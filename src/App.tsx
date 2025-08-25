@@ -2,7 +2,7 @@ import {SchemaViewer} from "./ui/schema_viewer"
 import {Schema} from "./lib/definitions";
 
 
-const placeholder_schemas: Array<Schema> = [
+const placeholder_schemas: Schema[] = [
     {
         name: "MatSci Schema",
         classes: [
