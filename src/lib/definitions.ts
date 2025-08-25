@@ -1,9 +1,9 @@
 export type SchemaClass = {
     name: string
     description: string
-    instances: Array<any>
+    instances: object[]
 }
 export type Schema = {
     name: string;
-    classes: Array<SchemaClass>;
+    classes: SchemaClass[];
 }
