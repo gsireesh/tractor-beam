@@ -27,6 +27,7 @@ export default tseslint.config(
         'warn',
         { allowConstantExport: true },
       ],
+      '@typescript-eslint/prefer-interface': false,
     },
   },
 )
