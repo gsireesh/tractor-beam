@@ -1,4 +1,4 @@
-import {SchemaClass} from "@/app/lib/definitions";
+import {SchemaClass} from "@/lib/definitions";
 import {Button} from "flowbite-react";
 import {PiCrop, PiHighlighterCircle} from "react-icons/pi";
 
@@ -15,7 +15,7 @@ export function SchemaClassViewer({schema_class}: { schema_class: SchemaClass })
                     rows={4}
                     defaultValue={schema_class.description}/>
             </label>
-            <div className="w-1/5 mt-2 w-full flex justify-end ">
+            <div className="w-1/5 mt-2 flex justify-end ">
                 <p className="pr-1">Annotate: </p>
                 <Button outline className="h-6 mr-1, ml-1"><PiCrop/></Button>
                 <Button outline className="h-6 mr-1 ml-1"><PiHighlighterCircle/></Button>
