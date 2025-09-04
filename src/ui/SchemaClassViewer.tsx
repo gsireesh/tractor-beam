@@ -1,15 +1,74 @@
 import { SchemaClass } from "@/lib/definitions";
+import { SchemaAction } from "@/lib/schema-reducer.ts";
 import { Button } from "flowbite-react";
 import { PiCrop, PiHighlighterCircle } from "react-icons/pi";
+import { useEffect, useRef, useState } from "react";
+
+function useClickOutside<T extends HTMLElement>(callback: () => void) {
+  const ref = useRef<T>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (ref.current && !ref.current.contains(event.target as Node)) {
+        callback();
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [callback]);
+
+  return ref;
+}
 
 export function SchemaClassViewer({
   schemaClass,
+  dispatch,
 }: {
   schemaClass: SchemaClass;
+  dispatch: (action: SchemaAction) => void;
 }) {
+  const [titleEditable, setTitleEditable] = useState<boolean>(false);
+  const titleRef = useClickOutside<HTMLHeadingElement>(() => {
+    setTitleEditable(false);
+  });
+
+  function toggleTitleEditable() {
+    if (!titleEditable) {
+      setTitleEditable(true);
+    }
+  }
+
   return (
     <div className="border-2 border-blue-500 rounded-lg m-4 p-4">
-      <h1 className="size-6 mb-2 overflow-scroll w-fit">{schemaClass.name}</h1>
+      <h1
+        ref={titleRef}
+        className="size-6 mb-4 overflow-scroll w-fit"
+        onClick={toggleTitleEditable}
+      >
+        {titleEditable ? (
+          <input
+            autoFocus
+            className="border-2"
+            value={schemaClass.name}
+            onChange={(e) =>
+              dispatch({
+                actionType: "updateClass",
+                schemaId: "0",
+                classId: schemaClass.id,
+                classInfo: {
+                  ...schemaClass,
+                  ...{ name: e.target.value },
+                },
+              })
+            }
+          />
+        ) : (
+          <div>{schemaClass.name}</div>
+        )}
+      </h1>
       <label className="block text-sm">
         Class Description:
         <textarea

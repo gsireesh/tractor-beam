@@ -1,10 +1,19 @@
+import { useImmerReducer } from "use-immer";
+
 import { SchemaClassViewer } from "@/ui/SchemaClassViewer";
 
 import { Button, TabItem, Tabs } from "flowbite-react";
 import { PiListPlus } from "react-icons/pi";
 import { Schema } from "@/lib/definitions";
+import { schemasReducer } from "@/lib/schema-reducer.ts";
 
-export function SchemaViewer({ schemas }: { schemas: Schema[] }) {
+export function SchemaViewer({
+  schemas: initialSchemas,
+}: {
+  schemas: Schema[];
+}) {
+  const [schemas, dispatch] = useImmerReducer(schemasReducer, initialSchemas);
+
   return (
     <Tabs>
       {schemas.map((schema) => (
@@ -15,7 +24,11 @@ export function SchemaViewer({ schemas }: { schemas: Schema[] }) {
           </Button>
           <ul>
             {schema.classes.map((sc) => (
-              <SchemaClassViewer key={sc.name} schemaClass={sc} />
+              <SchemaClassViewer
+                key={sc.id}
+                schemaClass={sc}
+                dispatch={dispatch}
+              />
             ))}
           </ul>
         </TabItem>
