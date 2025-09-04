@@ -1,7 +1,7 @@
 import { SchemaClass } from "@/lib/definitions";
 import { SchemaAction } from "@/lib/schema-reducer.ts";
 import { Button } from "flowbite-react";
-import { PiCrop, PiHighlighterCircle } from "react-icons/pi";
+import {PiCrop, PiHighlighterCircle, PiPencilSimple} from "react-icons/pi";
 import { useEffect, useRef, useState } from "react";
 
 function useClickOutside<T extends HTMLElement>(callback: () => void) {
@@ -25,7 +25,7 @@ function useClickOutside<T extends HTMLElement>(callback: () => void) {
 
 export function SchemaClassViewer({
   schemaClass,
-  dispatch,
+  dispatch,f
 }: {
   schemaClass: SchemaClass;
   dispatch: (action: SchemaAction) => void;
@@ -66,7 +66,7 @@ export function SchemaClassViewer({
             }
           />
         ) : (
-          <div>{schemaClass.name}</div>
+          <div className="flex flex-row group"><span>{schemaClass.name}</span><PiPencilSimple className="invisible group-hover:visible"/></div>
         )}
       </h1>
       <label className="block text-sm">
