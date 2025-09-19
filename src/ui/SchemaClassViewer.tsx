@@ -24,9 +24,11 @@ function useClickOutside<T extends HTMLElement>(callback: () => void) {
 }
 
 export function SchemaClassViewer({
+  schemaId,
   schemaClass,
   dispatch,
 }: {
+  schemaId: string,
   schemaClass: SchemaClass;
   dispatch: (action: SchemaAction) => void;
 }) {
@@ -45,7 +47,7 @@ export function SchemaClassViewer({
     <div className="border-2 border-blue-500 rounded-lg m-4 p-4">
       <h1
         ref={titleRef}
-        className="size-6 mb-4 overflow-scroll w-fit"
+        className="size-6 mb-4 w-fit"
         onClick={toggleTitleEditable}
       >
         {titleEditable ? (
@@ -56,7 +58,7 @@ export function SchemaClassViewer({
             onChange={(e) =>
               dispatch({
                 actionType: "updateClass",
-                schemaId: "0",
+                schemaId: schemaId,
                 classId: schemaClass.id,
                 classInfo: {
                   ...schemaClass,
@@ -78,7 +80,7 @@ export function SchemaClassViewer({
           value={schemaClass.description}
           onChange={(event) => {dispatch({
             actionType: "updateClass",
-            schemaId: "0",
+            schemaId: schemaId,
             classId: schemaClass.id,
             classInfo: {
               ...schemaClass,
