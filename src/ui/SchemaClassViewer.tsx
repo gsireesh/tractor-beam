@@ -25,7 +25,7 @@ function useClickOutside<T extends HTMLElement>(callback: () => void) {
 
 export function SchemaClassViewer({
   schemaClass,
-  dispatch,f
+  dispatch,
 }: {
   schemaClass: SchemaClass;
   dispatch: (action: SchemaAction) => void;
