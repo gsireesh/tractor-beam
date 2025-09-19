@@ -75,10 +75,19 @@ export function SchemaClassViewer({
           className="block p-0.5 w-4/5 border-2 border-blue-500 rounded-lg"
           autoFocus={false}
           rows={4}
-          defaultValue={schemaClass.description}
+          value={schemaClass.description}
+          onChange={(event) => {dispatch({
+            actionType: "updateClass",
+            schemaId: "0",
+            classId: schemaClass.id,
+            classInfo: {
+              ...schemaClass,
+              ...{description: event.target.value}
+            }
+          })}}
         />
       </label>
-      <div className="w-1/5 mt-2 flex justify-end ">
+      <div className=" mt-2 flex justify-end">
         <p className="pr-1">Annotate: </p>
         <Button outline className="h-6 mr-1, ml-1">
           <PiCrop />
