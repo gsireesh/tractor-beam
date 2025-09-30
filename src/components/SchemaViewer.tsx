@@ -1,6 +1,6 @@
 import { useImmerReducer } from "use-immer";
 
-import { SchemaClassViewer } from "@/ui/SchemaClassViewer";
+import { SchemaClassViewer } from "@/components/SchemaClassViewer";
 
 import { Button, TabItem, Tabs } from "flowbite-react";
 import { PiListPlus } from "react-icons/pi";

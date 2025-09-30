@@ -1,4 +1,4 @@
-import { SchemaViewer } from "@/ui/SchemaViewer";
+import { SchemaViewer } from "@/components/SchemaViewer";
 import { Schema } from "@/lib/definitions";
 
 const placeholderSchemas: Schema[] = [
