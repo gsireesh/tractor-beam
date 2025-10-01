@@ -19,8 +19,5 @@ web-ext.config.t
 !.vscode/extensions.json
 .idea
 .DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
+
+.wxt/chrome-data

@@ -4,6 +4,8 @@ import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
 import tseslint from 'typescript-eslint'
 
+import autoImports from './.wxt/eslint-auto-imports.mjs'
+
 export default tseslint.config(
   { ignores: ['dist'] },
   {
@@ -29,5 +31,5 @@ export default tseslint.config(
       ],
       '@typescript-eslint/prefer-interface': ['off'],
     },
-  },
+  }, autoImports
 )
