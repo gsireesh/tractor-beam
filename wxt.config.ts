@@ -5,9 +5,10 @@ import flowbiteReact from "flowbite-react/plugin/vite";
 export default defineConfig({
   srcDir: 'src',
   modules: ['@wxt-dev/module-react'],
-  vite: () => ({
+   
+  vite: (() => ({
     plugins: [tailwindcss(), flowbiteReact()]
-  }),
+  })),
   imports: {
     eslintrc: {
       enabled: 9

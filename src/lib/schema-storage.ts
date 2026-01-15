@@ -1,6 +1,5 @@
 import {placeholderSchemas} from "@/lib/placeholder-schemas.ts";
 import {IndexedDBConfig} from "@/app-config.ts";
-import {Schema} from "@/lib/definitions.ts";
 
 let dbPromise: Promise<IDBDatabase> | null = null;
 
@@ -30,14 +29,13 @@ export function getDB({dbSchemaName, schemaVersion, schemaObjectStoreName}: Inde
 export async function getStates(indexedDBConfig: IndexedDBConfig) {
     const db = await getDB(indexedDBConfig);
     const schemaObjectStore = db.transaction(indexedDBConfig.schemaObjectStoreName, 'readwrite').objectStore(indexedDBConfig.schemaObjectStoreName);
-    const schemaRequest = schemaObjectStore.getAll();
-    return schemaRequest
+    return schemaObjectStore.getAll()
 }
 
-export async function storeStates<S>(indexedDBConfig: IndexedDBConfig, updatedState: S) {
+export async function storeStates<S>(indexedDBConfig: IndexedDBConfig, updatedState: S[]) {
     const db = await getDB(indexedDBConfig);
     const schemaObjectStore = db.transaction(indexedDBConfig.schemaObjectStoreName, 'readwrite').objectStore(indexedDBConfig.schemaObjectStoreName);
-    updatedState.forEach((schema) => {
+    updatedState.forEach((schema: S) => {
         schemaObjectStore.put(schema)
     })
 }

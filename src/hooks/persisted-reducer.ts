@@ -3,7 +3,7 @@ import {IndexedDBConfig} from "@/app-config.ts";
 import {ImmerReducer, useImmerReducer} from "use-immer";
 
 
-export function usePersistedReducer<S, A>(reducer: ImmerReducer<S, A>, initialValues: S, indexedDBConfig: IndexedDBConfig) {
+export function usePersistedReducer<S extends unknown[], A>(reducer: ImmerReducer<S, A>, initialValues: S, indexedDBConfig: IndexedDBConfig) {
     const [state, originalDispatch] = useImmerReducer(reducer, initialValues);
 
     const dispatch = useCallback((action: A) => {
@@ -24,6 +24,6 @@ export function usePersistedReducer<S, A>(reducer: ImmerReducer<S, A>, initialVa
   }, [state, indexedDBConfig]);
 
 
-    return [state, dispatch]
+    return [state, dispatch] as const;
 
 }
