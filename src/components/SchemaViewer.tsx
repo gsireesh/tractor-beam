@@ -1,11 +1,11 @@
-import { useImmerReducer } from "use-immer";
-
 import { SchemaClassViewer } from "@/components/SchemaClassViewer";
+import {APP_CONFIG} from "@/app-config.ts";
 
 import { Button, TabItem, Tabs } from "flowbite-react";
 import { PiListPlus } from "react-icons/pi";
 import { Schema } from "@/lib/definitions";
-import { schemasReducer } from "@/lib/schema-reducer.ts";
+import { schemasReducer, SchemaAction} from "@/lib/schema-reducer.ts";
+import {usePersistedReducer} from "@/hooks/persisted-reducer.ts";
 import {generateId} from "@/lib/utils.ts";
 
 export function SchemaViewer({
@@ -13,7 +13,7 @@ export function SchemaViewer({
 }: {
   schemas: Schema[];
 }) {
-  const [schemas, dispatch] = useImmerReducer(schemasReducer, initialSchemas);
+  const [schemas, dispatch] = usePersistedReducer<Schema[], SchemaAction>(schemasReducer, initialSchemas, APP_CONFIG.indexedDBConfig);
 
   return (
     <Tabs>
