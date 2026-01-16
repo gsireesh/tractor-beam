@@ -19,7 +19,7 @@ export default function Page() {
       setInitialState(result);
     };
 
-    fetchInitialState();
+    void fetchInitialState();
   }, []);
 
   if (!initialState) {
