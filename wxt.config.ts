@@ -5,7 +5,12 @@ import flowbiteReact from "flowbite-react/plugin/vite";
 export default defineConfig({
   srcDir: 'src',
   modules: ['@wxt-dev/module-react'],
-   
+
+  manifest: {
+    action: {},
+    permissions: ['sidePanel', 'tabs'],
+  },
+
   vite: (() => ({
     plugins: [tailwindcss(), flowbiteReact()]
   })),
@@ -13,5 +18,5 @@ export default defineConfig({
     eslintrc: {
       enabled: 9
     }
-  }
+  },
 });
