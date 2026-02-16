@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useLayoutEffect, useRef } from 'react';
 
 interface SelectionPopoverProps {
   text: string;
@@ -14,9 +14,9 @@ export function SelectionPopover({
   onAddInstance,
 }: SelectionPopoverProps) {
   const popoverRef = useRef<HTMLDivElement>(null);
-  const [adjustedPosition, setAdjustedPosition] = useState({ top: 0, left: 0, showAbove: false });
+  const [adjustedPosition, setAdjustedPosition] = useState<{ top: number; left: number; showAbove: boolean } | null>(null);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!popoverRef.current) return;
 
     const popoverWidth = 280;
@@ -48,16 +48,17 @@ export function SelectionPopover({
   return (
     <div
       ref={popoverRef}
-      className={`absolute z-[100000] font-sans text-sm ${adjustedPosition.showAbove ? 'popover-above' : ''}`}
+      className={`absolute z-[100000] font-sans text-sm ${adjustedPosition?.showAbove ? 'popover-above' : ''}`}
       style={{
-        top: adjustedPosition.top,
-        left: adjustedPosition.left,
+        top: adjustedPosition?.top ?? 0,
+        left: adjustedPosition?.left ?? 0,
+        visibility: adjustedPosition ? 'visible' : 'hidden',
       }}
     >
       {/* Arrow */}
       <div
         className={`absolute left-5 w-0 h-0 border-l-8 border-r-8 border-l-transparent border-r-transparent ${
-          adjustedPosition.showAbove
+          adjustedPosition?.showAbove
             ? 'bottom-[-8px] border-t-8 border-t-white dark:border-t-gray-800'
             : 'top-[-8px] border-b-8 border-b-indigo-600'
         }`}
