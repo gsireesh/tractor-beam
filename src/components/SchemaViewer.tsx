@@ -15,6 +15,38 @@ export function SchemaViewer({
 }) {
   const [schemas, dispatch] = usePersistedReducer<Schema[], SchemaAction>(schemasReducer, initialSchemas, APP_CONFIG.indexedDBConfig);
 
+  useEffect(() => {
+    browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    switch (message.type) {
+      case 'pdfTextSelected': {
+        console.log('[background] PDF text selected:', message.text);
+        break;
+      }
+      case 'addInstance': {
+        console.log("Instance added", message);
+        dispatch({
+          actionType: "addInstance",
+          schemaId: "0",
+          classId: "Material",
+          instance: {
+            instanceType: "text",
+            text: (message.text as string),
+            range: null,
+            coords: null
+          },
+
+        })
+      }
+      default: {
+        console.log("Unhandled message", message);
+      }
+
+    }
+  });
+
+  }, []);
+
+
   return (
     <Tabs>
       {schemas.map((schema) => (

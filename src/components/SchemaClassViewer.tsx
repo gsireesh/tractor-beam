@@ -1,6 +1,6 @@
 import { SchemaClass } from "@/lib/definitions";
 import { SchemaAction } from "@/lib/schema-reducer.ts";
-import { Button } from "flowbite-react";
+import { Accordion, AccordionContent, AccordionPanel, AccordionTitle, Button } from "flowbite-react";
 import {PiCrop, PiHighlighterCircle, PiPencilSimple} from "react-icons/pi";
 import { useEffect, useRef, useState } from "react";
 
@@ -89,6 +89,16 @@ export function SchemaClassViewer({
           })}}
         />
       </label>
+        <Accordion>
+            <AccordionPanel>
+                <AccordionTitle>Instances</AccordionTitle>
+                <AccordionContent>
+                    {
+                        schemaClass.instances.length ? (schemaClass.instances.map((instance) => <p key={instance.text}>{instance.text}</p>)) : <p>Empty.</p>
+                    }
+                </AccordionContent>
+            </AccordionPanel>
+        </Accordion>
       <div className=" mt-2 flex justify-end">
         <p className="pr-1">Annotate: </p>
         <Button outline className="h-6 mr-1, ml-1">

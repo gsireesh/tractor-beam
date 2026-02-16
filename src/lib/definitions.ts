@@ -8,6 +8,7 @@ export interface PdfBox {
 
 export interface Instance {
   instanceType: "text" | "box";
+  text: string;
   range: Range;
   coords: PdfBox;
 }

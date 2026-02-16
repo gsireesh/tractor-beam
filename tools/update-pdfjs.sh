@@ -71,14 +71,14 @@ else
   echo "   Warning: viewer.mjs not found at expected location"
 fi
 
-echo "==> Injecting pdfjs-init.js script into viewer.html..."
+echo "==> Injecting pdfjs-init.js into viewer.html..."
 
 VIEWER_HTML="$PDFJS_DIR/web/viewer.html"
 if [ -f "$VIEWER_HTML" ]; then
-  # Inject our custom init script before the closing </head> tag
+  # Inject pdfjs-init.js before </head> - it dynamically loads other scripts
   sed -i.bak 's|</head>|<script src="/pdfjs-init.js"></script>\n</head>|' "$VIEWER_HTML"
   rm -f "$VIEWER_HTML.bak"
-  echo "   Patched viewer.html"
+  echo "   Injected pdfjs-init.js"
 else
   echo "   Warning: viewer.html not found at expected location"
 fi
