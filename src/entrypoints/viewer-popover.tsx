@@ -32,10 +32,12 @@ function render() {
       text={state.text}
       position={state.position}
       onClose={hidePopover}
-      onAddInstance={(text) => {
+      onAddInstance={(text, schemaId,  classId) => {
         chrome.runtime.sendMessage({
           type: 'addInstance',
           text,
+          schemaId,
+          classId,
           pdfUrl: new URLSearchParams(window.location.search).get('file') || '',
         }).catch(() => {});
         hidePopover();

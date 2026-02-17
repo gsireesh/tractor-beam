@@ -26,8 +26,8 @@ export function SchemaViewer({
         console.log("Instance added", message);
         dispatch({
           actionType: "addInstance",
-          schemaId: "0",
-          classId: "Material",
+          schemaId: message.schemaId,
+          classId: message.classId,
           instance: {
             instanceType: "text",
             text: (message.text as string),

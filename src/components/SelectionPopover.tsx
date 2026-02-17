@@ -5,7 +5,7 @@ interface SelectionPopoverProps {
   text: string;
   position: { top: number; left: number; bottom: number };
   onClose: () => void;
-  onAddInstance: (text: string) => void;
+  onAddInstance: (text: string, schemaId: string, classId: string) => void;
 }
 
 export function SelectionPopover({
@@ -17,6 +17,7 @@ export function SelectionPopover({
   const popoverRef = useRef<HTMLDivElement>(null);
   const [adjustedPosition, setAdjustedPosition] = useState<{ top: number; left: number; showAbove: boolean } | null>(null);
   const [activeSchema, setActiveSchema] = useState<Schema|null>(null);
+  const [selectedClassId, setSelectedClassId] = useState<string>('');
 
   useLayoutEffect(() => {
     if (!popoverRef.current) return;
@@ -51,13 +52,15 @@ export function SelectionPopover({
     browser.runtime.sendMessage({
       "type": "getActiveSchema"
     }).then((response) => {
-      setActiveSchema(response as Schema)
+      const schema = response as Schema;
+      setActiveSchema(schema);
+      if (schema?.classes?.length > 0) {
+        setSelectedClassId(schema.classes[0].id);
+      }
     }).catch(() => {
       console.error("getActiveSchema failed!");
     })
   }, []);
-
-  const classes = activeSchema?.classes.map(c => c.name);
 
   return (
     <div
@@ -87,13 +90,22 @@ export function SelectionPopover({
             {text}
           </div>
           <div className="flex gap-2">
-            <button
-              className="flex-1 px-3 py-2 rounded-md text-sm font-medium cursor-pointer border-none transition-colors bg-indigo-600 text-white hover:bg-indigo-700"
-              onClick={() => onAddInstance(text)}
+            <select
+              className="flex-1 px-2 py-2 rounded-md text-sm border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200"
+              value={selectedClassId}
+              onChange={(e) => setSelectedClassId(e.target.value)}
             >
-              Add as Instance
+              {activeSchema?.classes.map((c) => (
+                <option key={c.id} value={c.id}>{c.name}</option>
+              ))}
+            </select>
+            <button
+              className="px-3 py-2 rounded-md text-sm font-medium cursor-pointer border-none transition-colors bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              onClick={() => onAddInstance(text, activeSchema.id, selectedClassId)}
+              disabled={!selectedClassId}
+            >
+              Add
             </button>
-            <br />
           </div>
         </div>
       </div>
