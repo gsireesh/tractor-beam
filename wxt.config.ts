@@ -9,6 +9,7 @@ export default defineConfig({
   manifest: {
     action: {},
     permissions: ['sidePanel', 'tabs'],
+    host_permissions: ["<all_urls>"]
   },
 
   vite: (() => ({
