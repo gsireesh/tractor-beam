@@ -18,14 +18,12 @@ export default defineBackground(() => {
     console.log('[background] isPdfUrl result:', isPdf);
 
     if (isPdf) {
+      console.log('[background] Opening sidepanel');
+      await browser.sidePanel.open({ tabId: tab.id });
       // Redirect to PDF viewer in the same tab
       const viewerUrl = getPdfViewerUrl(tab.url!);
       console.log('[background] Redirecting to:', viewerUrl);
       await browser.tabs.update(tab.id, { url: viewerUrl });
-    } else {
-      // Open sidepanel for non-PDF pages
-      console.log('[background] Opening sidepanel');
-      await browser.sidePanel.open({ tabId: tab.id });
     }
   });
 
