@@ -1,8 +1,12 @@
 import { getPdfViewerUrl, isPdfUrl } from '@/lib/pdf-utils';
+import {BackgroundState, Schema} from "@/lib/definitions.ts";
 
 export default defineBackground(() => {
   // Disable automatic sidepanel opening so we can handle clicks manually
   browser.sidePanel.setPanelBehavior({ openPanelOnActionClick: false });
+  const backgroundState: BackgroundState = {
+    activeSchema: null,
+  }
 
   // Handle extension action (toolbar button) click
   browser.action.onClicked.addListener(async (tab) => {
@@ -41,13 +45,23 @@ export default defineBackground(() => {
       case 'pdfTextSelected':
         console.log('[background] PDF text selected:', message.text);
         break;
-
       case 'getPdfViewerConfig':
         // Return configuration for the PDF viewer
         sendResponse({
           // Add any viewer configuration options here
         });
         return true; // Indicates async response
+        break;
+      case 'setActiveSchema':
+        backgroundState.activeSchema = (message.schema as Schema);
+        break;
+      case 'getActiveSchema':
+        console.log(`Get ActiveSchema request! ActiveSchema: ${backgroundState.activeSchema?.name}`);
+        sendResponse({
+          ...backgroundState.activeSchema
+        });
+        return true;
+        break;
     }
   });
 });

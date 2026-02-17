@@ -1,4 +1,5 @@
 import { useState, useLayoutEffect, useRef } from 'react';
+import {Schema} from "@/lib/definitions.ts";
 
 interface SelectionPopoverProps {
   text: string;
@@ -15,6 +16,7 @@ export function SelectionPopover({
 }: SelectionPopoverProps) {
   const popoverRef = useRef<HTMLDivElement>(null);
   const [adjustedPosition, setAdjustedPosition] = useState<{ top: number; left: number; showAbove: boolean } | null>(null);
+  const [activeSchema, setActiveSchema] = useState<Schema|null>(null);
 
   useLayoutEffect(() => {
     if (!popoverRef.current) return;
@@ -45,6 +47,18 @@ export function SelectionPopover({
     setAdjustedPosition({ top, left, showAbove });
   }, [position]);
 
+  useEffect(() => {
+    browser.runtime.sendMessage({
+      "type": "getActiveSchema"
+    }).then((response) => {
+      setActiveSchema(response as Schema)
+    }).catch(() => {
+      console.error("getActiveSchema failed!");
+    })
+  }, []);
+
+  const classes = activeSchema?.classes.map(c => c.name);
+
   return (
     <div
       ref={popoverRef}
@@ -66,17 +80,6 @@ export function SelectionPopover({
 
       {/* Content */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl min-w-[250px] max-w-[350px] overflow-hidden border border-gray-200 dark:border-gray-700">
-        {/* Header */}
-        <div className="flex justify-between items-center px-3 py-2.5 bg-indigo-600 text-white">
-          <span className="font-semibold text-sm">Add to Schema</span>
-          <button
-            className="bg-transparent border-none text-white text-lg cursor-pointer p-0 leading-none opacity-80 hover:opacity-100"
-            onClick={onClose}
-            title="Close"
-          >
-            &times;
-          </button>
-        </div>
 
         {/* Body */}
         <div className="p-3">
@@ -90,6 +93,7 @@ export function SelectionPopover({
             >
               Add as Instance
             </button>
+            <br />
           </div>
         </div>
       </div>

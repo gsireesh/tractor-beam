@@ -46,6 +46,14 @@ export function SchemaViewer({
 
   }, []);
 
+  // post activeSchema to background script
+  useEffect(() => {
+    chrome.runtime.sendMessage({
+      type: "setActiveSchema",
+      schema: schemas[0]
+    })
+  });
+
 
   return (
     <Tabs>

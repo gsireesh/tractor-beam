@@ -24,3 +24,7 @@ export interface Schema {
   name: string;
   classes: SchemaClass[];
 }
+
+export interface BackgroundState {
+  activeSchema: Schema | null;
+}
