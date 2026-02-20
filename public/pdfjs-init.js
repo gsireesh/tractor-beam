@@ -37,7 +37,6 @@
   function selectionToPdfBoxes(range) {
     const rects = range.getClientRects();
     const boxes = [];
-    const scale = window.PDFViewerApplication?.pdfViewer?.currentScale || 1;
 
     for (const rect of rects) {
       // Find the .page element containing this rect's midpoint
@@ -52,12 +51,17 @@
       const borderLeft = pageEl.clientLeft || 0;
       const borderTop = pageEl.clientTop || 0;
 
+      // Store as fractions (0–1) of the page content area so coordinates
+      // are scale-independent — no rounding drift on zoom.
+      const contentWidth = pageEl.clientWidth;
+      const contentHeight = pageEl.clientHeight;
+
       boxes.push({
         pageNumber,
-        left: (rect.left - pageRect.left - borderLeft) / scale,
-        top: (rect.top - pageRect.top - borderTop) / scale,
-        width: rect.width / scale,
-        height: rect.height / scale,
+        left:   (rect.left - pageRect.left - borderLeft) / contentWidth,
+        top:    (rect.top  - pageRect.top  - borderTop)  / contentHeight,
+        width:  rect.width  / contentWidth,
+        height: rect.height / contentHeight,
       });
     }
     return boxes;
@@ -118,7 +122,7 @@
   /**
    * Render highlight overlays for a given page number at the current scale.
    */
-  function renderHighlightsOnPage(pageNumber, scale) {
+  function renderHighlightsOnPage(pageNumber) {
     const pageEl = document.querySelector(`.page[data-page-number="${pageNumber}"]`);
     if (!pageEl) return;
 
@@ -142,7 +146,7 @@
       for (const box of hl.coords) {
         if (box.pageNumber !== pageNumber) continue;
         const div = document.createElement('div');
-        div.style.cssText = `position:absolute;left:${box.left * scale}px;top:${box.top * scale}px;width:${box.width * scale}px;height:${box.height * scale}px;background:${color};border-radius:2px;mix-blend-mode:multiply;`;
+        div.style.cssText = `position:absolute;left:${box.left * 100}%;top:${box.top * 100}%;width:${box.width * 100}%;height:${box.height * 100}%;background:${color};border-radius:2px;mix-blend-mode:multiply;`;
         container.appendChild(div);
       }
     }
@@ -152,11 +156,10 @@
    * Re-render all highlights across all visible pages.
    */
   function renderAllHighlights() {
-    const scale = window.PDFViewerApplication?.pdfViewer?.currentScale || 1;
     const pages = document.querySelectorAll('.page[data-page-number]');
     for (const pageEl of pages) {
       const pageNumber = parseInt(pageEl.getAttribute('data-page-number'), 10);
-      renderHighlightsOnPage(pageNumber, scale);
+      renderHighlightsOnPage(pageNumber);
     }
   }
 
@@ -192,8 +195,7 @@
 
     // Re-render highlights when a page finishes rendering
     PDFViewerApplication.eventBus.on('pagerendered', function(evt) {
-      const scale = PDFViewerApplication.pdfViewer.currentScale || 1;
-      renderHighlightsOnPage(evt.pageNumber, scale);
+      renderHighlightsOnPage(evt.pageNumber);
     });
 
     // Clear stale highlight containers on scale change (they get recreated on pagerendered)
