@@ -7,10 +7,12 @@ export interface PdfBox {
 }
 
 export interface Instance {
+  id: string;
   instanceType: "text" | "box";
   text: string;
   range: Range;
-  coords: PdfBox;
+  coords: PdfBox[] | null;
+  pdfUrl: string;
 }
 
 export interface SchemaClass {

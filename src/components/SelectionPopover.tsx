@@ -1,16 +1,18 @@
 import { useState, useLayoutEffect, useRef } from 'react';
-import {Schema} from "@/lib/definitions.ts";
+import {Schema, PdfBox} from "@/lib/definitions.ts";
 
 interface SelectionPopoverProps {
   text: string;
   position: { top: number; left: number; bottom: number };
+  coords?: PdfBox[] | null;
   onClose: () => void;
-  onAddInstance: (text: string, schemaId: string, classId: string) => void;
+  onAddInstance: (text: string, schemaId: string, classId: string, coords?: PdfBox[] | null) => void;
 }
 
 export function SelectionPopover({
   text,
   position,
+  coords,
   onClose,
   onAddInstance,
 }: SelectionPopoverProps) {
@@ -101,7 +103,7 @@ export function SelectionPopover({
             </select>
             <button
               className="px-3 py-2 rounded-md text-sm font-medium cursor-pointer border-none transition-colors bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
-              onClick={() => onAddInstance(text, activeSchema.id, selectedClassId)}
+              onClick={() => onAddInstance(text, activeSchema.id, selectedClassId, coords)}
               disabled={!selectedClassId}
             >
               Add

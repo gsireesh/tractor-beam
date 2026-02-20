@@ -1,5 +1,6 @@
 import { createRoot, Root } from 'react-dom/client';
 import { SelectionPopover } from '@/components/SelectionPopover';
+import { PdfBox } from '@/lib/definitions';
 import cssText from './popover-styles.css?inline';
 
 // This script is loaded in the PDF viewer to render the selection popover
@@ -11,12 +12,14 @@ interface PopoverState {
   visible: boolean;
   text: string;
   position: { top: number; left: number; bottom: number };
+  coords: PdfBox[] | null;
 }
 
 let state: PopoverState = {
   visible: false,
   text: '',
   position: { top: 0, left: 0, bottom: 0 },
+  coords: null,
 };
 
 function render() {
@@ -31,13 +34,15 @@ function render() {
     <SelectionPopover
       text={state.text}
       position={state.position}
+      coords={state.coords}
       onClose={hidePopover}
-      onAddInstance={(text, schemaId,  classId) => {
+      onAddInstance={(text, schemaId, classId, coords) => {
         chrome.runtime.sendMessage({
           type: 'addInstance',
           text,
           schemaId,
           classId,
+          coords,
           pdfUrl: new URLSearchParams(window.location.search).get('file') || '',
         }).catch(() => {});
         hidePopover();
@@ -46,7 +51,7 @@ function render() {
   );
 }
 
-function showPopover(text: string, rect: DOMRect) {
+function showPopover(text: string, rect: DOMRect, coords?: PdfBox[]) {
   state = {
     visible: true,
     text,
@@ -55,6 +60,7 @@ function showPopover(text: string, rect: DOMRect) {
       left: rect.left,
       bottom: rect.bottom,
     },
+    coords: coords && coords.length > 0 ? coords : null,
   };
   render();
 }

@@ -6,6 +6,32 @@ export default defineBackground(() => {
   browser.sidePanel.setPanelBehavior({ openPanelOnActionClick: false });
   const backgroundState: BackgroundState = {
     activeSchema: null,
+  };
+
+  // Track the PDF viewer tab so we can push highlights to it
+  let pdfViewerTabId: number | null = null;
+  let pdfViewerUrl: string = '';
+
+  /**
+   * Extract all instances with coords from the active schema,
+   * filtered to the current PDF, and send them to the viewer tab.
+   */
+  function pushHighlightsToViewer() {
+    if (!pdfViewerTabId || !backgroundState.activeSchema) return;
+
+    const instances: Array<{ id: string; classId: string; coords: any[] }> = [];
+    for (const cls of backgroundState.activeSchema.classes) {
+      for (const inst of cls.instances) {
+        if (inst.coords && inst.pdfUrl === pdfViewerUrl) {
+          instances.push({ id: inst.id, classId: cls.id, coords: inst.coords });
+        }
+      }
+    }
+
+    chrome.tabs.sendMessage(pdfViewerTabId, {
+      type: 'renderHighlights',
+      instances,
+    }).catch(() => {});
   }
 
   // Handle extension action (toolbar button) click
@@ -36,6 +62,9 @@ export default defineBackground(() => {
     switch (message.type) {
       case 'pdfViewerReady':
         console.log('[background] PDF viewer ready:', message.pdfUrl);
+        pdfViewerTabId = sender.tab?.id ?? null;
+        pdfViewerUrl = message.pdfUrl || '';
+        pushHighlightsToViewer();
         break;
 
       case 'pdfPageChanged':
@@ -54,6 +83,7 @@ export default defineBackground(() => {
         break;
       case 'setActiveSchema':
         backgroundState.activeSchema = (message.schema as Schema);
+        pushHighlightsToViewer();
         break;
       case 'getActiveSchema':
         console.log(`Get ActiveSchema request! ActiveSchema: ${backgroundState.activeSchema?.name}`);

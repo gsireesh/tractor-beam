@@ -7,6 +7,7 @@ import { Schema } from "@/lib/definitions";
 import { schemasReducer, SchemaAction} from "@/lib/schema-reducer.ts";
 import {usePersistedReducer} from "@/hooks/persisted-reducer.ts";
 import {generateId} from "@/lib/utils.ts";
+import {PdfBox} from "@/lib/definitions.ts";
 
 export function SchemaViewer({
   schemas: initialSchemas,
@@ -29,13 +30,15 @@ export function SchemaViewer({
           schemaId: message.schemaId,
           classId: message.classId,
           instance: {
+            id: generateId(),
             instanceType: "text",
             text: (message.text as string),
             range: null,
-            coords: null
+            coords: (message.coords as PdfBox[]) || null,
+            pdfUrl: (message.pdfUrl as string) || '',
           },
-
-        })
+        });
+        break;
       }
       default: {
         console.log("Unhandled message", message);

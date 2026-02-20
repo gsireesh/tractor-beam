@@ -31,11 +31,44 @@
   }
 
   /**
+   * Convert a selection Range into scale-independent PdfBox[] coords.
+   * Each client rect becomes one PdfBox with page-relative coordinates.
+   */
+  function selectionToPdfBoxes(range) {
+    const rects = range.getClientRects();
+    const boxes = [];
+    const scale = window.PDFViewerApplication?.pdfViewer?.currentScale || 1;
+
+    for (const rect of rects) {
+      // Find the .page element containing this rect's midpoint
+      const el = document.elementFromPoint(rect.left + rect.width / 2, rect.top + rect.height / 2);
+      const pageEl = el?.closest('.page[data-page-number]');
+      if (!pageEl) continue;
+
+      const pageNumber = parseInt(pageEl.getAttribute('data-page-number'), 10);
+      const pageRect = pageEl.getBoundingClientRect();
+      // Subtract border (clientLeft/clientTop) so coords are relative to the padding box,
+      // which is where absolutely-positioned children are placed.
+      const borderLeft = pageEl.clientLeft || 0;
+      const borderTop = pageEl.clientTop || 0;
+
+      boxes.push({
+        pageNumber,
+        left: (rect.left - pageRect.left - borderLeft) / scale,
+        top: (rect.top - pageRect.top - borderTop) / scale,
+        width: rect.width / scale,
+        height: rect.height / scale,
+      });
+    }
+    return boxes;
+  }
+
+  /**
    * Show the selection popover using the React component
    */
-  function showSelectionPopover(text, rect) {
+  function showSelectionPopover(text, rect, coords) {
     if (window.TractorBeamPopover) {
-      window.TractorBeamPopover.show(text, rect);
+      window.TractorBeamPopover.show(text, rect, coords);
     } else {
       console.warn('[pdfjs-init] TractorBeamPopover not loaded');
     }
@@ -47,6 +80,83 @@
   function hideSelectionPopover() {
     if (window.TractorBeamPopover) {
       window.TractorBeamPopover.hide();
+    }
+  }
+
+  // --- Highlight rendering ---
+
+  // Stored highlights: array of { id, classId, coords: PdfBox[] }
+  window._tractorBeamHighlights = [];
+
+
+  function hashId(str) {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      hash = (hash << 5) - hash + str.charCodeAt(i);
+    hash |= 0; // Convert to 32-bit integer
+  }
+  return Math.abs(hash);
+}
+
+  const colorArray = [
+  'rgba(255, 182, 193, 0.3)', // pink
+  'rgba(255, 218, 185, 0.3)', // peach
+  'rgba(255, 255, 186, 0.3)', // yellow
+  'rgba(186, 255, 201, 0.3)', // mint
+  'rgba(186, 225, 255, 0.3)', // sky blue
+  'rgba(216, 191, 255, 0.3)', // lavender
+  'rgba(255, 200, 221, 0.3)', // rose
+  'rgba(200, 255, 240, 0.3)', // aqua
+  'rgba(255, 228, 196, 0.3)', // bisque
+  'rgba(230, 230, 250, 0.3)', // periwinkle
+];
+  function getHighlightColor(classId) {
+    const idx = hashId(classId) % colorArray.length;
+    return colorArray[idx];
+  }
+
+  /**
+   * Render highlight overlays for a given page number at the current scale.
+   */
+  function renderHighlightsOnPage(pageNumber, scale) {
+    const pageEl = document.querySelector(`.page[data-page-number="${pageNumber}"]`);
+    if (!pageEl) return;
+
+    // Find or create the highlight container
+    let container = pageEl.querySelector('.tractor-beam-highlights');
+    if (!container) {
+      container = document.createElement('div');
+      container.className = 'tractor-beam-highlights';
+      container.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:5;';
+      pageEl.style.position = 'relative';
+      pageEl.appendChild(container);
+    }
+
+    // Clear existing highlights on this page
+    container.innerHTML = '';
+
+    const highlights = window._tractorBeamHighlights || [];
+    for (const hl of highlights) {
+      if (!hl.coords) continue;
+      const color = getHighlightColor(hl.classId);
+      for (const box of hl.coords) {
+        if (box.pageNumber !== pageNumber) continue;
+        const div = document.createElement('div');
+        div.style.cssText = `position:absolute;left:${box.left * scale}px;top:${box.top * scale}px;width:${box.width * scale}px;height:${box.height * scale}px;background:${color};border-radius:2px;mix-blend-mode:multiply;`;
+        container.appendChild(div);
+      }
+    }
+  }
+
+  /**
+   * Re-render all highlights across all visible pages.
+   */
+  function renderAllHighlights() {
+    const scale = window.PDFViewerApplication?.pdfViewer?.currentScale || 1;
+    const pages = document.querySelectorAll('.page[data-page-number]');
+    for (const pageEl of pages) {
+      const pageNumber = parseInt(pageEl.getAttribute('data-page-number'), 10);
+      renderHighlightsOnPage(pageNumber, scale);
     }
   }
 
@@ -80,6 +190,18 @@
       console.log('[pdfjs-init] Could not send pdfViewerReady message:', err.message);
     }
 
+    // Re-render highlights when a page finishes rendering
+    PDFViewerApplication.eventBus.on('pagerendered', function(evt) {
+      const scale = PDFViewerApplication.pdfViewer.currentScale || 1;
+      renderHighlightsOnPage(evt.pageNumber, scale);
+    });
+
+    // Clear stale highlight containers on scale change (they get recreated on pagerendered)
+    PDFViewerApplication.eventBus.on('scalechanging', function() {
+      const containers = document.querySelectorAll('.tractor-beam-highlights');
+      for (const c of containers) c.innerHTML = '';
+    });
+
     // Listen for page changes
     PDFViewerApplication.eventBus.on('pagechanging', function(evt) {
       chrome.runtime.sendMessage({
@@ -107,9 +229,10 @@
         // Get the bounding rect of the selection
         const range = selection.getRangeAt(0);
         const rect = range.getBoundingClientRect();
+        const coords = selectionToPdfBoxes(range);
 
         // Show the popover anchored to the selection
-        showSelectionPopover(selectedText, rect);
+        showSelectionPopover(selectedText, rect, coords);
 
         // Also notify the extension
         chrome.runtime.sendMessage({
@@ -129,7 +252,7 @@
       viewerContainer.addEventListener('scroll', hideSelectionPopover);
     }
 
-    // Listen for configuration requests from the extension
+    // Listen for messages from the extension
     chrome.runtime.onMessage.addListener(function(message, sender, sendResponse) {
       if (message.type === 'getPdfInfo') {
         sendResponse({
@@ -139,6 +262,11 @@
           title: PDFViewerApplication.documentInfo?.Title || ''
         });
         return true;
+      }
+
+      if (message.type === 'renderHighlights') {
+        window._tractorBeamHighlights = message.instances || [];
+        renderAllHighlights();
       }
     });
   });
