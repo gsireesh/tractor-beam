@@ -1,1 +1,10 @@
-@import "tailwindcss";
+/*
+ * Import Tailwind WITHOUT preflight (CSS reset).
+ * Preflight sets box-sizing:border-box on ALL elements globally,
+ * which breaks pdf.js text layer alignment (it assumes content-box).
+ * Since this CSS is injected into the pdf.js viewer page, we must
+ * avoid any global resets.
+ */
+@layer theme, base, components, utilities;
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);
