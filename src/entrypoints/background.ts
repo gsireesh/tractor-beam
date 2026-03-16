@@ -15,7 +15,7 @@ async function ensureOffscreenDocument() {
   });
   if (contexts.length > 0) return;
   await chrome.offscreen.createDocument({
-    url: 'offscreen/index.html',
+    url: 'offscreen.html',
     reasons: ['WORKERS' as chrome.offscreen.Reason],
     justification: 'Run ML models for PDF analysis',
   });
@@ -85,6 +85,11 @@ export default defineBackground(() => {
       const viewerUrl = getPdfViewerUrl(tab.url!);
       console.log('[background] Redirecting to:', viewerUrl);
       await browser.tabs.update(tab.id, { url: viewerUrl });
+
+      // kick off offscreen document for ML annotation
+      console.log('[background] Initializing offscreen document...');
+      await ensureOffscreenDocument()
+      console.log("[background] Offscreen document initialized.");
     }
   });
 
