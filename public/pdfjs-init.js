@@ -163,6 +163,31 @@
     }
   }
 
+  /**
+   * Extract full text from all pages of the loaded PDF document.
+   * Uses the pdf.js API (page.getTextContent()) already loaded in the viewer.
+   * Returns an array of { pageNumber, text } objects.
+   */
+  async function extractFullText(PDFViewerApplication) {
+    const pdfDoc = PDFViewerApplication.pdfDocument;
+    if (!pdfDoc) throw new Error('No PDF document loaded');
+
+    const numPages = pdfDoc.numPages;
+    const pages = [];
+
+    for (let i = 1; i <= numPages; i++) {
+      const page = await pdfDoc.getPage(i);
+      const textContent = await page.getTextContent();
+      const text = textContent.items
+        .filter(function(item) { return item.str !== undefined; })
+        .map(function(item) { return item.str; })
+        .join('');
+      pages.push({ pageNumber: i, text: text });
+    }
+
+    return pages;
+  }
+
   // Load the React popover component
   loadViewerPopover()
     .then(() => console.log('[pdfjs-init] viewer-popover.js loaded'))
@@ -269,6 +294,15 @@
       if (message.type === 'renderHighlights') {
         window._tractorBeamHighlights = message.instances || [];
         renderAllHighlights();
+      }
+
+      if (message.type === 'extractPdfText') {
+        extractFullText(PDFViewerApplication).then(function(pages) {
+          sendResponse({ type: 'pdfTextExtracted', pages: pages });
+        }).catch(function(err) {
+          sendResponse({ type: 'pdfTextExtracted', pages: [], error: err.message });
+        });
+        return true; // async response
       }
     });
   });
