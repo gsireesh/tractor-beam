@@ -41,6 +41,7 @@ export class WebLlmRunner {
           this.onProgress('loading', report.progress, report.text, requestId);
         },
       });
+      this.onProgress('running', 1, '', '');
       this.loadedModel = this.currentModel;
       return this.engine;
     } finally {

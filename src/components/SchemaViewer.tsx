@@ -8,6 +8,7 @@ import { schemasReducer, SchemaAction} from "@/lib/schema-reducer.ts";
 import {usePersistedReducer} from "@/hooks/persisted-reducer.ts";
 import {generateId} from "@/lib/utils.ts";
 import {PdfBox} from "@/lib/definitions.ts";
+import {ModelControls} from "@/components/ModelControls.tsx";
 
 export function SchemaViewer({
   schemas: initialSchemas,
@@ -15,6 +16,9 @@ export function SchemaViewer({
   schemas: Schema[];
 }) {
   const [schemas, dispatch] = usePersistedReducer<Schema[], SchemaAction>(schemasReducer, initialSchemas, APP_CONFIG.indexedDBConfig);
+  const [llmLoaded, setLlmLoaded] = useState({stage: "unloaded", progress: "", message: ""});
+
+  const activeSchema = schemas[0]
 
   useEffect(() => {
     browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
@@ -40,6 +44,12 @@ export function SchemaViewer({
         });
         break;
       }
+      case "mlProgress": {
+        console.log("[sidebar] MLProgress Event!", message);
+        setLlmLoaded({stage: message.stage, progress: message.progress, message: message.message});
+        break
+      }
+
       default: {
         console.log("Unhandled message", message);
       }
@@ -53,12 +63,15 @@ export function SchemaViewer({
   useEffect(() => {
     chrome.runtime.sendMessage({
       type: "setActiveSchema",
-      schema: schemas[0]
+      schema: activeSchema,
     })
   });
 
 
+
   return (
+      <>
+        <ModelControls status={llmLoaded.stage} progress={llmLoaded.progress} message={llmLoaded.message} activeSchema={activeSchema}/>
     <Tabs>
       {schemas.map((schema) => (
         <TabItem key={schema.name} title={schema.name}>
@@ -88,5 +101,6 @@ export function SchemaViewer({
         </TabItem>
       ))}
     </Tabs>
+      </>
   );
 }

@@ -13,17 +13,20 @@ import type { Schema } from '@/lib/definitions';
 import { constructSchemaNERPrompt} from "@/lib/ml/prompting.ts";
 import { WebLlmRunner, type ChatMessage } from '@/lib/ml/webllm-runner';
 import { TransformersRunner } from '@/lib/ml/transformers-runner';
+
+
 const webllm = new WebLlmRunner(broadcastProgress);
 const transformers = new TransformersRunner(broadcastProgress);
 
 function broadcastProgress(stage: string, progress: number, message?: string, requestId?: string) {
+  console.log(`[offscreen] progress: ${stage}, ${progress}, ${message}`);
   chrome.runtime.sendMessage({
     type: 'mlProgress',
     requestId,
     stage,
     progress,
     message,
-  }).catch(() => {});
+  }).catch((err) => {console.log("Progress message failed", err)});
 }
 
 function buildNerPrompt(schema: Schema, pdfText: { pageNumber: number; text: string }[]): ChatMessage[] {
