@@ -1,7 +1,5 @@
 import { defineConfig } from 'wxt';
 import tailwindcss from "@tailwindcss/vite";
-import flowbiteReact from "flowbite-react/plugin/vite";
-
 export default defineConfig({
   srcDir: 'src',
   modules: ['@wxt-dev/module-react'],
@@ -13,7 +11,7 @@ export default defineConfig({
   },
 
   vite: (() => ({
-    plugins: [tailwindcss(), flowbiteReact()]
+    plugins: [tailwindcss()]
   })),
   imports: {
     eslintrc: {
