@@ -119,8 +119,9 @@
 
     // Clear stale highlight containers on scale change
     PDFViewerApplication.eventBus.on('scalechanging', function() {
-      const containers = document.querySelectorAll('.tractor-beam-highlights');
-      for (const c of containers) c.innerHTML = '';
+      if (window.TractorBeamHighlights) {
+        window.TractorBeamHighlights.clearContainers();
+      }
     });
 
     // Listen for page changes

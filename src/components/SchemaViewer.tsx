@@ -44,6 +44,15 @@ export function SchemaViewer({
         });
         break;
       }
+      case 'deleteInstance': {
+        console.log("Instance deleted", message);
+        dispatch({
+          actionType: "deleteInstance",
+          classId: message.classId,
+          instanceId: message.highlightId,
+        });
+        break;
+      }
       case "mlProgress": {
         console.log("[sidebar] MLProgress Event!", message);
         setLlmLoaded({stage: message.stage, progress: message.progress, message: message.message});

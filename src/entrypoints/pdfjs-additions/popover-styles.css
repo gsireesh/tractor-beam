@@ -8,3 +8,8 @@
 @layer theme, base, components, utilities;
 @import "tailwindcss/theme.css" layer(theme);
 @import "tailwindcss/utilities.css" layer(utilities);
+
+/* Let mouse events reach highlights through the text layer.
+   Spans keep pointer-events so text selection still works. */
+.textLayer { pointer-events: none; }
+.textLayer span { pointer-events: auto; }

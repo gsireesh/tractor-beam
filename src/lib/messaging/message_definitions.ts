@@ -51,6 +51,12 @@ export interface AddInstanceMessage {
   pdfUrl: string;
 }
 
+export interface DeleteInstanceMessage {
+  type: 'deleteInstance';
+  highlightId: string;
+  classId: string;
+}
+
 // ─── PDF full-text extraction ───
 
 export interface ExtractPdfTextMessage {
@@ -124,6 +130,7 @@ export type ExtensionMessage =
   | RenderHighlightsMessage
   | GetPdfInfoMessage
   | AddInstanceMessage
+  | DeleteInstanceMessage
   | ExtractPdfTextMessage
   | PdfTextExtractedMessage
   | RunWebLlmTaskMessage

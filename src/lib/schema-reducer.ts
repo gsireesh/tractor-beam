@@ -20,7 +20,13 @@ interface AddInstance {
   instance: Instance;
 }
 
-export type SchemaAction = AddClass | UpdateClass | AddInstance;
+interface DeleteInstance {
+  actionType: "deleteInstance";
+  classId: string;
+  instanceId: string;
+}
+
+export type SchemaAction = AddClass | UpdateClass | AddInstance | DeleteInstance;
 
 export function schemasReducer(draft: Schema[], action: SchemaAction) {
   console.log("action", action);
@@ -50,6 +56,15 @@ export function schemasReducer(draft: Schema[], action: SchemaAction) {
       }
       return;
     }
-
+    case "deleteInstance": {
+      for (const schema of draft) {
+        const cls = schema.classes.find((c) => c.id === action.classId);
+        if (cls) {
+          cls.instances = cls.instances.filter((i) => i.id !== action.instanceId);
+          return;
+        }
+      }
+      return;
+    }
   }
 }
