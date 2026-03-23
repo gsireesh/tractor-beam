@@ -1,5 +1,6 @@
 import { SchemaClassViewer } from "@/components/SchemaClassViewer";
 import {APP_CONFIG} from "@/app-config.ts";
+import {storeMlAnnotationRun} from "@/lib/schema-storage.ts";
 
 import { Button, TabItem, Tabs } from "flowbite-react";
 import { PiListPlus } from "react-icons/pi";
@@ -57,6 +58,19 @@ export function SchemaViewer({
         console.log("[sidebar] MLProgress Event!", message);
         setLlmLoaded({stage: message.stage, progress: message.progress, message: message.message});
         break
+      }
+      case "annotationResults": {
+        console.log("[sidebar] Received annotation results:", message.annotations?.length);
+        if (message.annotations && message.requestId) {
+          storeMlAnnotationRun(APP_CONFIG.indexedDBConfig, {
+            id: message.requestId,
+            pdfUrl: '',
+            schemaId: activeSchema?.id || '',
+            annotations: message.annotations,
+            createdAt: Date.now(),
+          }).catch(err => console.error('[sidebar] Failed to store ML annotations:', err));
+        }
+        break;
       }
 
       default: {

@@ -11,6 +11,8 @@ interface HighlightRectProps {
   color: string;
 }
 
+export const VISUAL_BLOCK_CLASS_ID = '__visual-block__';
+
 export const HighlightRect = memo(function HighlightRect({
   highlightId,
   classId,
@@ -22,6 +24,7 @@ export const HighlightRect = memo(function HighlightRect({
 }: HighlightRectProps) {
   const [hovered, setHovered] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const isVisualBlock = classId === VISUAL_BLOCK_CLASS_ID;
 
   function handleDelete() {
     setDeleting(true);
@@ -35,11 +38,11 @@ export const HighlightRect = memo(function HighlightRect({
   // Padding expands the hover hitbox so the button (positioned at the right
   // edge) stays inside the mouseenter/mouseleave boundary. Negative margin
   // cancels out the visual shift so the highlight doesn't move.
-  const pad = hovered ? 24 : 0;
+  const pad = hovered && !isVisualBlock ? 24 : 0;
 
   return (
     <div
-      onMouseEnter={() => setHovered(true)}
+      onMouseEnter={() => !isVisualBlock && setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
         position: 'absolute',
@@ -49,7 +52,7 @@ export const HighlightRect = memo(function HighlightRect({
         height: `${height * 100}%`,
         paddingRight: `${pad}px`,
         marginRight: `-${pad}px`,
-        pointerEvents: 'auto',
+        pointerEvents: isVisualBlock ? 'none' : 'auto',
         opacity: deleting ? 0 : 1,
         transition: 'opacity 200ms ease-out',
       }}
@@ -58,12 +61,20 @@ export const HighlightRect = memo(function HighlightRect({
         style={{
           width: '100%',
           height: '100%',
-          background: color,
-          borderRadius: '2px',
-          mixBlendMode: 'multiply',
+          ...(isVisualBlock
+            ? {
+                border: '1px dashed rgba(100, 100, 255, 0.4)',
+                borderRadius: '3px',
+                background: 'transparent',
+              }
+            : {
+                background: color,
+                borderRadius: '2px',
+                mixBlendMode: 'multiply',
+              }),
         }}
       />
-      {hovered && !deleting && (
+      {hovered && !deleting && !isVisualBlock && (
         <button
           onClick={(e) => {
             e.stopPropagation();

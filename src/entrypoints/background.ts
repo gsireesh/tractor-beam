@@ -1,9 +1,11 @@
 import { getPdfViewerUrl, isPdfUrl } from '@/lib/pdf-utils';
-import { BackgroundState, Schema } from '@/lib/definitions';
+import { BackgroundState, Schema, VisualBlock, PdfBox } from '@/lib/definitions';
 import type {
   ExtensionMessage,
   RenderHighlightsMessage,
   PdfTextExtractedMessage,
+  VisualBlocksResponseMessage,
+  AnnotationResultsMessage,
 } from '@/lib/messaging/message_definitions';
 import { sendTabMessage } from '@/lib/messaging/send';
 
@@ -32,6 +34,9 @@ export default defineBackground(() => {
   let pdfViewerTabId: number | null = null;
   let pdfViewerUrl = '';
 
+  // Accumulate ML annotation highlights across streaming blocks
+  let mlHighlights: RenderHighlightsMessage['instances'] = [];
+
   /**
    * Extract all instances with coords from the active schema,
    * filtered to the current PDF, and send them to the viewer tab.
@@ -50,7 +55,7 @@ export default defineBackground(() => {
 
     chrome.tabs.sendMessage(pdfViewerTabId, {
       type: 'renderHighlights',
-      instances,
+      instances: [...instances, ...mlHighlights],
     } satisfies RenderHighlightsMessage).catch(() => {});
   }
 
@@ -137,6 +142,104 @@ export default defineBackground(() => {
         }
         sendResponse({ error: 'No PDF viewer tab active' });
         return true;
+
+      // ─── Visual blocks: relay request to PDF viewer tab ───
+      case 'requestVisualBlocks':
+        if (pdfViewerTabId) {
+          sendTabMessage<VisualBlocksResponseMessage>(pdfViewerTabId, {
+            type: 'requestVisualBlocks',
+            requestId: message.requestId,
+          })
+            .then((result) => sendResponse(result))
+            .catch((err) => sendResponse({ error: err.message }));
+          return true;
+        }
+        sendResponse({ error: 'No PDF viewer tab active' });
+        return true;
+
+      // ─── Annotation pipeline: fetch blocks, then forward to offscreen ───
+      case 'runAnnotationPipeline':
+        mlHighlights = []; // reset for new run
+        if (pdfViewerTabId) {
+          sendTabMessage<VisualBlocksResponseMessage>(pdfViewerTabId, {
+            type: 'requestVisualBlocks',
+            requestId: message.requestId,
+          })
+            .then((blocksResponse) => {
+              const blocks = blocksResponse.blocks ?? [];
+              console.log(`[background] Got ${blocks.length} visual blocks, forwarding to offscreen`);
+
+              // Render visual block outlines on the viewer
+              const blockOutlines: RenderHighlightsMessage['instances'] = blocks.map((block: VisualBlock) => {
+                const boxes = block.items.map(item => item.box);
+                if (boxes.length === 0) return null;
+                const bbox: PdfBox = {
+                  pageNumber: block.pageNumber,
+                  left: Math.min(...boxes.map(b => b.left)),
+                  top: Math.min(...boxes.map(b => b.top)),
+                  width: Math.max(...boxes.map(b => b.left + b.width)) - Math.min(...boxes.map(b => b.left)),
+                  height: Math.max(...boxes.map(b => b.top + b.height)) - Math.min(...boxes.map(b => b.top)),
+                };
+                return { id: `vb-${block.blockId}`, classId: '__visual-block__', coords: [bbox] };
+              }).filter((x): x is NonNullable<typeof x> => x !== null);
+
+              // Store block outlines so they persist across re-renders
+              mlHighlights = blockOutlines;
+              pushHighlightsToViewer();
+
+              forwardToOffscreen({
+                ...message,
+                blocks,
+              } as ExtensionMessage);
+            })
+            .catch((err) => {
+              console.error('[background] Failed to get visual blocks:', err);
+              chrome.runtime.sendMessage({
+                type: 'mlTaskError',
+                requestId: message.requestId,
+                error: `Failed to get visual blocks: ${err.message}`,
+              }).catch(() => {});
+            });
+        } else {
+          chrome.runtime.sendMessage({
+            type: 'mlTaskError',
+            requestId: message.requestId,
+            error: 'No PDF viewer tab active',
+          }).catch(() => {});
+        }
+        break;
+
+      // ─── Annotation results: accumulate and render highlights on viewer ───
+      case 'annotationResults':
+        console.log(`[background] Received annotationResults: ${(message as AnnotationResultsMessage).annotations?.length} annotations, pdfViewerTabId=${pdfViewerTabId}`);
+        if (pdfViewerTabId) {
+          const newInstances = (message as AnnotationResultsMessage).annotations.map(a => ({
+            id: a.id,
+            classId: a.classId,
+            coords: a.coords,
+          }));
+          mlHighlights = [...mlHighlights, ...newInstances];
+          // Re-render all highlights: manual + accumulated ML
+          const manualInstances: RenderHighlightsMessage['instances'] = [];
+          if (backgroundState.activeSchema) {
+            for (const cls of backgroundState.activeSchema.classes) {
+              for (const inst of cls.instances) {
+                if (inst.coords && inst.pdfUrl === pdfViewerUrl) {
+                  manualInstances.push({ id: inst.id, classId: cls.id, coords: inst.coords });
+                }
+              }
+            }
+          }
+          const allInstances = [...manualInstances, ...mlHighlights];
+          console.log(`[background] Sending ${allInstances.length} highlights to tab ${pdfViewerTabId}`);
+          chrome.tabs.sendMessage(pdfViewerTabId, {
+            type: 'renderHighlights',
+            instances: allInstances,
+          } satisfies RenderHighlightsMessage).catch((err) => {
+            console.error('[background] Failed to send highlights to tab:', err);
+          });
+        }
+        break;
 
       // ─── ML tasks: forward to offscreen document ───
       case 'runWebLlmTask':

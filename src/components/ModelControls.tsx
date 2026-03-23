@@ -18,13 +18,11 @@ const STATUS_MAP = {
 }
 
   function sendRunMessage(activeSchema: Schema) {
-    console.log("[side panel] triggering annotation start!");
+    console.log("[side panel] triggering annotation pipeline!");
     chrome.runtime.sendMessage({
-      type: "runWebLlmTask",
-      requestId: "lmao",
+      type: "runAnnotationPipeline",
+      requestId: crypto.randomUUID(),
       schema: activeSchema,
-      pdfText: [{pageNumber: 0, text: "Pierre Vinken, gigachad, ascended the throne of god" +
-            " emperor today."}]
     })
   }
 

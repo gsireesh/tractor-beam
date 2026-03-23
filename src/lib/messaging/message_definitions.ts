@@ -1,4 +1,4 @@
-import { Schema, PdfBox } from '@/lib/definitions';
+import { Schema, PdfBox, VisualBlock, MlAnnotation } from '@/lib/definitions';
 
 // ─── Existing messages (viewer ↔ background ↔ sidepanel) ───
 
@@ -68,6 +68,32 @@ export interface PdfTextExtractedMessage {
   pages: { pageNumber: number; text: string }[];
 }
 
+// ─── Annotation pipeline messages ───
+
+export interface RunAnnotationPipelineMessage {
+  type: 'runAnnotationPipeline';
+  requestId: string;
+  schema: Schema;
+  blocks?: VisualBlock[];  // populated by background before forwarding to offscreen
+}
+
+export interface RequestVisualBlocksMessage {
+  type: 'requestVisualBlocks';
+  requestId: string;
+}
+
+export interface VisualBlocksResponseMessage {
+  type: 'visualBlocksResponse';
+  requestId: string;
+  blocks: VisualBlock[];
+}
+
+export interface AnnotationResultsMessage {
+  type: 'annotationResults';
+  requestId: string;
+  annotations: MlAnnotation[];
+}
+
 // ─── ML task messages ───
 // Messages carry intent (schema + text), not implementation details.
 // Model selection and prompt construction happen in the offscreen document.
@@ -133,6 +159,10 @@ export type ExtensionMessage =
   | DeleteInstanceMessage
   | ExtractPdfTextMessage
   | PdfTextExtractedMessage
+  | RunAnnotationPipelineMessage
+  | RequestVisualBlocksMessage
+  | VisualBlocksResponseMessage
+  | AnnotationResultsMessage
   | RunWebLlmTaskMessage
   | RunTransformersTaskMessage
   | MlTaskResultMessage

@@ -9,10 +9,12 @@ export interface TractorBeamConfig {
 }
 
 
+export const ML_ANNOTATIONS_STORE = 'ml-annotations';
+
 export const APP_CONFIG: TractorBeamConfig = {
     indexedDBConfig: {
         dbSchemaName: 'tractor-beam',
-        schemaVersion: 1,
+        schemaVersion: 2,
         schemaObjectStoreName: 'schemas'
     },
 }

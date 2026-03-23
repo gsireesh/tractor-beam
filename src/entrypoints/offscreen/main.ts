@@ -8,9 +8,14 @@
  * model-specific prompts and calls the runners.
  */
 
-import type { ExtensionMessage, RunWebLlmTaskMessage } from '@/lib/messaging/message_definitions';
+import type {
+  ExtensionMessage,
+  RunWebLlmTaskMessage,
+  RunAnnotationPipelineMessage,
+} from '@/lib/messaging/message_definitions';
 import type { Schema } from '@/lib/definitions';
-import { constructSchemaNERPrompt} from "@/lib/ml/prompting.ts";
+import { constructSchemaNERPrompt } from "@/lib/ml/prompting.ts";
+import { parseSingleBlockNerOutput } from "@/lib/ml/ner-parser.ts";
 import { WebLlmRunner, type ChatMessage } from '@/lib/ml/webllm-runner';
 import { TransformersRunner } from '@/lib/ml/transformers-runner';
 
@@ -42,8 +47,74 @@ async function handleWebLlmTask(task: RunWebLlmTaskMessage) {
   return await webllm.run(messages, task.requestId);
 }
 
+async function handleAnnotationPipeline(task: RunAnnotationPipelineMessage) {
+  console.log('[offscreen] Starting annotation pipeline:', task.requestId);
+
+  const blocks = task.blocks;
+  if (!blocks || blocks.length === 0) {
+    throw new Error('No visual blocks provided — background failed to fetch them from the viewer');
+  }
+  console.log(`[offscreen] Processing ${blocks.length} visual blocks one at a time`);
+
+  const systemPrompt = constructSchemaNERPrompt(task.schema);
+  console.log("System prompt: ", systemPrompt);
+  const pdfUrl = '';
+
+  for (let i = 0; i < blocks.length; i++) {
+    const block = blocks[i];
+    console.log(`[offscreen] Block ${i + 1}/${blocks.length}: ${block.blockId} (${block.text.length} chars)`);
+
+    // Broadcast progress for each block
+    broadcastProgress('running', i / blocks.length, `Block ${i + 1}/${blocks.length}`, task.requestId);
+
+    if (block.text.length < 50) {
+      console.log(`[offscreen] Skipping block ${block.blockId}: too short (${block.text.length} chars)`);
+      continue;
+    }
+
+    const messages: ChatMessage[] = [
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: block.text },
+    ];
+
+    const result = await webllm.run(messages, task.requestId);
+    const nerText = result.choices?.[0]?.message?.content ?? '';
+    console.log(`[offscreen] Block ${block.blockId} NER output:`, nerText);
+
+    const annotations = parseSingleBlockNerOutput(nerText, block, task.schema, pdfUrl);
+
+    if (annotations.length > 0) {
+      console.log(`[offscreen] Block ${block.blockId}: ${annotations.length} annotations, broadcasting`);
+      chrome.runtime.sendMessage({
+        type: 'annotationResults',
+        requestId: task.requestId,
+        annotations,
+      }).catch(() => {});
+    }
+  }
+
+  // Signal completion
+  broadcastProgress('running', 1, 'Done', task.requestId);
+  chrome.runtime.sendMessage({
+    type: 'mlTaskResult',
+    requestId: task.requestId,
+    result: `Processed ${blocks.length} blocks`,
+  }).catch(() => {});
+}
+
 chrome.runtime.onMessage.addListener((message: ExtensionMessage, _sender, sendResponse) => {
   switch (message.type) {
+    case 'runAnnotationPipeline':
+      handleAnnotationPipeline(message)
+        .catch((err) => {
+          chrome.runtime.sendMessage({
+            type: 'mlTaskError',
+            requestId: message.requestId,
+            error: err.message || String(err),
+          }).catch(() => {});
+        });
+      break;
+
     case 'runWebLlmTask':
       handleWebLlmTask(message)
         .then((result) => {

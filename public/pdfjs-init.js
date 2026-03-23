@@ -181,9 +181,17 @@
       }
 
       if (message.type === 'renderHighlights') {
+        console.log('[pdfjs-init] renderHighlights received:', message.instances?.length, 'instances');
+        if (message.instances?.length > 0) {
+          var sample = message.instances[0];
+          console.log('[pdfjs-init] Sample highlight:', JSON.stringify(sample));
+        }
         if (window.TractorBeamHighlights) {
           window.TractorBeamHighlights.setHighlights(message.instances || []);
           window.TractorBeamHighlights.renderAll();
+          console.log('[pdfjs-init] renderAll() called');
+        } else {
+          console.warn('[pdfjs-init] TractorBeamHighlights not available!');
         }
       }
 
@@ -193,6 +201,17 @@
             sendResponse({ type: 'pdfTextExtracted', pages: pages });
           }).catch(function(err) {
             sendResponse({ type: 'pdfTextExtracted', pages: [], error: err.message });
+          });
+          return true;
+        }
+      }
+
+      if (message.type === 'requestVisualBlocks') {
+        if (window.TractorBeamTextExtraction) {
+          window.TractorBeamTextExtraction.extractVisualBlocks(PDFViewerApplication).then(function(blocks) {
+            sendResponse({ type: 'visualBlocksResponse', requestId: message.requestId, blocks: blocks });
+          }).catch(function(err) {
+            sendResponse({ type: 'visualBlocksResponse', requestId: message.requestId, blocks: [], error: err.message });
           });
           return true;
         }

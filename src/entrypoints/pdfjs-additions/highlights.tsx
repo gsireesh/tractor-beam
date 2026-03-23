@@ -66,12 +66,22 @@ function HighlightsRoot({
 
 function render() {
   if (!root) return;
+  console.log(`[highlights] render(): ${highlights.length} highlights, ${pageContainers.size} containers`);
+  if (highlights.length > 0) {
+    console.log('[highlights] First highlight:', JSON.stringify(highlights[0]));
+  }
   root.render(
     <HighlightsRoot
       highlights={highlights}
       pageContainers={new Map(pageContainers)}
     />
   );
+  // Check DOM after render
+  setTimeout(() => {
+    const hostEl = document.getElementById('tractor-beam-highlights-root');
+    const rects = hostEl?.querySelectorAll('[style*="position: absolute"]');
+    console.log(`[highlights] After render: ${rects?.length ?? 0} positioned elements in highlight root`);
+  }, 100);
 }
 
 // ─── Public API ───
@@ -111,10 +121,12 @@ function renderPage(pageNumber: number) {
 
 function renderAll() {
   const pages = document.querySelectorAll('.page[data-page-number]');
+  console.log(`[highlights] renderAll: ${pages.length} pages found, ${highlights.length} highlights`);
   for (const pageEl of pages) {
     const pageNumber = parseInt(pageEl.getAttribute('data-page-number')!, 10);
     ensureContainer(pageNumber);
   }
+  console.log(`[highlights] ${pageContainers.size} page containers ready`);
   render();
 }
 
