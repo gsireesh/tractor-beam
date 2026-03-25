@@ -267,6 +267,7 @@ export default defineBackground(() => {
 
       // ─── ML tasks: forward to offscreen document ───
       case 'cancelAnnotationPipeline':
+      case 'setClaudeApiKey':
         forwardToOffscreen(message);
         break;
 
