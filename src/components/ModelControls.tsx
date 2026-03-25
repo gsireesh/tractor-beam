@@ -1,7 +1,7 @@
 import {useState} from "react";
 import {MlProgressMessage} from "@/lib/messaging/message_definitions.ts";
 import {Schema} from "@/lib/definitions.ts"
-import {Progress} from 'flowbite-react';
+import {Progress} from '@/components/ui/progress';
 import {PiPlayBold, PiStopBold} from "react-icons/pi";
 
 export interface ModelControlsProps {
@@ -52,13 +52,13 @@ export function ModelControls({status, progress, message, activeSchema} : ModelC
         {status === "loading" && (
             <div className="mt-1">
                 <div className="text-xs text-gray-500">Loading model...</div>
-                <Progress progress={progress * 100} size="sm" />
+                <Progress value={progress * 100} className="h-2" />
             </div>
         )}
         {isRunning && (
             <div className="mt-1">
                 <div className="text-xs text-gray-500">{message || "Annotating..."}</div>
-                <Progress progress={progress * 100} size="sm" color="green" />
+                <Progress value={progress * 100} className="h-2 [&>div]:bg-green-500" />
             </div>
         )}
         <div className="flex gap-1 mt-1">

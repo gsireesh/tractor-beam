@@ -2,7 +2,8 @@ import { SchemaClassViewer } from "@/components/SchemaClassViewer";
 import {APP_CONFIG} from "@/app-config.ts";
 import {storeMlAnnotationRun} from "@/lib/schema-storage.ts";
 
-import { Button, TabItem, Tabs } from "flowbite-react";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PiListPlus } from "react-icons/pi";
 import { Schema } from "@/lib/definitions";
 import { schemasReducer, SchemaAction} from "@/lib/schema-reducer.ts";
@@ -95,10 +96,17 @@ export function SchemaViewer({
   return (
       <>
         <ModelControls status={llmLoaded.stage} progress={llmLoaded.progress} message={llmLoaded.message} activeSchema={activeSchema}/>
-    <Tabs>
+    <Tabs defaultValue={schemas[0]?.name}>
+      <TabsList>
+        {schemas.map((schema) => (
+          <TabsTrigger key={schema.name} value={schema.name}>
+            {schema.name}
+          </TabsTrigger>
+        ))}
+      </TabsList>
       {schemas.map((schema) => (
-        <TabItem key={schema.name} title={schema.name}>
-          <Button outline className="h-6 mr-1, ml-1" onClick={() => dispatch({
+        <TabsContent key={schema.name} value={schema.name}>
+          <Button variant="outline" className="h-6 mr-1 ml-1" onClick={() => dispatch({
             actionType: "addClass",
             schemaId: schema.id,
             classInfo: {
@@ -121,7 +129,7 @@ export function SchemaViewer({
               />
             ))}
           </ul>
-        </TabItem>
+        </TabsContent>
       ))}
     </Tabs>
       </>
