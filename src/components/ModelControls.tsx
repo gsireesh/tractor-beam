@@ -43,7 +43,7 @@ export function ModelControls({status, progress, message, activeSchema} : ModelC
         setCurrentRequestId(null);
     }
 
-    return <div className="border-2 border-blue-500 rounded-md p-2">
+    return <div className="border-t-2 border-blue-500 p-2 m-0 shadow-[0px_-4px_6px_-1px_rgba(0,0,0,0.1)]">
         <div className="font-semibold text-sm">Model Control Panel</div>
         <div className="flex items-center gap-2 text-sm">
             Model Status: {status}

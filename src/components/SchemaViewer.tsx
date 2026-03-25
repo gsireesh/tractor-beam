@@ -94,44 +94,49 @@ export function SchemaViewer({
 
 
   return (
-      <>
-        <ModelControls status={llmLoaded.stage} progress={llmLoaded.progress} message={llmLoaded.message} activeSchema={activeSchema}/>
-    <Tabs defaultValue={schemas[0]?.name}>
-      <TabsList>
-        {schemas.map((schema) => (
-          <TabsTrigger key={schema.name} value={schema.name}>
-            {schema.name}
-          </TabsTrigger>
-        ))}
-      </TabsList>
-      {schemas.map((schema) => (
-        <TabsContent key={schema.name} value={schema.name}>
-          <Button variant="outline" className="h-6 mr-1 ml-1" onClick={() => dispatch({
-            actionType: "addClass",
-            schemaId: schema.id,
-            classInfo: {
-              id: generateId(),
-              name: "New Class",
-              description: "",
-              instances: []
-            }
-          })}>
-            <PiListPlus />
-            Add new class
-          </Button>
-          <ul>
-            {schema.classes.map((sc) => (
-              <SchemaClassViewer
-                key={sc.id}
-                schemaId={schema.id}
-                schemaClass={sc}
-                dispatch={dispatch}
-              />
+      <div className="flex flex-col h-screen overflow-hidden">
+        <div className="flex-1 overflow-y-auto min-h-0">
+          <Tabs defaultValue={schemas[0]?.name}>
+          <TabsList>
+            {schemas.map((schema) => (
+              <TabsTrigger key={schema.name} value={schema.name}>
+                {schema.name}
+              </TabsTrigger>
             ))}
-          </ul>
-        </TabsContent>
-      ))}
-    </Tabs>
-      </>
+          </TabsList>
+          {schemas.map((schema) => (
+            <TabsContent key={schema.name} value={schema.name}>
+              <Button variant="outline" className="h-6 mr-1 ml-1" onClick={() => dispatch({
+                actionType: "addClass",
+                schemaId: schema.id,
+                classInfo: {
+                  id: generateId(),
+                  name: "New Class",
+                  description: "",
+                  instances: []
+                }
+              })}>
+                <PiListPlus />
+                Add new class
+              </Button>
+              <ul>
+                {schema.classes.map((sc) => (
+                  <SchemaClassViewer
+                    key={sc.id}
+                    schemaId={schema.id}
+                    schemaClass={sc}
+                    dispatch={dispatch}
+                  />
+                ))}
+              </ul>
+            </TabsContent>
+          ))}
+        </Tabs>
+        </div>
+
+        <div className="shrink-0">
+          <ModelControls status={llmLoaded.stage} progress={llmLoaded.progress} message={llmLoaded.message} activeSchema={activeSchema}/>
+        </div>
+      </div>
   );
 }
