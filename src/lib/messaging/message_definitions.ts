@@ -85,24 +85,16 @@ export interface PdfTextExtractedMessage {
 
 // ─── Annotation pipeline messages ───
 
-export type AnnotationBackend = 'webllm' | 'claude';
-
 export interface RunAnnotationPipelineMessage {
   type: 'runAnnotationPipeline';
   requestId: string;
   schema: Schema;
-  backend: AnnotationBackend;
   blocks?: VisualBlock[];  // populated by background before forwarding to offscreen
 }
 
 export interface CancelAnnotationPipelineMessage {
   type: 'cancelAnnotationPipeline';
   requestId: string;
-}
-
-export interface SetClaudeApiKeyMessage {
-  type: 'setClaudeApiKey';
-  apiKey: string;
 }
 
 export interface RequestVisualBlocksMessage {
@@ -190,7 +182,6 @@ export type ExtensionMessage =
   | PdfTextExtractedMessage
   | RunAnnotationPipelineMessage
   | CancelAnnotationPipelineMessage
-  | SetClaudeApiKeyMessage
   | RequestVisualBlocksMessage
   | VisualBlocksResponseMessage
   | AnnotationResultsMessage

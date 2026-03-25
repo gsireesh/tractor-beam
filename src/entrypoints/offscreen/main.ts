@@ -17,12 +17,10 @@ import type { Schema } from '@/lib/definitions';
 import { constructSchemaNERPrompt } from "@/lib/ml/prompting.ts";
 import { parseSingleBlockNerOutput } from "@/lib/ml/ner-parser.ts";
 import { WebLlmRunner, type ChatMessage } from '@/lib/ml/webllm-runner';
-import { ClaudeRunner } from '@/lib/ml/claude-runner';
 import { TransformersRunner } from '@/lib/ml/transformers-runner';
 
 
 const webllm = new WebLlmRunner(broadcastProgress);
-const claude = new ClaudeRunner(broadcastProgress);
 const transformers = new TransformersRunner(broadcastProgress);
 
 let cancelledRequestIds = new Set<string>();
@@ -60,9 +58,6 @@ async function handleAnnotationPipeline(task: RunAnnotationPipelineMessage) {
   }
   console.log(`[offscreen] Processing ${blocks.length} visual blocks one at a time`);
 
-  const runner = task.backend === 'claude' ? claude : webllm;
-  console.log(`[offscreen] Using backend: ${task.backend}`);
-
   const systemPrompt = constructSchemaNERPrompt(task.schema);
   console.log("System prompt: ", systemPrompt);
   const pdfUrl = '';
@@ -92,7 +87,7 @@ async function handleAnnotationPipeline(task: RunAnnotationPipelineMessage) {
     ];
 
     try {
-      const result = await runner.run(messages, task.requestId);
+      const result = await webllm.run(messages, task.requestId);
       const nerText = result.choices?.[0]?.message?.content ?? '';
       console.log(`[offscreen] Block ${block.blockId} NER output:`, nerText);
 
@@ -122,11 +117,6 @@ async function handleAnnotationPipeline(task: RunAnnotationPipelineMessage) {
 
 chrome.runtime.onMessage.addListener((message: ExtensionMessage, _sender, sendResponse) => {
   switch (message.type) {
-    case 'setClaudeApiKey':
-      claude.setApiKey(message.apiKey);
-      console.log('[offscreen] Claude API key set');
-      break;
-
     case 'cancelAnnotationPipeline':
       console.log('[offscreen] Cancel requested for:', message.requestId);
       cancelledRequestIds.add(message.requestId);
