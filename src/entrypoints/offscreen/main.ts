@@ -23,6 +23,8 @@ import { TransformersRunner } from '@/lib/ml/transformers-runner';
 const webllm = new WebLlmRunner(broadcastProgress);
 const transformers = new TransformersRunner(broadcastProgress);
 
+let cancelledRequestIds = new Set<string>();
+
 function broadcastProgress(stage: string, progress: number, message?: string, requestId?: string) {
   console.log(`[offscreen] progress: ${stage}, ${progress}, ${message}`);
   chrome.runtime.sendMessage({
@@ -67,6 +69,13 @@ async function handleAnnotationPipeline(task: RunAnnotationPipelineMessage) {
     // Broadcast progress for each block
     broadcastProgress('running', i / blocks.length, `Block ${i + 1}/${blocks.length}`, task.requestId);
 
+    if (cancelledRequestIds.has(task.requestId)) {
+      console.log(`[offscreen] Pipeline ${task.requestId} cancelled at block ${i + 1}`);
+      cancelledRequestIds.delete(task.requestId);
+      broadcastProgress('running', 1, 'Cancelled', task.requestId);
+      return;
+    }
+
     if (block.text.length < 50) {
       console.log(`[offscreen] Skipping block ${block.blockId}: too short (${block.text.length} chars)`);
       continue;
@@ -77,19 +86,23 @@ async function handleAnnotationPipeline(task: RunAnnotationPipelineMessage) {
       { role: 'user', content: block.text },
     ];
 
-    const result = await webllm.run(messages, task.requestId);
-    const nerText = result.choices?.[0]?.message?.content ?? '';
-    console.log(`[offscreen] Block ${block.blockId} NER output:`, nerText);
+    try {
+      const result = await webllm.run(messages, task.requestId);
+      const nerText = result.choices?.[0]?.message?.content ?? '';
+      console.log(`[offscreen] Block ${block.blockId} NER output:`, nerText);
 
-    const annotations = parseSingleBlockNerOutput(nerText, block, task.schema, pdfUrl);
+      const annotations = parseSingleBlockNerOutput(nerText, block, task.schema, pdfUrl);
 
-    if (annotations.length > 0) {
-      console.log(`[offscreen] Block ${block.blockId}: ${annotations.length} annotations, broadcasting`);
-      chrome.runtime.sendMessage({
-        type: 'annotationResults',
-        requestId: task.requestId,
-        annotations,
-      }).catch(() => {});
+      if (annotations.length > 0) {
+        console.log(`[offscreen] Block ${block.blockId}: ${annotations.length} annotations, broadcasting`);
+        chrome.runtime.sendMessage({
+          type: 'annotationResults',
+          requestId: task.requestId,
+          annotations,
+        }).catch(() => {});
+      }
+    } catch (err) {
+      console.warn(`[offscreen] Block ${block.blockId} failed, skipping:`, err);
     }
   }
 
@@ -104,6 +117,11 @@ async function handleAnnotationPipeline(task: RunAnnotationPipelineMessage) {
 
 chrome.runtime.onMessage.addListener((message: ExtensionMessage, _sender, sendResponse) => {
   switch (message.type) {
+    case 'cancelAnnotationPipeline':
+      console.log('[offscreen] Cancel requested for:', message.requestId);
+      cancelledRequestIds.add(message.requestId);
+      break;
+
     case 'runAnnotationPipeline':
       handleAnnotationPipeline(message)
         .catch((err) => {

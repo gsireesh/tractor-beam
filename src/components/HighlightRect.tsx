@@ -1,5 +1,13 @@
 import React, { useState, memo } from 'react';
-import { PiTrashBold } from 'react-icons/pi';
+import { PiTrashBold, PiPlusBold } from 'react-icons/pi';
+
+interface PdfBox {
+  pageNumber: number;
+  left: number;
+  top: number;
+  width: number;
+  height: number;
+}
 
 interface HighlightRectProps {
   highlightId: string;
@@ -9,6 +17,9 @@ interface HighlightRectProps {
   width: number;
   height: number;
   color: string;
+  source?: 'manual' | 'ml';
+  text?: string;
+  allCoords?: PdfBox[];
 }
 
 export const VISUAL_BLOCK_CLASS_ID = '__visual-block__';
@@ -21,13 +32,18 @@ export const HighlightRect = memo(function HighlightRect({
   width,
   height,
   color,
+  source,
+  text,
+  allCoords,
 }: HighlightRectProps) {
   const [hovered, setHovered] = useState(false);
-  const [deleting, setDeleting] = useState(false);
+  const [acting, setActing] = useState(false);
   const isVisualBlock = classId === VISUAL_BLOCK_CLASS_ID;
+  const isMl = source === 'ml';
+  const isManual = source === 'manual' || (!source && !isVisualBlock);
 
   function handleDelete() {
-    setDeleting(true);
+    setActing(true);
     chrome.runtime.sendMessage({
       type: 'deleteInstance',
       highlightId: highlightId,
@@ -35,10 +51,18 @@ export const HighlightRect = memo(function HighlightRect({
     }).catch(() => { console.log("Failed to delete highlight!"); });
   }
 
-  // Padding expands the hover hitbox so the button (positioned at the right
-  // edge) stays inside the mouseenter/mouseleave boundary. Negative margin
-  // cancels out the visual shift so the highlight doesn't move.
+  function handlePromote() {
+    setActing(true);
+    chrome.runtime.sendMessage({
+      type: 'promoteMlAnnotation',
+      highlightId: highlightId,
+    }).catch(() => { console.log("Failed to promote annotation!"); });
+  }
+
   const pad = hovered && !isVisualBlock ? 24 : 0;
+
+  // Parse the base RGB from the color string for the border
+  const borderColor = isManual ? color.replace(/[\d.]+\)$/, '0.6)') : 'transparent';
 
   return (
     <div
@@ -53,7 +77,7 @@ export const HighlightRect = memo(function HighlightRect({
         paddingRight: `${pad}px`,
         marginRight: `-${pad}px`,
         pointerEvents: isVisualBlock ? 'none' : 'auto',
-        opacity: deleting ? 0 : 1,
+        opacity: acting ? 0 : 1,
         transition: 'opacity 200ms ease-out',
       }}
     >
@@ -71,10 +95,12 @@ export const HighlightRect = memo(function HighlightRect({
                 background: color,
                 borderRadius: '2px',
                 mixBlendMode: 'multiply',
+                border: `1px solid ${borderColor}`,
               }),
         }}
       />
-      {hovered && !deleting && !isVisualBlock && (
+      {/* Manual annotations: trash button */}
+      {hovered && !acting && isManual && (
         <button
           onClick={(e) => {
             e.stopPropagation();
@@ -101,6 +127,36 @@ export const HighlightRect = memo(function HighlightRect({
           title="Delete highlight"
         >
           <PiTrashBold size={11} />
+        </button>
+      )}
+      {/* ML annotations: promote button */}
+      {hovered && !acting && isMl && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            handlePromote();
+          }}
+          style={{
+            position: 'absolute',
+            right: '2px',
+            top: '50%',
+            transform: 'translateY(-50%)',
+            width: '18px',
+            height: '18px',
+            border: 'none',
+            borderRadius: '50%',
+            background: 'rgba(34, 139, 34, 0.85)',
+            color: 'white',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: 0,
+            pointerEvents: 'auto',
+          }}
+          title="Add to schema"
+        >
+          <PiPlusBold size={11} />
         </button>
       )}
     </div>

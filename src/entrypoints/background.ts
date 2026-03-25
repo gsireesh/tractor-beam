@@ -35,6 +35,7 @@ export default defineBackground(() => {
   let pdfViewerUrl = '';
 
   // Accumulate ML annotation highlights across streaming blocks
+  // Each entry also carries text for potential promotion to manual annotation
   let mlHighlights: RenderHighlightsMessage['instances'] = [];
 
   /**
@@ -48,7 +49,7 @@ export default defineBackground(() => {
     for (const cls of backgroundState.activeSchema.classes) {
       for (const inst of cls.instances) {
         if (inst.coords && inst.pdfUrl === pdfViewerUrl) {
-          instances.push({ id: inst.id, classId: cls.id, coords: inst.coords });
+          instances.push({ id: inst.id, classId: cls.id, coords: inst.coords, source: 'manual' as const });
         }
       }
     }
@@ -209,6 +210,27 @@ export default defineBackground(() => {
         }
         break;
 
+      // ─── Promote ML annotation to manual ───
+      case 'promoteMlAnnotation': {
+        const hlId = message.highlightId;
+        const hl = mlHighlights.find(h => h.id === hlId);
+        if (hl && hl.text && backgroundState.activeSchema) {
+          // Send addInstance so the sidepanel adds it to the schema
+          chrome.runtime.sendMessage({
+            type: 'addInstance',
+            text: hl.text,
+            schemaId: backgroundState.activeSchema.id,
+            classId: hl.classId,
+            coords: hl.coords,
+            pdfUrl: pdfViewerUrl,
+          }).catch(() => {});
+          // Remove from ML highlights
+          mlHighlights = mlHighlights.filter(h => h.id !== hlId);
+          pushHighlightsToViewer();
+        }
+        break;
+      }
+
       // ─── Annotation results: accumulate and render highlights on viewer ───
       case 'annotationResults':
         console.log(`[background] Received annotationResults: ${(message as AnnotationResultsMessage).annotations?.length} annotations, pdfViewerTabId=${pdfViewerTabId}`);
@@ -217,6 +239,8 @@ export default defineBackground(() => {
             id: a.id,
             classId: a.classId,
             coords: a.coords,
+            source: 'ml' as const,
+            text: a.text,
           }));
           mlHighlights = [...mlHighlights, ...newInstances];
           // Re-render all highlights: manual + accumulated ML
@@ -242,6 +266,10 @@ export default defineBackground(() => {
         break;
 
       // ─── ML tasks: forward to offscreen document ───
+      case 'cancelAnnotationPipeline':
+        forwardToOffscreen(message);
+        break;
+
       case 'runWebLlmTask':
       case 'runTransformersTask':
       case 'getModelStatus':

@@ -53,9 +53,16 @@ export class WebLlmRunner {
    * Run a chat completion. Thin wrapper around the OpenAI-compatible API.
    * Returns the raw API response.
    */
-  async run(messages: ChatMessage[], requestId?: string) {
+  async run(messages: ChatMessage[], requestId?: string, maxTokens = 1024, timeoutMs = 60_000) {
     const engine = await this.ensureEngine(requestId);
-    return await engine.chat.completions.create({ messages });
+    const completionPromise = engine.chat.completions.create({
+      messages,
+      max_tokens: maxTokens,
+    });
+    const timeoutPromise = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error('WebLLM inference timed out')), timeoutMs),
+    );
+    return await Promise.race([completionPromise, timeoutPromise]);
   }
 
   getStatus(): { loaded: boolean; model: string | null } {

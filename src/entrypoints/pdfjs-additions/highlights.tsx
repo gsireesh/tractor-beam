@@ -20,6 +20,8 @@ interface Highlight {
   id: string;
   classId: string;
   coords: PdfBox[];
+  source?: 'manual' | 'ml';
+  text?: string;
 }
 
 declare global {

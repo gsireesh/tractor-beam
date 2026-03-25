@@ -33,9 +33,19 @@ export interface GetActiveSchemaMessage {
   type: 'getActiveSchema';
 }
 
+export type HighlightSource = 'manual' | 'ml';
+
+export interface HighlightInstance {
+  id: string;
+  classId: string;
+  coords: PdfBox[];
+  source?: HighlightSource;
+  text?: string;
+}
+
 export interface RenderHighlightsMessage {
   type: 'renderHighlights';
-  instances: { id: string; classId: string; coords: PdfBox[] }[];
+  instances: HighlightInstance[];
 }
 
 export interface GetPdfInfoMessage {
@@ -57,6 +67,11 @@ export interface DeleteInstanceMessage {
   classId: string;
 }
 
+export interface PromoteMlAnnotationMessage {
+  type: 'promoteMlAnnotation';
+  highlightId: string;
+}
+
 // ─── PDF full-text extraction ───
 
 export interface ExtractPdfTextMessage {
@@ -75,6 +90,11 @@ export interface RunAnnotationPipelineMessage {
   requestId: string;
   schema: Schema;
   blocks?: VisualBlock[];  // populated by background before forwarding to offscreen
+}
+
+export interface CancelAnnotationPipelineMessage {
+  type: 'cancelAnnotationPipeline';
+  requestId: string;
 }
 
 export interface RequestVisualBlocksMessage {
@@ -157,9 +177,11 @@ export type ExtensionMessage =
   | GetPdfInfoMessage
   | AddInstanceMessage
   | DeleteInstanceMessage
+  | PromoteMlAnnotationMessage
   | ExtractPdfTextMessage
   | PdfTextExtractedMessage
   | RunAnnotationPipelineMessage
+  | CancelAnnotationPipelineMessage
   | RequestVisualBlocksMessage
   | VisualBlocksResponseMessage
   | AnnotationResultsMessage

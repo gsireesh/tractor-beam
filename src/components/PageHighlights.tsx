@@ -13,6 +13,8 @@ interface Highlight {
   id: string;
   classId: string;
   coords: PdfBox[];
+  source?: 'manual' | 'ml';
+  text?: string;
 }
 
 const COLORS = [
@@ -64,6 +66,9 @@ export function PageHighlights({ pageNumber, highlights }: PageHighlightsProps) 
               width={box.width}
               height={box.height}
               color={color}
+              source={hl.source}
+              text={hl.text}
+              allCoords={hl.coords}
             />
           ));
       })}
