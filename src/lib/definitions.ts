@@ -55,6 +55,7 @@ export interface SchemaClass {
   id: string;
   name: string;
   description: string;
+  color: string;
   instances: Instance[];
 }
 export interface Schema {

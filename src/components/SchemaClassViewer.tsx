@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/dropdown-menu.tsx";
 import {Settings, PencilLine, Palette, Trash2} from 'lucide-react';
 import { useEffect, useRef, useState } from "react";
+import {cn, rgbaToHex} from '@/lib/utils.ts';
 
 function useClickOutside<T extends HTMLElement>(callback: () => void) {
   const ref = useRef<T>(null);
@@ -48,8 +49,11 @@ export function SchemaClassViewer({
     }
   }
 
+  const bodyColor = rgbaToHex(schemaClass.color);
+  const borderColor = rgbaToHex(schemaClass.color, 1.0);
+
   return (
-    <div className="border-2 border-blue-500 rounded-lg m-4 p-4">
+    <div className="border-2 rounded-lg m-4 p-4 shadow-sm" style={{ backgroundColor: bodyColor,  borderColor: borderColor}}>
     <div className="flex flex-row justify-between">
       <h1
         ref={titleRef}
@@ -59,7 +63,7 @@ export function SchemaClassViewer({
         {titleEditable ? (
           <input
             autoFocus
-            className="border-2"
+            className="border-2 bg-white"
             value={schemaClass.name}
             onChange={(e) =>
               dispatch({
@@ -104,7 +108,8 @@ export function SchemaClassViewer({
       <label className="block text-sm">
         Class Description:
         <textarea
-          className="block p-0.5 w-4/5 border-2 border-blue-500 rounded-lg"
+          className="block p-0.5 w-4/5 border-2 rounded-lg bg-popover"
+          style={{borderColor: borderColor}}
           autoFocus={false}
           rows={4}
           value={schemaClass.description}
