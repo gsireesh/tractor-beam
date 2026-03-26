@@ -13,6 +13,12 @@ interface UpdateClass {
   classInfo: SchemaClass;
 }
 
+interface DeleteClass {
+  actionType: "deleteClass";
+  schemaId: string;
+  classId:string;
+}
+
 interface AddInstance {
   actionType: "addInstance",
   schemaId: string;
@@ -26,7 +32,7 @@ interface DeleteInstance {
   instanceId: string;
 }
 
-export type SchemaAction = AddClass | UpdateClass | AddInstance | DeleteInstance;
+export type SchemaAction = AddClass | UpdateClass | DeleteClass | AddInstance | DeleteInstance;
 
 export function schemasReducer(draft: Schema[], action: SchemaAction) {
   console.log("action", action);
@@ -45,7 +51,14 @@ export function schemasReducer(draft: Schema[], action: SchemaAction) {
       if (schema && classIdx !== undefined) {
         schema.classes[classIdx] = action.classInfo;
       }
-      return;;
+      return;
+    }
+    case "deleteClass": {
+      const schema = draft.find((s) => s.id == action.schemaId);
+      if (schema) {
+        schema.classes = schema.classes.filter(c => c.id !== action.classId);
+      }
+      return;
     }
     case "addInstance": {
       const schema = draft.find((s) => s.id == action.schemaId);

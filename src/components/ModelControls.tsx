@@ -44,7 +44,7 @@ export function ModelControls({status, progress, message, activeSchema} : ModelC
     }
 
     return <div className="border-t-2 border-blue-500 p-2 m-0 shadow-[0px_-4px_6px_-1px_rgba(0,0,0,0.1)]">
-        <div className="font-semibold text-sm">Model Control Panel</div>
+        <h1 className="font-semibold">Model Control Panel</h1>
         <div className="flex items-center gap-2 text-sm">
             Model Status: {status}
             <span className={"inline-block w-2 h-2 rounded-full " + (STATUS_MAP[status] || "bg-gray-400")} />

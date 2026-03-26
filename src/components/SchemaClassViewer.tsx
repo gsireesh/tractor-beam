@@ -2,7 +2,11 @@ import { SchemaClass } from "@/lib/definitions";
 import { SchemaAction } from "@/lib/schema-reducer.ts";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
-import {PiCrop, PiHighlighterCircle, PiPencilSimple} from "react-icons/pi";
+import {
+  DropdownMenu,
+  DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuTrigger
+} from "@/components/ui/dropdown-menu.tsx";
+import {Settings, PencilLine, Palette, Trash2} from 'lucide-react';
 import { useEffect, useRef, useState } from "react";
 
 function useClickOutside<T extends HTMLElement>(callback: () => void) {
@@ -46,6 +50,7 @@ export function SchemaClassViewer({
 
   return (
     <div className="border-2 border-blue-500 rounded-lg m-4 p-4">
+    <div className="flex flex-row justify-between">
       <h1
         ref={titleRef}
         className="size-6 mb-4 w-fit"
@@ -69,9 +74,33 @@ export function SchemaClassViewer({
             }
           />
         ) : (
-          <div className="flex flex-row group"><span>{schemaClass.name}</span><PiPencilSimple className="invisible group-hover:visible"/></div>
+          <div className="flex flex-row group"><span>{schemaClass.name}</span><PencilLine strokeWidth={1} size={"16px"} className="invisible group-hover:visible"/></div>
+
         )}
       </h1>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" className="bg-white"><Settings strokeWidth={1} size='24px' className={'bg-popover'}/></Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent >
+          <DropdownMenuGroup>
+            {/*<DropdownMenuItem><Palette strokeWidth={1} size={'1em'}/>Change Color</DropdownMenuItem>*/}
+            <DropdownMenuItem variant="destructive" onClick={() =>
+              dispatch({
+                actionType: "deleteClass",
+                schemaId: schemaId,
+                classId: schemaClass.id
+              })
+            }>
+              <Trash2 strokeWidth={1} size={'1em'}/>Delete Class
+            </DropdownMenuItem>
+          </DropdownMenuGroup>
+        </DropdownMenuContent>
+
+      </DropdownMenu>
+
+
+    </div>
       <label className="block text-sm">
         Class Description:
         <textarea
@@ -100,15 +129,6 @@ export function SchemaClassViewer({
                 </AccordionContent>
             </AccordionItem>
         </Accordion>
-      <div className=" mt-2 flex justify-end">
-        <p className="pr-1">Annotate: </p>
-        <Button variant="outline" className="h-6 mr-1 ml-1">
-          <PiCrop />
-        </Button>
-        <Button variant="outline" className="h-6 mr-1 ml-1">
-          <PiHighlighterCircle />
-        </Button>
-      </div>
     </div>
   );
 }
