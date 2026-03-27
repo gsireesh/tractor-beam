@@ -141,6 +141,10 @@
       if (popoverRoot && popoverRoot.contains(e.target)) {
         return;
       }
+      const drawerRoot = document.getElementById('tractor-beam-drawer-root');
+      if (drawerRoot && drawerRoot.contains(e.target)) {
+        return;
+      }
 
       const selection = window.getSelection();
       const selectedText = selection ? selection.toString().trim() : '';
@@ -178,21 +182,6 @@
           title: PDFViewerApplication.documentInfo?.Title || ''
         });
         return true;
-      }
-
-      if (message.type === 'renderHighlights') {
-        console.log('[pdfjs-init] renderHighlights received:', message.instances?.length, 'instances');
-        if (message.instances?.length > 0) {
-          var sample = message.instances[0];
-          console.log('[pdfjs-init] Sample highlight:', JSON.stringify(sample));
-        }
-        if (window.TractorBeamHighlights) {
-          window.TractorBeamHighlights.setHighlights(message.instances || []);
-          window.TractorBeamHighlights.renderAll();
-          console.log('[pdfjs-init] renderAll() called');
-        } else {
-          console.warn('[pdfjs-init] TractorBeamHighlights not available!');
-        }
       }
 
       if (message.type === 'extractPdfText') {

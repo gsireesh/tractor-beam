@@ -53,7 +53,7 @@ export function SchemaClassViewer({
   const borderColor = rgbaToHex(schemaClass.color, 1.0);
 
   return (
-    <div className="border-2 rounded-lg m-4 p-4 shadow-sm" style={{ backgroundColor: bodyColor,  borderColor: borderColor}}>
+    <div className="border-2 rounded-lg mx-1 my-2 p-2 shadow-sm" style={{ backgroundColor: bodyColor,  borderColor: borderColor}}>
     <div className="flex flex-row justify-between">
       <h1
         ref={titleRef}
@@ -84,7 +84,7 @@ export function SchemaClassViewer({
       </h1>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="bg-white"><Settings strokeWidth={1} size='24px' className={'bg-popover'}/></Button>
+          <Button variant="ghost"><Settings strokeWidth={1} size='24px'/></Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent >
           <DropdownMenuGroup>
@@ -108,7 +108,7 @@ export function SchemaClassViewer({
       <label className="block text-sm">
         Class Description:
         <textarea
-          className="block p-0.5 w-4/5 border-2 rounded-lg bg-popover"
+          className="block p-0.5 w-4/5 border-2 rounded-lg bg-white"
           style={{borderColor: borderColor}}
           autoFocus={false}
           rows={4}

@@ -40,14 +40,31 @@ function render() {
       coords={state.coords}
       onClose={hidePopover}
       onAddInstance={(text, schemaId, classId, coords) => {
-        chrome.runtime.sendMessage({
-          type: 'addInstance',
-          text,
-          schemaId,
-          classId,
-          coords,
-          pdfUrl: new URLSearchParams(window.location.search).get('file') || '',
-        }).catch(() => {});
+        const pdfUrl = new URLSearchParams(window.location.search).get('file') || '';
+        if (window.TractorBeamDrawer) {
+          window.TractorBeamDrawer.dispatch({
+            actionType: 'addInstance',
+            schemaId,
+            classId,
+            instance: {
+              id: crypto.randomUUID(),
+              instanceType: 'text',
+              text,
+              range: null,
+              coords: coords ?? null,
+              pdfUrl,
+            },
+          });
+        } else {
+          chrome.runtime.sendMessage({
+            type: 'addInstance',
+            text,
+            schemaId,
+            classId,
+            coords,
+            pdfUrl,
+          }).catch(() => {});
+        }
         hidePopover();
       }}
     />

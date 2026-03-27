@@ -51,6 +51,17 @@ export function SelectionPopover({
   }, [position]);
 
   useEffect(() => {
+    // Try in-page drawer API first, fall back to background message
+    if (window.TractorBeamDrawer) {
+      const schema = window.TractorBeamDrawer.getActiveSchema();
+      if (schema) {
+        setActiveSchema(schema);
+        if (schema.classes?.length > 0) {
+          setSelectedClassId(schema.classes[0].id);
+        }
+        return;
+      }
+    }
     browser.runtime.sendMessage({
       "type": "getActiveSchema"
     }).then((response) => {

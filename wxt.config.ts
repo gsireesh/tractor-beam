@@ -6,7 +6,7 @@ export default defineConfig({
 
   manifest: {
     action: {},
-    permissions: ['sidePanel', 'tabs', 'offscreen'],
+    permissions: ['tabs', 'offscreen'],
     host_permissions: ["<all_urls>"]
   },
 
