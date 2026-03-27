@@ -8,7 +8,7 @@ import { PiListPlus } from "react-icons/pi";
 import { Schema } from "@/lib/definitions";
 import { schemasReducer, SchemaAction} from "@/lib/schema-reducer.ts";
 import {usePersistedReducer} from "@/hooks/persisted-reducer.ts";
-import {generateId} from "@/lib/utils.ts";
+import {generateId, generateRandomRgbColor} from "@/lib/utils.ts";
 import {PdfBox} from "@/lib/definitions.ts";
 import {ModelControls} from "@/components/ModelControls.tsx";
 
@@ -113,6 +113,7 @@ export function SchemaViewer({
                   id: generateId(),
                   name: "New Class",
                   description: "",
+                  color: generateRandomRgbColor(),
                   instances: []
                 }
               })}>

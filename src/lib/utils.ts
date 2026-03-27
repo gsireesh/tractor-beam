@@ -20,3 +20,10 @@ export function rgbaToHex(rgba: string, overrideAlpha: number | null = null): st
   const alpha = overrideAlpha ? toHex(Math.round(overrideAlpha * 255)) : toHex(Math.round(parseFloat(a) * 255));
   return `${hex}${alpha}`;
 }
+
+export function generateRandomRgbColor(){
+  const r = Math.floor(Math.random() * 256);
+  const g = Math.floor(Math.random() * 256);
+  const b = Math.floor(Math.random() * 256);
+  return `rgba(${r}, ${g}, ${b}, 0.3)`;
+};
