@@ -91,7 +91,7 @@ async function handleAnnotationPipeline(task: RunAnnotationPipelineMessage) {
 
     const processBlock = async (block: typeof processableBlocks[number]) => {
       const messages: ChatMessage[] = [
-        { role: 'system', content: systemPrompt },
+        { role: 'system', content: systemPrompt, cache_control: {type: "ephemeral"}},
         { role: 'user', content: block.text },
       ];
       const result = await runner.run(messages, task.requestId);

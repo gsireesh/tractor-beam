@@ -4,6 +4,7 @@ import { DEFAULT_WEBLLM_MODEL, type ProgressCallback, type WebLlmModelId } from 
 export interface ChatMessage {
   role: 'system' | 'user' | 'assistant';
   content: string;
+  cache_control?: {type: string};
 }
 
 export class WebLlmRunner {
