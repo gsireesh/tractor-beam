@@ -1,8 +1,23 @@
-import {useState} from "react";
+import {useState, useEffect} from "react";
 import {MlProgressMessage} from "@/lib/messaging/message_definitions.ts";
 import {Schema} from "@/lib/definitions.ts"
 import {Progress} from '@/components/ui/progress';
-import {LayoutPanelLeft, Play, Square} from 'lucide-react';
+import {LayoutPanelLeft, Play, Settings, Square, Save} from 'lucide-react';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuLabel,
+    DropdownMenuRadioGroup,
+    DropdownMenuRadioItem,
+    DropdownMenuSeparator,
+    DropdownMenuPortal,
+    DropdownMenuSub,
+    DropdownMenuSubContent,
+    DropdownMenuSubTrigger,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu.tsx";
+import {WEBLLM_MODELS, CLAUDE_MODELS, type ModelProvider, type ModelConfig} from '@/lib/ml/types';
+import {getModelConfig, setModelConfig, getClaudeApiKey, setClaudeApiKey} from '@/lib/ml/config';
 
 export interface ModelControlsProps {
     status: MlProgressMessage["stage"]
@@ -20,7 +35,28 @@ const STATUS_MAP: Record<string, string> = {
 
 export function ModelControls({status, progress, message, activeSchema} : ModelControlsProps) {
     const [currentRequestId, setCurrentRequestId] = useState<string | null>(null);
+    const [config, setLocalConfig] = useState<Partial<ModelConfig>>({});
+    const [apiKey, setApiKey] = useState('');
+    const [apiKeySaved, setApiKeySaved] = useState(false);
     const isRunning = status === "running" && progress < 1;
+
+    useEffect(() => {
+        Promise.all([getModelConfig(), getClaudeApiKey()]).then(([cfg, key]) => {
+            setLocalConfig(cfg);
+            if (key) setApiKey(key);
+        });
+    }, []);
+
+    function updateConfig(partial: Partial<ModelConfig>) {
+        setLocalConfig(prev => ({...prev, ...partial}));
+        void setModelConfig(partial);
+    }
+
+    async function saveApiKey() {
+        await setClaudeApiKey(apiKey);
+        setApiKeySaved(true);
+        setTimeout(() => setApiKeySaved(false), 2000);
+    }
 
     function sendRunMessage() {
         const requestId = crypto.randomUUID();
@@ -36,10 +72,61 @@ export function ModelControls({status, progress, message, activeSchema} : ModelC
         setCurrentRequestId(null);
     }
 
+    const currentModel = config.provider === 'claude' ? config.claudeModel : config.webllmModel;
+
     return <div className="border-t-2 border-blue-500 p-2 m-0 shadow-[0px_-4px_6px_-1px_rgba(0,0,0,0.1)]">
-        <h1 className="font-semibold">Model Control Panel</h1>
+        <div className="flex items-center justify-between">
+            <h1 className="font-semibold">Model Control Panel</h1>
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <button title="Model settings">
+                        <Settings strokeWidth={1} size={18} />
+                    </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-64 z-[10001]">
+                    <DropdownMenuLabel>Provider</DropdownMenuLabel>
+                    <DropdownMenuRadioGroup value={config.provider ?? 'webllm'} onValueChange={(v) => updateConfig({ provider: v as ModelProvider })}>
+                        <DropdownMenuRadioItem value="webllm">WebLLM (local)</DropdownMenuRadioItem>
+                        <DropdownMenuRadioItem value="claude">Claude API</DropdownMenuRadioItem>
+                    </DropdownMenuRadioGroup>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuLabel>Model</DropdownMenuLabel>
+                    <DropdownMenuSub>
+                        <DropdownMenuSubTrigger>{currentModel ?? 'Select model...'}</DropdownMenuSubTrigger>
+                        <DropdownMenuPortal>
+                            <DropdownMenuSubContent className="z-[10002]">
+                                {config.provider === 'claude' ? (
+                                    <DropdownMenuRadioGroup value={config.claudeModel ?? ''} onValueChange={(v) => updateConfig({ claudeModel: v as typeof CLAUDE_MODELS[number] })}>
+                                        {CLAUDE_MODELS.map((m) => <DropdownMenuRadioItem key={m} value={m}>{m}</DropdownMenuRadioItem>)}
+                                    </DropdownMenuRadioGroup>
+                                ) : (
+                                    <DropdownMenuRadioGroup value={config.webllmModel ?? ''} onValueChange={(v) => updateConfig({ webllmModel: v as typeof WEBLLM_MODELS[number] })}>
+                                        {WEBLLM_MODELS.map((m) => <DropdownMenuRadioItem key={m} value={m}>{m}</DropdownMenuRadioItem>)}
+                                    </DropdownMenuRadioGroup>
+                                )}
+                            </DropdownMenuSubContent>
+                        </DropdownMenuPortal>
+                    </DropdownMenuSub>
+                </DropdownMenuContent>
+            </DropdownMenu>
+        </div>
+        {config.provider === 'claude' && (
+            <div className="flex items-center gap-1 mt-1">
+                <input
+                    type="password"
+                    placeholder="Claude API Key"
+                    className="flex-1 px-2 py-1 text-xs border rounded"
+                    value={apiKey}
+                    onChange={(e) => setApiKey(e.target.value)}
+                />
+                <button onClick={() => void saveApiKey()} title="Save API key">
+                    <Save strokeWidth={1} size={16} />
+                </button>
+                {apiKeySaved && <span className="text-xs text-green-600">Saved!</span>}
+            </div>
+        )}
         <div className="flex items-center gap-2 text-sm">
-            Model Status: {status}
+            <span>{config.provider === 'claude' ? 'Claude' : 'WebLLM'}: {status}</span>
             <span className={"inline-block w-2 h-2 rounded-full " + (STATUS_MAP[status] || "bg-gray-400")} />
         </div>
         {status === "loading" && (

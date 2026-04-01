@@ -1,4 +1,5 @@
 import { Schema, PdfBox, VisualBlock, MlAnnotation } from '@/lib/definitions';
+import type { ModelConfig } from '@/lib/ml/types';
 
 // ─── Viewer ↔ background messages ───
 
@@ -48,6 +49,8 @@ export interface RunAnnotationPipelineMessage {
   requestId: string;
   schema: Schema;
   blocks?: VisualBlock[];
+  modelConfig?: ModelConfig;
+  claudeApiKey?: string;
 }
 
 export interface CancelAnnotationPipelineMessage {
@@ -109,6 +112,7 @@ export interface ModelStatusReportMessage {
   type: 'modelStatusReport';
   webllm: { loaded: boolean; model: string | null };
   transformers: { loaded: boolean; pipelines: string[] };
+  claude: { loaded: boolean; model: string | null };
 }
 
 // ─── Discriminated union of all messages ───

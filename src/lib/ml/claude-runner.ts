@@ -1,7 +1,6 @@
 import type { ChatMessage } from './webllm-runner';
 import type { ProgressCallback } from './types';
-
-const DEFAULT_CLAUDE_MODEL = 'claude-sonnet-4-20250514';
+import { DEFAULT_CLAUDE_MODEL } from './types';
 
 export class ClaudeRunner {
   private apiKey: string | null = null;
@@ -12,18 +11,17 @@ export class ClaudeRunner {
     this.onProgress = onProgress;
   }
 
-  async setApiKey(key: string) {
-    this.apiKey = key;
-    await chrome.storage.local.set({ claudeApiKey: key });
+  setModel(model: string) {
+    this.model = model;
   }
 
-  async ensureApiKey(): Promise<string> {
+  /** Set API key in memory only (for offscreen document which can't access chrome.storage). */
+  setApiKeyDirect(key: string) {
+    this.apiKey = key;
+  }
+
+  ensureApiKey(): string {
     if (this.apiKey) return this.apiKey;
-    const result = await chrome.storage.local.get('claudeApiKey');
-    if (result.claudeApiKey) {
-      this.apiKey = result.claudeApiKey;
-      return this.apiKey;
-    }
     throw new Error('Claude API key not configured. Set it in the Model Control Panel.');
   }
 
@@ -32,7 +30,7 @@ export class ClaudeRunner {
    * Returns a response shaped like WebLLM's ChatCompletion for compatibility.
    */
   async run(messages: ChatMessage[], requestId?: string, maxTokens = 1024, timeoutMs = 60_000) {
-    const apiKey = await this.ensureApiKey();
+    const apiKey = this.ensureApiKey();
 
     // Claude API uses a separate system parameter rather than a system message
     const systemMessage = messages.find(m => m.role === 'system');

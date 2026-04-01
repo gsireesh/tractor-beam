@@ -18,10 +18,13 @@ import { constructSchemaNERPrompt } from "@/lib/ml/prompting.ts";
 import { parseSingleBlockNerOutput } from "@/lib/ml/ner-parser.ts";
 import { WebLlmRunner, type ChatMessage } from '@/lib/ml/webllm-runner';
 import { TransformersRunner } from '@/lib/ml/transformers-runner';
+import { ClaudeRunner } from '@/lib/ml/claude-runner';
+import { DEFAULT_MODEL_CONFIG } from '@/lib/ml/types';
 
 
 const webllm = new WebLlmRunner(broadcastProgress);
 const transformers = new TransformersRunner(broadcastProgress);
+const claude = new ClaudeRunner(broadcastProgress);
 
 let cancelledRequestIds = new Set<string>();
 
@@ -58,6 +61,20 @@ async function handleAnnotationPipeline(task: RunAnnotationPipelineMessage) {
   }
   console.log(`[offscreen] Processing ${blocks.length} visual blocks one at a time`);
 
+  // Use model config from the message (offscreen can't access chrome.storage)
+  const config = task.modelConfig ?? DEFAULT_MODEL_CONFIG;
+  const runner = config.provider === 'claude' ? claude : webllm;
+  if (config.provider === 'claude') {
+    claude.setModel(config.claudeModel);
+    if (task.claudeApiKey) {
+      claude.setApiKeyDirect(task.claudeApiKey);
+    }
+    console.log(`[offscreen] Using Claude API: ${config.claudeModel}`);
+  } else {
+    webllm.setModel(config.webllmModel);
+    console.log(`[offscreen] Using WebLLM: ${config.webllmModel}`);
+  }
+
   const systemPrompt = constructSchemaNERPrompt(task.schema);
   console.log("System prompt: ", systemPrompt);
   const pdfUrl = '';
@@ -87,7 +104,7 @@ async function handleAnnotationPipeline(task: RunAnnotationPipelineMessage) {
     ];
 
     try {
-      const result = await webllm.run(messages, task.requestId);
+      const result = await runner.run(messages, task.requestId);
       const nerText = result.choices?.[0]?.message?.content ?? '';
       console.log(`[offscreen] Block ${block.blockId} NER output:`, nerText);
 
@@ -111,7 +128,7 @@ async function handleAnnotationPipeline(task: RunAnnotationPipelineMessage) {
   chrome.runtime.sendMessage({
     type: 'mlTaskResult',
     requestId: task.requestId,
-    result: `Processed ${blocks.length} blocks`,
+    result: `Processed ${blocks.length} blocks via ${config.provider}`,
   }).catch(() => {});
 }
 
@@ -174,6 +191,7 @@ chrome.runtime.onMessage.addListener((message: ExtensionMessage, _sender, sendRe
         type: 'modelStatusReport',
         webllm: webllm.getStatus(),
         transformers: transformers.getStatus(),
+        claude: claude.getStatus(),
       });
       return true;
   }
