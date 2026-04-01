@@ -231,20 +231,22 @@ function DrawerContent({ initialSchemas }: { initialSchemas: Schema[] }) {
     if (!window.TractorBeamHighlights) return;
 
     const pdfUrl = new URLSearchParams(window.location.search).get('file') ?? '';
-    const instances: { id: string; classId: string; coords: PdfBox[]; source?: 'manual' | 'ml'; text?: string }[] = [];
+    const instances: { id: string; classId: string; coords: PdfBox[]; source?: 'manual' | 'ml'; text?: string, color: string }[] = [];
 
     if (activeSchema) {
       for (const cls of activeSchema.classes) {
         for (const inst of cls.instances) {
           if (inst.coords && inst.pdfUrl === pdfUrl) {
-            instances.push({ id: inst.id, classId: cls.id, coords: inst.coords, source: 'manual' });
+            instances.push({ id: inst.id, classId: cls.id, coords: inst.coords, source: 'manual', color: cls.color});
           }
         }
       }
     }
 
+    const colorsByClass = activeSchema.classes.reduce((colorsByClass: Record<string, string>, currentClass) => {colorsByClass[currentClass.id] = currentClass.color; return colorsByClass}, {});
+    const mlInstances: { id: string; classId: string; coords: PdfBox[]; source?: 'ml'; text?: string, color: string }[] = mlHighlights.map((highlight) => ({...highlight, color: colorsByClass[highlight.classId]}));
     // Merge in ML highlights
-    const allInstances = [...instances, ...mlHighlights];
+    const allInstances = [...instances, ...mlInstances];
     console.log(`[drawer] highlight sync: ${instances.length} manual, ${mlHighlights.length} ML, pdfUrl="${pdfUrl}"`);
 
     window.TractorBeamHighlights.setHighlights(allInstances);
