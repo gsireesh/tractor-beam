@@ -9,6 +9,7 @@ import {
 import {Settings, PencilLine, Palette, Trash2} from 'lucide-react';
 import { useEffect, useRef, useState } from "react";
 import {cn, rgbaToHex} from '@/lib/utils.ts';
+import {InstanceViewer} from "@/components/InstanceViewer.tsx";
 
 function useClickOutside<T extends HTMLElement>(callback: () => void) {
   const ref = useRef<T>(null);
@@ -57,7 +58,7 @@ export function SchemaClassViewer({
     <div className="flex flex-row justify-between">
       <h1
         ref={titleRef}
-        className="size-6 mb-4 w-fit"
+        className="size-6 mb-4 w-fit text-base"
         onClick={toggleTitleEditable}
       >
         {titleEditable ? (
@@ -129,7 +130,7 @@ export function SchemaClassViewer({
                 <AccordionTrigger>Instances</AccordionTrigger>
                 <AccordionContent>
                     {
-                        schemaClass.instances.length ? (schemaClass.instances.map((instance) => <p key={instance.text}>{instance.text}</p>)) : <p>Empty.</p>
+                        schemaClass.instances.length ? (schemaClass.instances.map((instance) => <InstanceViewer key={instance.id} instance={instance} borderColor={borderColor} />)) : <p>Empty.</p>
                     }
                 </AccordionContent>
             </AccordionItem>
