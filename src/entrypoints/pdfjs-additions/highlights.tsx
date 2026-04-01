@@ -89,16 +89,18 @@ function render() {
 // ─── Public API ───
 
 function ensureContainer(pageNumber: number): HTMLElement | null {
-  if (pageContainers.has(pageNumber)) return pageContainers.get(pageNumber)!;
+  // Check if cached container is still in the DOM (PDF.js may remove it on re-render)
+  const cached = pageContainers.get(pageNumber);
+  if (cached?.isConnected) return cached;
 
   const pageEl = document.querySelector(
     `.page[data-page-number="${pageNumber}"]`,
-  ) as HTMLElement | null;
+  );
   if (!pageEl) return null;
 
   let container = pageEl.querySelector(
     '.tractor-beam-highlights',
-  ) as HTMLElement | null;
+  );
   if (!container) {
     container = document.createElement('div');
     container.className = 'tractor-beam-highlights';

@@ -155,12 +155,6 @@
         const coords = selectionToPdfBoxes(range);
 
         showSelectionPopover(selectedText, rect, coords);
-
-        chrome.runtime.sendMessage({
-          type: 'pdfTextSelected',
-          text: selectedText,
-          pdfUrl: getPdfUrlFromViewer()
-        }).catch(() => {});
       } else {
         hideSelectionPopover();
       }
@@ -195,16 +189,6 @@
         }
       }
 
-      if (message.type === 'requestVisualBlocks') {
-        if (window.TractorBeamTextExtraction) {
-          window.TractorBeamTextExtraction.extractVisualBlocks(PDFViewerApplication).then(function(blocks) {
-            sendResponse({ type: 'visualBlocksResponse', requestId: message.requestId, blocks: blocks });
-          }).catch(function(err) {
-            sendResponse({ type: 'visualBlocksResponse', requestId: message.requestId, blocks: [], error: err.message });
-          });
-          return true;
-        }
-      }
     });
   });
 })();

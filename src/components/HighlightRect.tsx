@@ -44,19 +44,40 @@ export const HighlightRect = memo(function HighlightRect({
 
   function handleDelete() {
     setActing(true);
-    chrome.runtime.sendMessage({
-      type: 'deleteInstance',
-      highlightId: highlightId,
-      classId: classId,
-    }).catch(() => { console.log("Failed to delete highlight!"); });
+    if (window.TractorBeamDrawer) {
+      window.TractorBeamDrawer.dispatch({
+        actionType: 'deleteInstance',
+        classId: classId,
+        instanceId: highlightId,
+      });
+    } else {
+      console.warn('[HighlightRect] TractorBeamDrawer not available for delete');
+    }
   }
 
   function handlePromote() {
     setActing(true);
-    chrome.runtime.sendMessage({
-      type: 'promoteMlAnnotation',
-      highlightId: highlightId,
-    }).catch(() => { console.log("Failed to promote annotation!"); });
+    if (window.TractorBeamDrawer) {
+      const schema = window.TractorBeamDrawer.getActiveSchema();
+      if (schema && text && allCoords) {
+        const pdfUrl = new URLSearchParams(window.location.search).get('file') || '';
+        window.TractorBeamDrawer.dispatch({
+          actionType: 'addInstance',
+          schemaId: schema.id,
+          classId: classId,
+          instance: {
+            id: crypto.randomUUID(),
+            instanceType: 'text',
+            text: text,
+            range: null,
+            coords: allCoords,
+            pdfUrl,
+          },
+        });
+      }
+    } else {
+      console.warn('[HighlightRect] TractorBeamDrawer not available for promote');
+    }
   }
 
   const pad = hovered && !isVisualBlock ? 24 : 0;

@@ -140,7 +140,7 @@
 
 .tractor-beam-toggle-tab {
   position: fixed;
-  top: 50%;
+  top: 10%;
   right: 0;
   transform: translateY(-50%);
   z-index: 10001;

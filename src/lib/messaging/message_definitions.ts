@@ -1,6 +1,6 @@
 import { Schema, PdfBox, VisualBlock, MlAnnotation } from '@/lib/definitions';
 
-// ─── Existing messages (viewer ↔ background ↔ sidepanel) ───
+// ─── Viewer ↔ background messages ───
 
 export interface PdfViewerReadyMessage {
   type: 'pdfViewerReady';
@@ -14,62 +14,12 @@ export interface PdfPageChangedMessage {
   pdfUrl: string;
 }
 
-export interface PdfTextSelectedMessage {
-  type: 'pdfTextSelected';
-  text: string;
-  pdfUrl: string;
-}
-
 export interface GetPdfViewerConfigMessage {
   type: 'getPdfViewerConfig';
 }
 
-export interface SetActiveSchemaMessage {
-  type: 'setActiveSchema';
-  schema: Schema;
-}
-
-export interface GetActiveSchemaMessage {
-  type: 'getActiveSchema';
-}
-
-export type HighlightSource = 'manual' | 'ml';
-
-export interface HighlightInstance {
-  id: string;
-  classId: string;
-  coords: PdfBox[];
-  source?: HighlightSource;
-  text?: string;
-}
-
-export interface RenderHighlightsMessage {
-  type: 'renderHighlights';
-  instances: HighlightInstance[];
-}
-
 export interface GetPdfInfoMessage {
   type: 'getPdfInfo';
-}
-
-export interface AddInstanceMessage {
-  type: 'addInstance';
-  text: string;
-  schemaId: string;
-  classId: string;
-  coords: PdfBox[] | null;
-  pdfUrl: string;
-}
-
-export interface DeleteInstanceMessage {
-  type: 'deleteInstance';
-  highlightId: string;
-  classId: string;
-}
-
-export interface PromoteMlAnnotationMessage {
-  type: 'promoteMlAnnotation';
-  highlightId: string;
 }
 
 // ─── PDF full-text extraction ───
@@ -83,29 +33,26 @@ export interface PdfTextExtractedMessage {
   pages: { pageNumber: number; text: string }[];
 }
 
+// ─── Offscreen lifecycle ───
+
+export interface EnsureOffscreenMessage {
+  type: 'ensureOffscreen';
+}
+
 // ─── Annotation pipeline messages ───
+// The drawer orchestrates the pipeline: extracts visual blocks locally,
+// then sends the complete message (with blocks) to the offscreen document.
 
 export interface RunAnnotationPipelineMessage {
   type: 'runAnnotationPipeline';
   requestId: string;
   schema: Schema;
-  blocks?: VisualBlock[];  // populated by background before forwarding to offscreen
+  blocks?: VisualBlock[];
 }
 
 export interface CancelAnnotationPipelineMessage {
   type: 'cancelAnnotationPipeline';
   requestId: string;
-}
-
-export interface RequestVisualBlocksMessage {
-  type: 'requestVisualBlocks';
-  requestId: string;
-}
-
-export interface VisualBlocksResponseMessage {
-  type: 'visualBlocksResponse';
-  requestId: string;
-  blocks: VisualBlock[];
 }
 
 export interface AnnotationResultsMessage {
@@ -169,21 +116,13 @@ export interface ModelStatusReportMessage {
 export type ExtensionMessage =
   | PdfViewerReadyMessage
   | PdfPageChangedMessage
-  | PdfTextSelectedMessage
   | GetPdfViewerConfigMessage
-  | SetActiveSchemaMessage
-  | GetActiveSchemaMessage
-  | RenderHighlightsMessage
   | GetPdfInfoMessage
-  | AddInstanceMessage
-  | DeleteInstanceMessage
-  | PromoteMlAnnotationMessage
   | ExtractPdfTextMessage
   | PdfTextExtractedMessage
+  | EnsureOffscreenMessage
   | RunAnnotationPipelineMessage
   | CancelAnnotationPipelineMessage
-  | RequestVisualBlocksMessage
-  | VisualBlocksResponseMessage
   | AnnotationResultsMessage
   | RunWebLlmTaskMessage
   | RunTransformersTaskMessage

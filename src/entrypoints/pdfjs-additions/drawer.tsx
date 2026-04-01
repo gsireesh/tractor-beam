@@ -1,16 +1,18 @@
 /**
  * In-page drawer — renders the SchemaViewer inside a collapsible
  * right-side panel within the PDF viewer page (Hypothesis-style).
- * Exposes window.TractorBeamDrawer API.
+ *
+ * Exposes window.TractorBeamDrawer API, including annotation pipeline
+ * orchestration (visual block extraction → offscreen ML → highlight rendering).
  */
 
+import { useState, useEffect } from 'react';
 import { createRoot, Root } from 'react-dom/client';
 import { SchemaViewer } from '@/components/SchemaViewer';
 import { getStates, storeMlAnnotationRun } from '@/lib/schema-storage';
 import { APP_CONFIG } from '@/app-config';
 import { Schema, PdfBox } from '@/lib/definitions';
 import { schemasReducer, SchemaAction } from '@/lib/schema-reducer';
-import { generateId } from '@/lib/utils';
 import { usePersistedReducer } from '@/hooks/persisted-reducer';
 import type { ExtensionMessage } from '@/lib/messaging/message_definitions';
 import cssText from './drawer-styles.css?inline';
@@ -22,6 +24,56 @@ const DRAWER_WIDTH = 380;
 let drawerDispatch: ((action: SchemaAction) => void) | null = null;
 let getActiveSchemaFn: (() => Schema | null) = () => null;
 let setOpenFn: ((value: boolean | ((prev: boolean) => boolean)) => void) | null = null;
+let setMlHighlightsFn: ((fn: (prev: MlHighlight[]) => MlHighlight[]) => void) | null = null;
+
+interface MlHighlight { id: string; classId: string; coords: PdfBox[]; source: 'ml'; text?: string }
+
+// ─── Pipeline orchestration (called via window API) ───
+async function runAnnotationPipeline(schema: Schema, requestId: string) {
+  console.log('[drawer] Starting annotation pipeline:', requestId);
+
+  // Reset ML highlights for the new run
+  setMlHighlightsFn?.(() => []);
+
+  // 1. Extract visual blocks directly from the in-page API
+  if (!window.TractorBeamTextExtraction) {
+    console.error('[drawer] TractorBeamTextExtraction not available');
+    return;
+  }
+  const PDFViewerApplication = (window as any).PDFViewerApplication;
+  if (!PDFViewerApplication) {
+    console.error('[drawer] PDFViewerApplication not available');
+    return;
+  }
+
+  console.log('[drawer] Extracting visual blocks...');
+  const blocks = await window.TractorBeamTextExtraction.extractVisualBlocks(PDFViewerApplication);
+  console.log(`[drawer] Extracted ${blocks.length} visual blocks`);
+
+
+  // 2. Ensure the offscreen document is ready
+  await chrome.runtime.sendMessage({ type: 'ensureOffscreen' }).catch(() => {
+    console.warn('[drawer] ensureOffscreen failed — offscreen may already exist');
+  });
+
+  // 3. Send the complete message (with blocks) to the offscreen document
+  chrome.runtime.sendMessage({
+    type: 'runAnnotationPipeline',
+    requestId,
+    schema,
+    blocks,
+  }).catch((err) => {
+    console.error('[drawer] Failed to send runAnnotationPipeline:', err);
+  });
+}
+
+function cancelAnnotationPipeline(requestId: string) {
+  console.log('[drawer] Cancelling annotation pipeline:', requestId);
+  chrome.runtime.sendMessage({
+    type: 'cancelAnnotationPipeline',
+    requestId,
+  }).catch(() => {});
+}
 
 // ─── React components ───
 
@@ -44,15 +96,12 @@ function DrawerContainer() {
   }, [isOpen]);
 
   // Adjust PDF viewer layout when drawer opens/closes.
-  // #mainContainer uses position:absolute + inset:0, so we push its right edge
-  // inward by setting inset-inline-end (right) to the drawer width.
   useEffect(() => {
     const mainContainer = document.getElementById('mainContainer');
     if (mainContainer) {
       mainContainer.style.transition = 'right 0.25s ease-in-out';
       mainContainer.style.right = isOpen ? `${DRAWER_WIDTH}px` : '0px';
     }
-    // Trigger PDF.js to recalculate viewport after transition
     const timer = setTimeout(() => window.dispatchEvent(new Event('resize')), 260);
     return () => clearTimeout(timer);
   }, [isOpen]);
@@ -103,50 +152,32 @@ function DrawerContent({ initialSchemas }: { initialSchemas: Schema[] }) {
     APP_CONFIG.indexedDBConfig,
   );
   const [llmLoaded, setLlmLoaded] = useState({ stage: 'unloaded', progress: '', message: '' });
+  const [mlHighlights, setMlHighlights] = useState<MlHighlight[]>([]);
 
   const activeSchema = schemas[0];
 
-  // Expose dispatch and getActiveSchema for the window API
+  // Expose refs for the window API
   useEffect(() => {
     drawerDispatch = dispatch;
     getActiveSchemaFn = () => activeSchema ?? null;
+    setMlHighlightsFn = setMlHighlights;
     return () => {
       drawerDispatch = null;
       getActiveSchemaFn = () => null;
+      setMlHighlightsFn = null;
     };
   }, [dispatch, activeSchema]);
 
-  // Listen for messages from background/offscreen
+  // Listen for messages from offscreen document (ML results)
   useEffect(() => {
     const listener = (message: ExtensionMessage) => {
       switch (message.type) {
-        case 'addInstance':
-          dispatch({
-            actionType: 'addInstance',
-            schemaId: message.schemaId,
-            classId: message.classId,
-            instance: {
-              id: generateId(),
-              instanceType: 'text',
-              text: message.text,
-              range: null,
-              coords: message.coords ?? null,
-              pdfUrl: message.pdfUrl ?? '',
-            },
-          });
-          break;
-        case 'deleteInstance':
-          dispatch({
-            actionType: 'deleteInstance',
-            classId: message.classId,
-            instanceId: message.highlightId,
-          });
-          break;
         case 'mlProgress':
           setLlmLoaded({ stage: message.stage, progress: String(message.progress), message: message.message ?? '' });
           break;
         case 'annotationResults':
           if (message.annotations && message.requestId) {
+            // Store for later review
             storeMlAnnotationRun(APP_CONFIG.indexedDBConfig, {
               id: message.requestId,
               pdfUrl: '',
@@ -154,20 +185,30 @@ function DrawerContent({ initialSchemas }: { initialSchemas: Schema[] }) {
               annotations: message.annotations,
               createdAt: Date.now(),
             }).catch((err: unknown) => console.error('[drawer] Failed to store ML annotations:', err));
+
+            // Render ML annotations as highlights
+            const newMlHighlights: MlHighlight[] = message.annotations.map((a) => ({
+              id: a.id,
+              classId: a.classId,
+              coords: a.coords,
+              source: 'ml' as const,
+              text: a.text,
+            }));
+            setMlHighlights(prev => [...prev, ...newMlHighlights]);
           }
           break;
       }
     };
     browser.runtime.onMessage.addListener(listener);
     return () => browser.runtime.onMessage.removeListener(listener);
-  }, [dispatch, activeSchema]);
+  }, [activeSchema]);
 
   // Push highlights directly to the in-page highlights module
   useEffect(() => {
     if (!window.TractorBeamHighlights) return;
 
     const pdfUrl = new URLSearchParams(window.location.search).get('file') ?? '';
-    const instances: { id: string; classId: string; coords: PdfBox[]; source?: 'manual' | 'ml' }[] = [];
+    const instances: { id: string; classId: string; coords: PdfBox[]; source?: 'manual' | 'ml'; text?: string }[] = [];
 
     if (activeSchema) {
       for (const cls of activeSchema.classes) {
@@ -179,17 +220,13 @@ function DrawerContent({ initialSchemas }: { initialSchemas: Schema[] }) {
       }
     }
 
-    window.TractorBeamHighlights.setHighlights(instances);
-    window.TractorBeamHighlights.renderAll();
-  }, [schemas, activeSchema]);
+    // Merge in ML highlights
+    const allInstances = [...instances, ...mlHighlights];
+    console.log(`[drawer] highlight sync: ${instances.length} manual, ${mlHighlights.length} ML, pdfUrl="${pdfUrl}"`);
 
-  // Sync active schema to background (still needed for ML pipeline)
-  useEffect(() => {
-    chrome.runtime.sendMessage({
-      type: 'setActiveSchema',
-      schema: activeSchema,
-    }).catch(() => { /* background may not be ready */ });
-  });
+    window.TractorBeamHighlights.setHighlights(allInstances);
+    window.TractorBeamHighlights.renderAll();
+  }, [schemas, activeSchema, mlHighlights]);
 
   return (
     <SchemaViewer schemas={schemas} dispatch={dispatch} llmStatus={llmLoaded} />
@@ -206,6 +243,8 @@ declare global {
       close: () => void;
       dispatch: (action: SchemaAction) => void;
       getActiveSchema: () => Schema | null;
+      runAnnotationPipeline: (schema: Schema, requestId: string) => Promise<void>;
+      cancelAnnotationPipeline: (requestId: string) => void;
     };
   }
 }
@@ -235,6 +274,8 @@ function init() {
       else console.warn('[drawer] dispatch called before drawer is ready');
     },
     getActiveSchema: () => getActiveSchemaFn(),
+    runAnnotationPipeline,
+    cancelAnnotationPipeline,
   };
 
   console.log('[pdfjs-additions] Drawer initialized');

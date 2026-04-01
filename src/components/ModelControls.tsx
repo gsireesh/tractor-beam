@@ -25,21 +25,14 @@ export function ModelControls({status, progress, message, activeSchema} : ModelC
     function sendRunMessage() {
         const requestId = crypto.randomUUID();
         setCurrentRequestId(requestId);
-        console.log("[side panel] triggering annotation pipeline!");
-        chrome.runtime.sendMessage({
-            type: "runAnnotationPipeline",
-            requestId,
-            schema: activeSchema,
-        });
+        console.log("[ModelControls] triggering annotation pipeline!");
+        window.TractorBeamDrawer.runAnnotationPipeline(activeSchema, requestId);
     }
 
     function sendCancelMessage() {
         if (!currentRequestId) return;
-        console.log("[side panel] cancelling annotation pipeline!");
-        chrome.runtime.sendMessage({
-            type: "cancelAnnotationPipeline",
-            requestId: currentRequestId,
-        });
+        console.log("[ModelControls] cancelling annotation pipeline!");
+        window.TractorBeamDrawer.cancelAnnotationPipeline(currentRequestId);
         setCurrentRequestId(null);
     }
 
