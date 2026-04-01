@@ -16,6 +16,7 @@ import { schemasReducer, SchemaAction } from '@/lib/schema-reducer';
 import { usePersistedReducer } from '@/hooks/persisted-reducer';
 import type { ExtensionMessage } from '@/lib/messaging/message_definitions';
 import cssText from './drawer-styles.css?inline';
+import {mergePdfBoxes} from "@/lib/utils.ts";
 
 const DRAWER_WIDTH = 380;
 
@@ -27,6 +28,28 @@ let setOpenFn: ((value: boolean | ((prev: boolean) => boolean)) => void) | null 
 let setMlHighlightsFn: ((fn: (prev: MlHighlight[]) => MlHighlight[]) => void) | null = null;
 
 interface MlHighlight { id: string; classId: string; coords: PdfBox[]; source: 'ml'; text?: string }
+
+async function runSegmentationPipeline() {
+  console.log('[drawer] Drawing segmentation boxes');
+  if (!window.TractorBeamTextExtraction) {
+    console.error('[drawer] TractorBeamTextExtraction not available');
+    return;
+  }
+
+  console.log('[drawer] Extracting visual blocks...');
+  const PDFViewerApplication = window.PDFViewerApplication;
+  const blocks = await window.TractorBeamTextExtraction.extractVisualBlocks(PDFViewerApplication);
+  console.log(`[drawer] Extracted ${blocks.length} visual blocks`);
+
+  window.TractorBeamHighlights.setHighlights(blocks.map((block) => {
+    const superBlock = mergePdfBoxes(block.items.map((item) => item.box));
+    return {
+    id: block.blockId,
+    classId: VISUAL_BLOCK_CLASS_ID,
+    coords: [superBlock]
+  }}));
+
+}
 
 // ─── Pipeline orchestration (called via window API) ───
 async function runAnnotationPipeline(schema: Schema, requestId: string) {
@@ -244,6 +267,7 @@ declare global {
       dispatch: (action: SchemaAction) => void;
       getActiveSchema: () => Schema | null;
       runAnnotationPipeline: (schema: Schema, requestId: string) => Promise<void>;
+      runSegmentationPipeline: () => Promise<void>;
       cancelAnnotationPipeline: (requestId: string) => void;
     };
   }
@@ -275,6 +299,7 @@ function init() {
     },
     getActiveSchema: () => getActiveSchemaFn(),
     runAnnotationPipeline,
+    runSegmentationPipeline,
     cancelAnnotationPipeline,
   };
 

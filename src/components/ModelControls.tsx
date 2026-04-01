@@ -2,7 +2,7 @@ import {useState} from "react";
 import {MlProgressMessage} from "@/lib/messaging/message_definitions.ts";
 import {Schema} from "@/lib/definitions.ts"
 import {Progress} from '@/components/ui/progress';
-import {PiPlayBold, PiStopBold} from "react-icons/pi";
+import {LayoutPanelLeft, Play, Square} from 'lucide-react';
 
 export interface ModelControlsProps {
     status: MlProgressMessage["stage"]
@@ -56,21 +56,25 @@ export function ModelControls({status, progress, message, activeSchema} : ModelC
         )}
         <div className="flex gap-1 mt-1">
             <button
-                className="border-1 rounded-sm p-0"
                 onClick={sendRunMessage}
                 disabled={isRunning}
             >
-                <PiPlayBold />
+                <Play strokeWidth={1} color="green" />
             </button>
             {isRunning && (
                 <button
-                    className="border-1 rounded-sm p-0 text-red-600"
                     onClick={sendCancelMessage}
                     title="Stop annotation"
                 >
-                    <PiStopBold />
+                    <Square strokeWidth={1} color="red" />
                 </button>
             )}
+            <button onClick={() => {
+                console.log('[drawer] Running segmentation pipeline!');
+                void window.TractorBeamDrawer.runSegmentationPipeline()
+            }}>
+                <LayoutPanelLeft strokeWidth={1} />
+            </button>
         </div>
     </div>
 }
