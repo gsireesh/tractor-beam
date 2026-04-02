@@ -1,6 +1,7 @@
 import { DEFAULT_MODEL_CONFIG, MODEL_CONFIG_KEY, type ModelConfig } from './types';
 
 const API_KEY_STORAGE_KEY = 'claudeApiKey';
+const OLLAMA_BASE_URL_KEY = 'ollamaBaseUrl';
 
 /** Read model config from chrome.storage.local, merged with defaults. */
 export async function getModelConfig(): Promise<ModelConfig> {
@@ -24,4 +25,15 @@ export async function getClaudeApiKey(): Promise<string | null> {
 /** Store the Claude API key in chrome.storage.local. */
 export async function setClaudeApiKey(key: string): Promise<void> {
   await chrome.storage.local.set({ [API_KEY_STORAGE_KEY]: key });
+}
+
+/** Read the Ollama base URL from chrome.storage.local. */
+export async function getOllamaBaseUrl(): Promise<string | null> {
+  const result = await chrome.storage.local.get(OLLAMA_BASE_URL_KEY);
+  return result[OLLAMA_BASE_URL_KEY] ?? null;
+}
+
+/** Store the Ollama base URL in chrome.storage.local. */
+export async function setOllamaBaseUrl(url: string): Promise<void> {
+  await chrome.storage.local.set({ [OLLAMA_BASE_URL_KEY]: url });
 }

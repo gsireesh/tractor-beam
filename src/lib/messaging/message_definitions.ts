@@ -51,6 +51,7 @@ export interface RunAnnotationPipelineMessage {
   blocks?: VisualBlock[];
   modelConfig?: ModelConfig;
   claudeApiKey?: string;
+  ollamaBaseUrl?: string;
 }
 
 export interface CancelAnnotationPipelineMessage {
@@ -113,6 +114,7 @@ export interface ModelStatusReportMessage {
   webllm: { loaded: boolean; model: string | null };
   transformers: { loaded: boolean; pipelines: string[] };
   claude: { loaded: boolean; model: string | null };
+  ollama: { loaded: boolean; model: string | null };
 }
 
 // ─── Discriminated union of all messages ───

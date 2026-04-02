@@ -15,7 +15,7 @@ import { Schema, PdfBox } from '@/lib/definitions';
 import { schemasReducer, SchemaAction } from '@/lib/schema-reducer';
 import { usePersistedReducer } from '@/hooks/persisted-reducer';
 import type { ExtensionMessage } from '@/lib/messaging/message_definitions';
-import { getModelConfig, getClaudeApiKey } from '@/lib/ml/config';
+import { getModelConfig, getClaudeApiKey, getOllamaBaseUrl } from '@/lib/ml/config';
 import cssText from './drawer-styles.css?inline';
 import {mergePdfBoxes} from "@/lib/utils.ts";
 
@@ -83,6 +83,7 @@ async function runAnnotationPipeline(schema: Schema, requestId: string) {
   // 3. Read model config and send the complete message to the offscreen document
   const modelConfig = await getModelConfig();
   const claudeApiKey = modelConfig.provider === 'claude' ? await getClaudeApiKey() ?? undefined : undefined;
+  const ollamaBaseUrl = modelConfig.provider === 'ollama' ? await getOllamaBaseUrl() ?? undefined : undefined;
 
   chrome.runtime.sendMessage({
     type: 'runAnnotationPipeline',
@@ -91,6 +92,7 @@ async function runAnnotationPipeline(schema: Schema, requestId: string) {
     blocks,
     modelConfig,
     claudeApiKey,
+    ollamaBaseUrl,
   }).catch((err) => {
     console.error('[drawer] Failed to send runAnnotationPipeline:', err);
   });

@@ -16,8 +16,9 @@ import {
     DropdownMenuSubTrigger,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu.tsx";
-import {WEBLLM_MODELS, CLAUDE_MODELS, type ModelProvider, type ModelConfig} from '@/lib/ml/types';
-import {getModelConfig, setModelConfig, getClaudeApiKey, setClaudeApiKey} from '@/lib/ml/config';
+import {WEBLLM_MODELS, CLAUDE_MODELS, OLLAMA_MODELS, type ModelProvider, type ModelConfig} from '@/lib/ml/types';
+import {DEFAULT_OLLAMA_BASE_URL} from '@/lib/ml/types';
+import {getModelConfig, setModelConfig, getClaudeApiKey, setClaudeApiKey, getOllamaBaseUrl, setOllamaBaseUrl} from '@/lib/ml/config';
 
 export interface ModelControlsProps {
     status: MlProgressMessage["stage"]
@@ -38,12 +39,15 @@ export function ModelControls({status, progress, message, activeSchema} : ModelC
     const [config, setLocalConfig] = useState<Partial<ModelConfig>>({});
     const [apiKey, setApiKey] = useState('');
     const [apiKeySaved, setApiKeySaved] = useState(false);
+    const [ollamaUrl, setOllamaUrl] = useState(DEFAULT_OLLAMA_BASE_URL);
+    const [ollamaUrlSaved, setOllamaUrlSaved] = useState(false);
     const isRunning = status === "running" && progress < 1;
 
     useEffect(() => {
-        Promise.all([getModelConfig(), getClaudeApiKey()]).then(([cfg, key]) => {
+        Promise.all([getModelConfig(), getClaudeApiKey(), getOllamaBaseUrl()]).then(([cfg, key, url]) => {
             setLocalConfig(cfg);
             if (key) setApiKey(key);
+            if (url) setOllamaUrl(url);
         });
     }, []);
 
@@ -56,6 +60,12 @@ export function ModelControls({status, progress, message, activeSchema} : ModelC
         await setClaudeApiKey(apiKey);
         setApiKeySaved(true);
         setTimeout(() => setApiKeySaved(false), 2000);
+    }
+
+    async function saveOllamaUrl() {
+        await setOllamaBaseUrl(ollamaUrl);
+        setOllamaUrlSaved(true);
+        setTimeout(() => setOllamaUrlSaved(false), 2000);
     }
 
     function sendRunMessage() {
@@ -72,7 +82,7 @@ export function ModelControls({status, progress, message, activeSchema} : ModelC
         setCurrentRequestId(null);
     }
 
-    const currentModel = config.provider === 'claude' ? config.claudeModel : config.webllmModel;
+    const currentModel = config.provider === 'claude' ? config.claudeModel : config.provider === 'ollama' ? config.ollamaModel : config.webllmModel;
 
     return <div className="border-t-2 border-blue-500 p-2 m-0 shadow-[0px_-4px_6px_-1px_rgba(0,0,0,0.1)]">
         <div className="flex items-center justify-between">
@@ -88,6 +98,7 @@ export function ModelControls({status, progress, message, activeSchema} : ModelC
                     <DropdownMenuRadioGroup value={config.provider ?? 'webllm'} onValueChange={(v) => updateConfig({ provider: v as ModelProvider })}>
                         <DropdownMenuRadioItem value="webllm">WebLLM (local)</DropdownMenuRadioItem>
                         <DropdownMenuRadioItem value="claude">Claude API</DropdownMenuRadioItem>
+                        <DropdownMenuRadioItem value="ollama">Ollama (local)</DropdownMenuRadioItem>
                     </DropdownMenuRadioGroup>
                     <DropdownMenuSeparator />
                     <DropdownMenuLabel>Model</DropdownMenuLabel>
@@ -98,6 +109,10 @@ export function ModelControls({status, progress, message, activeSchema} : ModelC
                                 {config.provider === 'claude' ? (
                                     <DropdownMenuRadioGroup value={config.claudeModel ?? ''} onValueChange={(v) => updateConfig({ claudeModel: v as typeof CLAUDE_MODELS[number] })}>
                                         {CLAUDE_MODELS.map((m) => <DropdownMenuRadioItem key={m} value={m}>{m}</DropdownMenuRadioItem>)}
+                                    </DropdownMenuRadioGroup>
+                                ) : config.provider === 'ollama' ? (
+                                    <DropdownMenuRadioGroup value={config.ollamaModel ?? ''} onValueChange={(v) => updateConfig({ ollamaModel: v as typeof OLLAMA_MODELS[number] })}>
+                                        {OLLAMA_MODELS.map((m) => <DropdownMenuRadioItem key={m} value={m}>{m}</DropdownMenuRadioItem>)}
                                     </DropdownMenuRadioGroup>
                                 ) : (
                                     <DropdownMenuRadioGroup value={config.webllmModel ?? ''} onValueChange={(v) => updateConfig({ webllmModel: v as typeof WEBLLM_MODELS[number] })}>
@@ -125,8 +140,23 @@ export function ModelControls({status, progress, message, activeSchema} : ModelC
                 {apiKeySaved && <span className="text-xs text-green-600">Saved!</span>}
             </div>
         )}
+        {config.provider === 'ollama' && (
+            <div className="flex items-center gap-1 mt-1">
+                <input
+                    type="text"
+                    placeholder="Ollama URL"
+                    className="flex-1 px-2 py-1 text-xs border rounded"
+                    value={ollamaUrl}
+                    onChange={(e) => setOllamaUrl(e.target.value)}
+                />
+                <button onClick={() => void saveOllamaUrl()} title="Save Ollama URL">
+                    <Save strokeWidth={1} size={16} />
+                </button>
+                {ollamaUrlSaved && <span className="text-xs text-green-600">Saved!</span>}
+            </div>
+        )}
         <div className="flex items-center gap-2 text-sm">
-            <span>{config.provider === 'claude' ? 'Claude' : 'WebLLM'}: {status}</span>
+            <span>{config.provider === 'claude' ? 'Claude' : config.provider === 'ollama' ? 'Ollama' : 'WebLLM'}: {status}</span>
             <span className={"inline-block w-2 h-2 rounded-full " + (STATUS_MAP[status] || "bg-gray-400")} />
         </div>
         {status === "loading" && (

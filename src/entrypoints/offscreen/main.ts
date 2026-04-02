@@ -19,6 +19,7 @@ import { parseSingleBlockNerOutput } from "@/lib/ml/ner-parser.ts";
 import { WebLlmRunner, type ChatMessage } from '@/lib/ml/webllm-runner';
 import { TransformersRunner } from '@/lib/ml/transformers-runner';
 import { ClaudeRunner } from '@/lib/ml/claude-runner';
+import { OllamaRunner } from '@/lib/ml/ollama-runner';
 import { DEFAULT_MODEL_CONFIG } from '@/lib/ml/types';
 import { parallelMap } from '@/lib/ml/parallel';
 
@@ -26,6 +27,7 @@ import { parallelMap } from '@/lib/ml/parallel';
 const webllm = new WebLlmRunner(broadcastProgress);
 const transformers = new TransformersRunner(broadcastProgress);
 const claude = new ClaudeRunner(broadcastProgress);
+const ollama = new OllamaRunner(broadcastProgress);
 
 const cancelledRequestIds = new Set<string>();
 
@@ -64,13 +66,21 @@ async function handleAnnotationPipeline(task: RunAnnotationPipelineMessage) {
 
   // Use model config from the message (offscreen can't access chrome.storage)
   const config = task.modelConfig ?? DEFAULT_MODEL_CONFIG;
-  const runner = config.provider === 'claude' ? claude : webllm;
+  const runner = config.provider === 'claude' ? claude : config.provider === 'ollama' ? ollama : webllm;
   if (config.provider === 'claude') {
     claude.setModel(config.claudeModel);
     if (task.claudeApiKey) {
       claude.setApiKeyDirect(task.claudeApiKey);
     }
     console.log(`[offscreen] Using Claude API: ${config.claudeModel}`);
+  } else if (config.provider === 'ollama') {
+    ollama.setModel(config.ollamaModel);
+    ollama.setBaseUrl(task.ollamaBaseUrl ?? 'http://localhost:11434');
+    const reachable = await ollama.checkAvailability();
+    if (!reachable) {
+      throw new Error(`Ollama server not reachable at ${task.ollamaBaseUrl ?? 'http://localhost:11434'}`);
+    }
+    console.log(`[offscreen] Using Ollama: ${config.ollamaModel}`);
   } else {
     webllm.setModel(config.webllmModel);
     console.log(`[offscreen] Using WebLLM: ${config.webllmModel}`);
@@ -84,9 +94,9 @@ async function handleAnnotationPipeline(task: RunAnnotationPipelineMessage) {
   const processableBlocks = blocks.filter(b => b.text.length >= 50);
   console.log(`[offscreen] ${processableBlocks.length} blocks to process (${blocks.length - processableBlocks.length} skipped as too short)`);
 
-  if (config.provider === 'claude') {
-    // Parallel execution for Claude (remote API benefits from concurrent requests)
-    const CONCURRENCY = 5;
+  if (config.provider === 'claude' || config.provider === 'ollama') {
+    // Parallel execution for remote/local API (benefits from concurrent requests)
+    const CONCURRENCY = config.provider === 'claude' ? 5 : 3;
     let completed = 0;
 
     const processBlock = async (block: typeof processableBlocks[number]) => {
@@ -226,6 +236,7 @@ chrome.runtime.onMessage.addListener((message: ExtensionMessage, _sender, sendRe
         webllm: webllm.getStatus(),
         transformers: transformers.getStatus(),
         claude: claude.getStatus(),
+        ollama: ollama.getStatus(),
       });
       return true;
   }
