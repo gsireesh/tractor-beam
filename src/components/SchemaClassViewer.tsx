@@ -6,9 +6,9 @@ import {
   DropdownMenu,
   DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu.tsx";
-import {Settings, PencilLine, Palette, Trash2} from 'lucide-react';
+import {Settings, PencilLine, Trash2} from 'lucide-react';
 import { useEffect, useRef, useState } from "react";
-import {cn, rgbaToHex} from '@/lib/utils.ts';
+import {rgbaToHex} from '@/lib/utils.ts';
 import {InstanceViewer} from "@/components/InstanceViewer.tsx";
 
 function useClickOutside<T extends HTMLElement>(callback: () => void) {

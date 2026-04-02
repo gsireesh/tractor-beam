@@ -1,13 +1,6 @@
 import React from 'react';
 import { HighlightRect } from './HighlightRect';
-
-interface PdfBox {
-  pageNumber: number;
-  left: number;
-  top: number;
-  width: number;
-  height: number;
-}
+import { PdfBox } from '@/lib/definitions';
 
 interface Highlight {
   id: string;

@@ -18,6 +18,7 @@ import type { ExtensionMessage } from '@/lib/messaging/message_definitions';
 import { getModelConfig, getClaudeApiKey, getOllamaBaseUrl } from '@/lib/ml/config';
 import cssText from './drawer-styles.css?inline';
 import {mergePdfBoxes} from "@/lib/utils.ts";
+import { VISUAL_BLOCK_CLASS_ID } from '@/components/HighlightRect';
 
 const DRAWER_WIDTH = 380;
 
