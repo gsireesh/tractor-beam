@@ -2,7 +2,7 @@ import {useState, useEffect} from "react";
 import {MlProgressMessage} from "@/lib/messaging/message_definitions.ts";
 import {Schema} from "@/lib/definitions.ts"
 import {Progress} from '@/components/ui/progress';
-import {LayoutPanelLeft, Play, Settings, Square, Save} from 'lucide-react';
+import {LayoutPanelLeft, Play, Settings, Square, Save, History} from 'lucide-react';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -191,6 +191,12 @@ export function ModelControls({status, progress, message, activeSchema} : ModelC
                 void window.TractorBeamDrawer.runSegmentationPipeline()
             }}>
                 <LayoutPanelLeft strokeWidth={1} />
+            </button>
+            <button onClick={() => {
+                console.log('[ModelControls] Loading cached annotations');
+                void window.TractorBeamDrawer.loadCachedAnnotations()
+            }} title="Load cached annotations">
+                <History strokeWidth={1} />
             </button>
         </div>
     </div>

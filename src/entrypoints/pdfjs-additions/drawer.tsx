@@ -9,7 +9,7 @@
 import { useState, useEffect } from 'react';
 import { createRoot, Root } from 'react-dom/client';
 import { SchemaViewer } from '@/components/SchemaViewer';
-import { getStates, storeMlAnnotationRun } from '@/lib/schema-storage';
+import { getStates, storeMlAnnotationRun, getMlAnnotationRuns } from '@/lib/schema-storage';
 import { APP_CONFIG } from '@/app-config';
 import { Schema, PdfBox } from '@/lib/definitions';
 import { schemasReducer, SchemaAction } from '@/lib/schema-reducer';
@@ -51,6 +51,25 @@ async function runSegmentationPipeline() {
     coords: [superBlock]
   }}));
 
+}
+
+async function loadCachedAnnotations() {
+  console.log('[drawer] Loading cached annotations from IndexedDB');
+  const runs = await getMlAnnotationRuns(APP_CONFIG.indexedDBConfig);
+  if (runs.length === 0) {
+    console.log('[drawer] No cached annotation runs found');
+    return;
+  }
+  const mostRecent = runs.sort((a, b) => b.createdAt - a.createdAt)[0];
+  console.log(`[drawer] Loaded cached run ${mostRecent.id} with ${mostRecent.annotations.length} annotations`);
+  const highlights: MlHighlight[] = mostRecent.annotations.map((a) => ({
+    id: a.id,
+    classId: a.classId,
+    coords: a.coords,
+    source: 'ml' as const,
+    text: a.text,
+  }));
+  setMlHighlightsFn?.(() => highlights);
 }
 
 // ─── Pipeline orchestration (called via window API) ───
@@ -279,6 +298,7 @@ declare global {
       getActiveSchema: () => Schema | null;
       runAnnotationPipeline: (schema: Schema, requestId: string) => Promise<void>;
       runSegmentationPipeline: () => Promise<void>;
+      loadCachedAnnotations: () => Promise<void>;
       cancelAnnotationPipeline: (requestId: string) => void;
     };
   }
@@ -311,6 +331,7 @@ function init() {
     getActiveSchema: () => getActiveSchemaFn(),
     runAnnotationPipeline,
     runSegmentationPipeline,
+    loadCachedAnnotations,
     cancelAnnotationPipeline,
   };
 
