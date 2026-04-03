@@ -51,7 +51,14 @@ export async function storeStates<S>(indexedDBConfig: IndexedDBConfig, updatedSt
 export async function storeMlAnnotationRun(indexedDBConfig: IndexedDBConfig, run: MlAnnotationRun): Promise<void> {
     const db = await getDB(indexedDBConfig);
     const store = db.transaction(ML_ANNOTATIONS_STORE, 'readwrite').objectStore(ML_ANNOTATIONS_STORE);
-    store.put(run);
+    const getRequest = store.get(run.id);
+    getRequest.onsuccess = () => {
+        const existing = getRequest.result as MlAnnotationRun | undefined;
+        if (existing) {
+            run = { ...run, annotations: [...existing.annotations, ...run.annotations] };
+        }
+        store.put(run);
+    };
 }
 
 export async function getMlAnnotationRuns(indexedDBConfig: IndexedDBConfig): Promise<MlAnnotationRun[]> {
