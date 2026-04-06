@@ -1,13 +1,13 @@
 import {placeholderSchemas} from "@/lib/placeholder-schemas.ts";
-import {IndexedDBConfig, ML_ANNOTATIONS_STORE} from "@/app-config.ts";
+import {IndexedDBConfig} from "@/app-config.ts";
 import type {MlAnnotationRun} from "@/lib/definitions.ts";
 
 let dbPromise: Promise<IDBDatabase> | null = null;
 
-export function getDB({dbSchemaName, schemaVersion, schemaObjectStoreName}: IndexedDBConfig) {
+export function getDB({dbSchemaName, schemaVersion, schemaObjectStoreName, mlAnnotationsObjectStore}: IndexedDBConfig) {
     dbPromise ??= new Promise((resolve, reject) => {
             const request = window.indexedDB.open(dbSchemaName, schemaVersion);
-            request.onerror = () => reject(request.error);
+            request.onerror = () => reject(request.error as Error);
             request.onsuccess = () => resolve(request.result);
 
             request.onupgradeneeded = (event) => {
@@ -27,7 +27,7 @@ export function getDB({dbSchemaName, schemaVersion, schemaObjectStoreName}: Inde
                 }
 
                 if (oldVersion < 2) {
-                    db.createObjectStore(ML_ANNOTATIONS_STORE, {keyPath: 'id'});
+                    db.createObjectStore(mlAnnotationsObjectStore, {keyPath: 'id'});
                 }
             }
         });
@@ -50,7 +50,7 @@ export async function storeStates<S>(indexedDBConfig: IndexedDBConfig, updatedSt
 
 export async function storeMlAnnotationRun(indexedDBConfig: IndexedDBConfig, run: MlAnnotationRun): Promise<void> {
     const db = await getDB(indexedDBConfig);
-    const store = db.transaction(ML_ANNOTATIONS_STORE, 'readwrite').objectStore(ML_ANNOTATIONS_STORE);
+    const store = db.transaction(indexedDBConfig.mlAnnotationsObjectStore, 'readwrite').objectStore(indexedDBConfig.mlAnnotationsObjectStore);
     const getRequest = store.get(run.id);
     getRequest.onsuccess = () => {
         const existing = getRequest.result as MlAnnotationRun | undefined;
@@ -63,16 +63,16 @@ export async function storeMlAnnotationRun(indexedDBConfig: IndexedDBConfig, run
 
 export async function getMlAnnotationRuns(indexedDBConfig: IndexedDBConfig): Promise<MlAnnotationRun[]> {
     const db = await getDB(indexedDBConfig);
-    const store = db.transaction(ML_ANNOTATIONS_STORE, 'readonly').objectStore(ML_ANNOTATIONS_STORE);
+    const store = db.transaction(indexedDBConfig.mlAnnotationsObjectStore, 'readonly').objectStore(indexedDBConfig.mlAnnotationsObjectStore);
     return new Promise((resolve, reject) => {
         const request = store.getAll();
         request.onsuccess = () => resolve(request.result as MlAnnotationRun[]);
-        request.onerror = () => reject(request.error);
+        request.onerror = () => reject(request.error as Error);
     });
 }
 
 export async function deleteMlAnnotationRun(indexedDBConfig: IndexedDBConfig, id: string): Promise<void> {
     const db = await getDB(indexedDBConfig);
-    const store = db.transaction(ML_ANNOTATIONS_STORE, 'readwrite').objectStore(ML_ANNOTATIONS_STORE);
+    const store = db.transaction(indexedDBConfig.mlAnnotationsObjectStore, 'readwrite').objectStore(indexedDBConfig.mlAnnotationsObjectStore);
     store.delete(id);
 }
