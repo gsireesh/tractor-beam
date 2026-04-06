@@ -28,6 +28,7 @@ interface AddInstance {
 
 interface DeleteInstance {
   actionType: "deleteInstance";
+  schemaId: string;
   classId: string;
   instanceId: string;
 }

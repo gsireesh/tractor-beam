@@ -16,6 +16,7 @@ import { schemasReducer, SchemaAction } from '@/lib/schema-reducer';
 import { usePersistedReducer } from '@/hooks/persisted-reducer';
 import type { ExtensionMessage } from '@/lib/messaging/message_definitions';
 import { getModelConfig, getClaudeApiKey, getOllamaBaseUrl } from '@/lib/ml/config';
+import { DrawerContext } from '@/contexts/DrawerContext';
 import cssText from './drawer-styles.css?inline';
 import {mergePdfBoxes} from "@/lib/utils.ts";
 import { VISUAL_BLOCK_CLASS_ID } from '@/components/HighlightRect';
@@ -53,9 +54,9 @@ async function runSegmentationPipeline() {
 
 }
 
-async function loadCachedAnnotations() {
+async function loadCachedAnnotations(schemaId: string, pdfUrl: string) {
   console.log('[drawer] Loading cached annotations from IndexedDB');
-  const runs = await getMlAnnotationRuns(APP_CONFIG.indexedDBConfig);
+  const runs = await getMlAnnotationRuns(APP_CONFIG.indexedDBConfig, schemaId, pdfUrl);
   if (runs.length === 0) {
     console.log('[drawer] No cached annotation runs found');
     return;
@@ -133,7 +134,6 @@ function DrawerContainer() {
   const [isOpen, setIsOpen] = useState(() => {
     return localStorage.getItem('tractor-beam-drawer-open') !== 'false';
   });
-
   // Load initial schema state from IndexedDB
   useEffect(() => {
     void getStates(APP_CONFIG.indexedDBConfig).then((request) => {
@@ -205,7 +205,10 @@ function DrawerContent({ initialSchemas }: { initialSchemas: Schema[] }) {
   const [llmLoaded, setLlmLoaded] = useState({ stage: 'unloaded', progress: '', message: '' });
   const [mlHighlights, setMlHighlights] = useState<MlHighlight[]>([]);
 
-  const activeSchema = schemas[0];
+
+  const pdfUrl = new URLSearchParams(window.location.search).get('file') ?? '';
+  const [activeSchemaId, setActiveSchemaId] = useState<string>(schemas[0]?.id ?? '');
+  const activeSchema = schemas.find(s => s.id === activeSchemaId) ?? schemas[0];
 
   // Expose refs for the window API
   useEffect(() => {
@@ -231,7 +234,7 @@ function DrawerContent({ initialSchemas }: { initialSchemas: Schema[] }) {
             // Store for later review
             storeMlAnnotationRun(APP_CONFIG.indexedDBConfig, {
               id: message.requestId,
-              pdfUrl: '',
+              pdfUrl: pdfUrl,
               schemaId: activeSchema?.id ?? '',
               annotations: message.annotations,
               createdAt: Date.now(),
@@ -257,8 +260,6 @@ function DrawerContent({ initialSchemas }: { initialSchemas: Schema[] }) {
   // Push highlights directly to the in-page highlights module
   useEffect(() => {
     if (!window.TractorBeamHighlights) return;
-
-    const pdfUrl = new URLSearchParams(window.location.search).get('file') ?? '';
     const instances: { id: string; classId: string; coords: PdfBox[]; source?: 'manual' | 'ml'; text?: string, color: string }[] = [];
 
     if (activeSchema) {
@@ -282,7 +283,9 @@ function DrawerContent({ initialSchemas }: { initialSchemas: Schema[] }) {
   }, [schemas, activeSchema, mlHighlights]);
 
   return (
-    <SchemaViewer schemas={schemas} dispatch={dispatch} llmStatus={llmLoaded} />
+    <DrawerContext.Provider value={{ activeSchema, pdfUrl, dispatch }}>
+      <SchemaViewer schemas={schemas} dispatch={dispatch} llmStatus={llmLoaded} onActiveSchemaChange={setActiveSchemaId} />
+    </DrawerContext.Provider>
   );
 }
 
@@ -298,7 +301,7 @@ declare global {
       getActiveSchema: () => Schema | null;
       runAnnotationPipeline: (schema: Schema, requestId: string) => Promise<void>;
       runSegmentationPipeline: () => Promise<void>;
-      loadCachedAnnotations: () => Promise<void>;
+      loadCachedAnnotations: (schemaId: string, pdfUrl: string) => Promise<void>;
       cancelAnnotationPipeline: (requestId: string) => void;
     };
   }

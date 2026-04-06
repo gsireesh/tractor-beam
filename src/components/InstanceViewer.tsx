@@ -1,13 +1,17 @@
 import {Instance} from "@/lib/definitions.ts";
 import {LocateFixed, Trash2} from "lucide-react";
+import {useDrawerContext} from "@/contexts/DrawerContext.tsx";
 
 export interface InstanceViewerProps {
     instance: Instance;
+    schemaClassId: string;
     borderColor: string;
 }
 
 export function InstanceViewer(props: InstanceViewerProps) {
-    const {instance, borderColor} = props;
+    const {instance, schemaClassId, borderColor} = props;
+
+    const {activeSchema, dispatch} = useDrawerContext();
 
     return <>
         <div className="border-1 rounded-lg bg-white" style={{borderColor: borderColor}}>
@@ -16,7 +20,12 @@ export function InstanceViewer(props: InstanceViewerProps) {
                 <button className={"mx-3 my-1"}>
                     <LocateFixed size={"16px"}/>
                 </button>
-                <button className={"mx-3 my-1"}>
+                <button className={"mx-3 my-1"} onClick={() => dispatch({
+                        actionType: "deleteInstance",
+                        schemaId: activeSchema.id,
+                        classId: schemaClassId,
+                        instanceId: instance.id
+                    })}>
                     <Trash2 size="16px" color="red"/>
                 </button>
             </div>

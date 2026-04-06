@@ -27,7 +27,8 @@ export function getDB({dbSchemaName, schemaVersion, schemaObjectStoreName, mlAnn
                 }
 
                 if (oldVersion < 2) {
-                    db.createObjectStore(mlAnnotationsObjectStore, {keyPath: 'id'});
+                    const annotationStore = db.createObjectStore(mlAnnotationsObjectStore, {keyPath: 'id'});
+                    annotationStore.createIndex("pdfUrl", "pdfUrl", {unique: false})
                 }
             }
         });
@@ -61,12 +62,13 @@ export async function storeMlAnnotationRun(indexedDBConfig: IndexedDBConfig, run
     };
 }
 
-export async function getMlAnnotationRuns(indexedDBConfig: IndexedDBConfig): Promise<MlAnnotationRun[]> {
+export async function getMlAnnotationRuns(indexedDBConfig: IndexedDBConfig, schemaId: string, pdfUrl: string): Promise<MlAnnotationRun[]> {
     const db = await getDB(indexedDBConfig);
     const store = db.transaction(indexedDBConfig.mlAnnotationsObjectStore, 'readonly').objectStore(indexedDBConfig.mlAnnotationsObjectStore);
+    const index = store.index("pdfUrl");
     return new Promise((resolve, reject) => {
-        const request = store.getAll();
-        request.onsuccess = () => resolve(request.result as MlAnnotationRun[]);
+        const request = index.getAll(pdfUrl);
+        request.onsuccess = () => resolve(request.result.filter((result: MlAnnotationRun) => result.schemaId === schemaId) as MlAnnotationRun[]);
         request.onerror = () => reject(request.error as Error);
     });
 }

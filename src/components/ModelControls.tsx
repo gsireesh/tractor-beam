@@ -1,6 +1,6 @@
 import {useState, useEffect} from "react";
 import {MlProgressMessage} from "@/lib/messaging/message_definitions.ts";
-import {Schema} from "@/lib/definitions.ts"
+
 import {Progress} from '@/components/ui/progress';
 import {LayoutPanelLeft, Play, Settings, Square, Save, History} from 'lucide-react';
 import {
@@ -19,12 +19,12 @@ import {
 import {WEBLLM_MODELS, CLAUDE_MODELS, OLLAMA_MODELS, type ModelProvider, type ModelConfig} from '@/lib/ml/types';
 import {DEFAULT_OLLAMA_BASE_URL} from '@/lib/ml/types';
 import {getModelConfig, setModelConfig, getClaudeApiKey, setClaudeApiKey, getOllamaBaseUrl, setOllamaBaseUrl} from '@/lib/ml/config';
+import { useDrawerContext } from '@/contexts/DrawerContext';
 
 export interface ModelControlsProps {
     status: MlProgressMessage["stage"]
     progress: number,
     message: string,
-    activeSchema: Schema,
 }
 
 const STATUS_MAP: Record<string, string> = {
@@ -34,7 +34,8 @@ const STATUS_MAP: Record<string, string> = {
     "running": "bg-green-600"
 }
 
-export function ModelControls({status, progress, message, activeSchema} : ModelControlsProps) {
+export function ModelControls({status, progress, message} : ModelControlsProps) {
+    const { activeSchema, pdfUrl } = useDrawerContext();
     const [currentRequestId, setCurrentRequestId] = useState<string | null>(null);
     const [config, setLocalConfig] = useState<Partial<ModelConfig>>({});
     const [apiKey, setApiKey] = useState('');
@@ -194,7 +195,7 @@ export function ModelControls({status, progress, message, activeSchema} : ModelC
             </button>
             <button onClick={() => {
                 console.log('[ModelControls] Loading cached annotations');
-                void window.TractorBeamDrawer.loadCachedAnnotations()
+                void window.TractorBeamDrawer.loadCachedAnnotations(activeSchema.id, pdfUrl)
             }} title="Load cached annotations">
                 <History strokeWidth={1} />
             </button>

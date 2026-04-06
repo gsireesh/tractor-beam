@@ -130,7 +130,7 @@ export function SchemaClassViewer({
                 <AccordionTrigger>Instances</AccordionTrigger>
                 <AccordionContent>
                     {
-                        schemaClass.instances.length ? (schemaClass.instances.map((instance) => <InstanceViewer key={instance.id} instance={instance} borderColor={borderColor} />)) : <p>Empty.</p>
+                        schemaClass.instances.length ? (schemaClass.instances.map((instance) => <InstanceViewer key={instance.id} instance={instance} schemaClassId={schemaClass.id} borderColor={borderColor} />)) : <p>Empty.</p>
                     }
                 </AccordionContent>
             </AccordionItem>
