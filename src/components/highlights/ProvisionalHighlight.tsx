@@ -1,9 +1,9 @@
 import { useState, useRef, useEffect, memo } from 'react';
-import { ActionButton } from './ActionButton';
+import { HighlightActionButton } from './HighlightActionButton.tsx';
 import type { HighlightRectProps } from './types';
 import {CirclePlus, CircleMinus} from "lucide-react";
 
-export const ProvisionalHighlightRect = memo(function ProvisionalHighlightRect({
+export const ProvisionalHighlight = memo(function ProvisionalHighlightRect({
   highlightId,
   classId,
   left,
@@ -103,14 +103,14 @@ export const ProvisionalHighlightRect = memo(function ProvisionalHighlightRect({
       />
       {hovered && !acting && (
         <div className="flex flex-row">
-          <ActionButton
+          <HighlightActionButton
             onClick={() => handlePromote(true)}
             title="Add to schema"
             icon={<CirclePlus size={"11px"} strokeWidth={1} />}
             variant="success"
             right="2px"
           />
-          <ActionButton
+          <HighlightActionButton
             onClick={()=> handlePromote(false)}
             title="Add to schema (negative example)"
             icon={<CircleMinus size={"11px"} strokeWidth={1} />}

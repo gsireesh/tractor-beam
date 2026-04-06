@@ -19,7 +19,7 @@ import { getModelConfig, getClaudeApiKey, getOllamaBaseUrl } from '@/lib/ml/conf
 import { DrawerContext } from '@/contexts/DrawerContext';
 import cssText from './drawer-styles.css?inline';
 import {mergePdfBoxes} from "@/lib/utils.ts";
-import { VISUAL_BLOCK_CLASS_ID } from '@/components/HighlightRect';
+import { VISUAL_BLOCK_CLASS_ID } from '@/components/Highlight.tsx';
 
 const DRAWER_WIDTH = 380;
 

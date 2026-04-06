@@ -8,7 +8,7 @@ interface ActionButtonProps {
   right: string;
 }
 
-export const ActionButton = memo(function ActionButton({
+export const HighlightActionButton = memo(function ActionButton({
   onClick,
   title,
   icon,

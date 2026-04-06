@@ -1,8 +1,8 @@
 import React from 'react';
-import { HighlightRect } from './HighlightRect';
+import { Highlight } from './Highlight.tsx';
 import { PdfBox } from '@/lib/definitions';
 
-interface Highlight {
+interface HighlightProps {
   id: string;
   classId: string;
   coords: PdfBox[];
@@ -13,7 +13,7 @@ interface Highlight {
 
 interface PageHighlightsProps {
   pageNumber: number;
-  highlights: Highlight[];
+  highlights: HighlightProps[];
 }
 
 export function PageHighlights({ pageNumber, highlights }: PageHighlightsProps) {
@@ -24,7 +24,7 @@ export function PageHighlights({ pageNumber, highlights }: PageHighlightsProps) 
         return hl.coords
           .filter((box) => box.pageNumber === pageNumber)
           .map((box, i) => (
-            <HighlightRect
+            <Highlight
               key={`${hl.id}-${i}`}
               highlightId={hl.id}
               classId={hl.classId}

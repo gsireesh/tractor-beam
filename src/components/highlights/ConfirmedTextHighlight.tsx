@@ -1,9 +1,9 @@
 import { useState, memo } from 'react';
-import { ActionButton } from './ActionButton';
+import { HighlightActionButton } from './HighlightActionButton.tsx';
 import type { HighlightRectProps } from './types';
 import {Trash2} from "lucide-react";
 
-export const ConfirmedTextHighlightRect = memo(function ConfirmedTextHighlightRect({
+export const ConfirmedTextHighlight = memo(function ConfirmedTextHighlightRect({
   highlightId,
   classId,
   left,
@@ -61,7 +61,7 @@ export const ConfirmedTextHighlightRect = memo(function ConfirmedTextHighlightRe
         style={(hovered ? hoverStyle : nonHoverStyle)}
       />
       {hovered && !acting && (
-        <ActionButton
+        <HighlightActionButton
           onClick={handleDelete}
           title="Delete highlight"
           icon={<Trash2 size={"11px"} strokeWidth={1} />}
