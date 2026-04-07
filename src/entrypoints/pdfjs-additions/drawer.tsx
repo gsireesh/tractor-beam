@@ -29,9 +29,11 @@ const DRAWER_WIDTH = 380;
 let drawerDispatch: ((action: SchemaAction) => void) | null = null;
 let getActiveSchemaFn: (() => Schema | null) = () => null;
 let setOpenFn: ((value: boolean | ((prev: boolean) => boolean)) => void) | null = null;
-let setMlHighlightsFn: ((fn: (prev: MlHighlight[]) => MlHighlight[]) => void) | null = null;
 
 interface MlHighlight { id: string; classId: string; coords: PdfBox[]; source: 'ml'; text?: string }
+
+// Module-level accumulator for ML highlights (set directly via highlights API, no React state needed)
+let mlHighlights: MlHighlight[] = [];
 
 async function runSegmentationPipeline() {
   console.log('[drawer] Drawing segmentation boxes');
@@ -45,12 +47,13 @@ async function runSegmentationPipeline() {
   const blocks = await window.TractorBeamTextExtraction.extractVisualBlocks(PDFViewerApplication);
   console.log(`[drawer] Extracted ${blocks.length} visual blocks`);
 
-  window.TractorBeamHighlights.setHighlights(blocks.map((block) => {
+  window.TractorBeamHighlights.setHighlights('layout', blocks.map((block) => {
     const superBlock = mergePdfBoxes(block.items.map((item) => item.box));
     return {
       id: block.blockId,
       classId: VISUAL_BLOCK_CLASS_ID,
       schemaId: "visual",
+      color: "visual",
       coords: [superBlock]
   }}));
 
@@ -65,14 +68,25 @@ async function loadCachedAnnotations(schemaId: string, pdfUrl: string) {
   }
   const mostRecent = runs.sort((a, b) => b.createdAt - a.createdAt)[0];
   console.log(`[drawer] Loaded cached run ${mostRecent.id} with ${mostRecent.annotations.length} annotations`);
-  const highlights: MlHighlight[] = mostRecent.annotations.map((a) => ({
+  mlHighlights = mostRecent.annotations.map((a) => ({
     id: a.id,
     classId: a.classId,
     coords: a.coords,
     source: 'ml' as const,
     text: a.text,
   }));
-  setMlHighlightsFn?.(() => highlights);
+  syncProvisionalHighlights();
+}
+
+/** Map raw ML highlights to colored Highlight objects and push to the highlights module. */
+function syncProvisionalHighlights() {
+  if (!window.TractorBeamHighlights) return;
+  const schema = getActiveSchemaFn();
+  if (!schema) return;
+  const colorsByClass = schema.classes.reduce((acc: Record<string, string>, cls) => { acc[cls.id] = cls.color; return acc; }, {});
+  const highlights: Highlight[] = mlHighlights.map((h) => ({ ...h, schemaId: schema.id, color: colorsByClass[h.classId] }));
+  console.log(`[drawer] provisional highlight sync: ${highlights.length} ML`);
+  window.TractorBeamHighlights.setHighlights('provisional', highlights);
 }
 
 // ─── Pipeline orchestration (called via window API) ───
@@ -80,7 +94,8 @@ async function runAnnotationPipeline(schema: Schema, requestId: string) {
   console.log('[drawer] Starting annotation pipeline:', requestId);
 
   // Reset ML highlights for the new run
-  setMlHighlightsFn?.(() => []);
+  mlHighlights = [];
+  syncProvisionalHighlights();
 
   // 1. Extract visual blocks directly from the in-page API
   if (!window.TractorBeamTextExtraction) {
@@ -205,7 +220,6 @@ function DrawerContent({ initialSchemas }: { initialSchemas: Schema[] }) {
     APP_CONFIG.indexedDBConfig,
   );
   const [llmLoaded, setLlmLoaded] = useState({ stage: 'unloaded', progress: '', message: '' });
-  const [mlHighlights, setMlHighlights] = useState<MlHighlight[]>([]);
 
 
   const pdfUrl = new URLSearchParams(window.location.search).get('file') ?? '';
@@ -216,11 +230,9 @@ function DrawerContent({ initialSchemas }: { initialSchemas: Schema[] }) {
   useEffect(() => {
     drawerDispatch = dispatch;
     getActiveSchemaFn = () => activeSchema ?? null;
-    setMlHighlightsFn = setMlHighlights;
     return () => {
       drawerDispatch = null;
       getActiveSchemaFn = () => null;
-      setMlHighlightsFn = null;
     };
   }, [dispatch, activeSchema]);
 
@@ -242,7 +254,7 @@ function DrawerContent({ initialSchemas }: { initialSchemas: Schema[] }) {
               createdAt: Date.now(),
             }).catch((err: unknown) => console.error('[drawer] Failed to store ML annotations:', err));
 
-            // Render ML annotations as highlights
+            // Accumulate and render ML annotations as provisional highlights
             const newMlHighlights: MlHighlight[] = message.annotations.map((a) => ({
               id: a.id,
               classId: a.classId,
@@ -250,16 +262,17 @@ function DrawerContent({ initialSchemas }: { initialSchemas: Schema[] }) {
               source: 'ml' as const,
               text: a.text,
             }));
-            setMlHighlights(prev => [...prev, ...newMlHighlights]);
+            mlHighlights = [...mlHighlights, ...newMlHighlights];
+            syncProvisionalHighlights();
           }
           break;
       }
     };
     browser.runtime.onMessage.addListener(listener);
     return () => browser.runtime.onMessage.removeListener(listener);
-  }, [activeSchema]);
+  }, [activeSchema, pdfUrl]);
 
-  // Push highlights directly to the in-page highlights module
+  // Push confirmed (human) highlights to the in-page highlights module
   useEffect(() => {
     if (!window.TractorBeamHighlights) return;
     const instances: Highlight[] = [];
@@ -274,15 +287,9 @@ function DrawerContent({ initialSchemas }: { initialSchemas: Schema[] }) {
       }
     }
 
-    const colorsByClass = activeSchema.classes.reduce((colorsByClass: Record<string, string>, currentClass) => {colorsByClass[currentClass.id] = currentClass.color; return colorsByClass}, {});
-    const mlInstances: Highlight[] = mlHighlights.map((highlight) => ({...highlight, schemaId: activeSchema.id, color: colorsByClass[highlight.classId]}));
-    // Merge in ML highlights
-    const allInstances = [...instances, ...mlInstances];
-    console.log(`[drawer] highlight sync: ${instances.length} manual, ${mlHighlights.length} ML, pdfUrl="${pdfUrl}"`);
-
-    window.TractorBeamHighlights.setHighlights(allInstances);
-    window.TractorBeamHighlights.renderAll();
-  }, [schemas, activeSchema, mlHighlights]);
+    console.log(`[drawer] confirmed highlight sync: ${instances.length} manual, pdfUrl="${pdfUrl}"`);
+    window.TractorBeamHighlights.setHighlights('confirmed', instances);
+  }, [schemas, activeSchema, pdfUrl]);
 
   return (
     <DrawerContext.Provider value={{ activeSchema, pdfUrl, dispatch }}>

@@ -26,10 +26,12 @@ export interface Highlight {
   color: string;
 }
 
+export type HighlightType = 'confirmed' | 'provisional' | 'layout';
+
 declare global {
   interface Window {
     TractorBeamHighlights: {
-      setHighlights: (highlights: Highlight[]) => void;
+      setHighlights: (highlightType: HighlightType, highlights: Highlight[]) => void;
       renderPage: (pageNumber: number) => void;
       renderAll: () => void;
       clearContainers: () => void;
@@ -39,11 +41,19 @@ declare global {
 
 // ─── Module-level state ───
 
-let highlights: Highlight[] = [];
+const highlights: Record<HighlightType, Highlight[]> = {
+  confirmed: [],
+  provisional: [],
+  layout: [],
+};
 let pageContainers = new Map<number, HTMLElement>();
 let root: Root | null = null;
 
 // ─── React root component ───
+
+function allHighlights(): Highlight[] {
+  return Object.values(highlights).flat();
+}
 
 function HighlightsRoot({
   highlights,
@@ -70,22 +80,14 @@ function HighlightsRoot({
 
 function render() {
   if (!root) return;
-  console.log(`[highlights] render(): ${highlights.length} highlights, ${pageContainers.size} containers`);
-  if (highlights.length > 0) {
-    console.log('[highlights] First highlight:', JSON.stringify(highlights[0]));
-  }
+  const mergedHighlights = allHighlights();
+  console.log(`[highlights] render(): ${mergedHighlights.length} highlights, ${pageContainers.size} containers`);
   root.render(
     <HighlightsRoot
-      highlights={highlights}
+      highlights={mergedHighlights}
       pageContainers={new Map(pageContainers)}
     />
   );
-  // Check DOM after render
-  setTimeout(() => {
-    const hostEl = document.getElementById('tractor-beam-highlights-root');
-    const rects = hostEl?.querySelectorAll('[style*="position: absolute"]');
-    console.log(`[highlights] After render: ${rects?.length ?? 0} positioned elements in highlight root`);
-  }, 100);
 }
 
 // ─── Public API ───
@@ -116,8 +118,9 @@ function ensureContainer(pageNumber: number): HTMLElement | null {
   return container;
 }
 
-function setHighlights(newHighlights: Highlight[]) {
-  highlights = newHighlights;
+function setHighlights(highlightType: HighlightType, newHighlights: Highlight[]) {
+  highlights[highlightType] = newHighlights;
+  render();
 }
 
 function renderPage(pageNumber: number) {
@@ -127,7 +130,7 @@ function renderPage(pageNumber: number) {
 
 function renderAll() {
   const pages = document.querySelectorAll('.page[data-page-number]');
-  console.log(`[highlights] renderAll: ${pages.length} pages found, ${highlights.length} highlights`);
+  console.log(`[highlights] renderAll: ${pages.length} pages found, ${allHighlights().length} highlights`);
   for (const pageEl of pages) {
     const pageNumber = parseInt(pageEl.getAttribute('data-page-number')!, 10);
     ensureContainer(pageNumber);
