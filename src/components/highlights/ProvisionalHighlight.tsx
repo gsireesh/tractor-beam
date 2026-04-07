@@ -4,7 +4,6 @@ import type { HighlightRectProps } from './types';
 import {CirclePlus, CircleMinus} from "lucide-react";
 
 export const ProvisionalHighlight = memo(function ProvisionalHighlightRect({
-  highlightId,
   classId,
   left,
   top,
@@ -17,6 +16,9 @@ export const ProvisionalHighlight = memo(function ProvisionalHighlightRect({
   const [hovered, setHovered] = useState(false);
   const [acting, setActing] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  // @ts-expect-error: mounted is used to ensure component presence before calculating element
+  // height. Element height is used for consistent appearance of squiggly boxes.
+  // eslint-disable-next-line
   const [mounted, setMounted] = useState(false);
   useEffect(() => { setMounted(true); }, []);
 

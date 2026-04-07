@@ -16,12 +16,14 @@ interface PdfBox {
   height: number;
 }
 
-interface Highlight {
+export interface Highlight {
   id: string;
   classId: string;
+  schemaId: string;
   coords: PdfBox[];
   source?: 'manual' | 'ml';
   text?: string;
+  color: string;
 }
 
 declare global {

@@ -1,10 +1,10 @@
-import React from 'react';
 import { Highlight } from './Highlight.tsx';
 import { PdfBox } from '@/lib/definitions';
 
 interface HighlightProps {
   id: string;
   classId: string;
+  schemaId: string;
   coords: PdfBox[];
   source?: 'manual' | 'ml';
   text?: string;
@@ -28,6 +28,7 @@ export function PageHighlights({ pageNumber, highlights }: PageHighlightsProps) 
               key={`${hl.id}-${i}`}
               highlightId={hl.id}
               classId={hl.classId}
+              schemaId={hl.schemaId}
               left={box.left}
               top={box.top}
               width={box.width}

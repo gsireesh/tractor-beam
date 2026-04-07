@@ -20,6 +20,7 @@ import { DrawerContext } from '@/contexts/DrawerContext';
 import cssText from './drawer-styles.css?inline';
 import {mergePdfBoxes} from "@/lib/utils.ts";
 import { VISUAL_BLOCK_CLASS_ID } from '@/components/Highlight.tsx';
+import type { Highlight } from '@/entrypoints/pdfjs-additions/highlights.tsx';
 
 const DRAWER_WIDTH = 380;
 
@@ -47,9 +48,10 @@ async function runSegmentationPipeline() {
   window.TractorBeamHighlights.setHighlights(blocks.map((block) => {
     const superBlock = mergePdfBoxes(block.items.map((item) => item.box));
     return {
-    id: block.blockId,
-    classId: VISUAL_BLOCK_CLASS_ID,
-    coords: [superBlock]
+      id: block.blockId,
+      classId: VISUAL_BLOCK_CLASS_ID,
+      schemaId: "visual",
+      coords: [superBlock]
   }}));
 
 }
@@ -260,20 +262,20 @@ function DrawerContent({ initialSchemas }: { initialSchemas: Schema[] }) {
   // Push highlights directly to the in-page highlights module
   useEffect(() => {
     if (!window.TractorBeamHighlights) return;
-    const instances: { id: string; classId: string; coords: PdfBox[]; source?: 'manual' | 'ml'; text?: string, color: string }[] = [];
+    const instances: Highlight[] = [];
 
     if (activeSchema) {
       for (const cls of activeSchema.classes) {
         for (const inst of cls.instances) {
           if (inst.coords && inst.pdfUrl === pdfUrl) {
-            instances.push({ id: inst.id, classId: cls.id, coords: inst.coords, source: 'manual', color: cls.color});
+            instances.push({ id: inst.id, classId: cls.id, schemaId: activeSchema.id, coords: inst.coords, source: 'manual', color: cls.color});
           }
         }
       }
     }
 
     const colorsByClass = activeSchema.classes.reduce((colorsByClass: Record<string, string>, currentClass) => {colorsByClass[currentClass.id] = currentClass.color; return colorsByClass}, {});
-    const mlInstances: { id: string; classId: string; coords: PdfBox[]; source?: 'ml'; text?: string, color: string }[] = mlHighlights.map((highlight) => ({...highlight, color: colorsByClass[highlight.classId]}));
+    const mlInstances: Highlight[] = mlHighlights.map((highlight) => ({...highlight, schemaId: activeSchema.id, color: colorsByClass[highlight.classId]}));
     // Merge in ML highlights
     const allInstances = [...instances, ...mlInstances];
     console.log(`[drawer] highlight sync: ${instances.length} manual, ${mlHighlights.length} ML, pdfUrl="${pdfUrl}"`);

@@ -6,6 +6,7 @@ import {Trash2} from "lucide-react";
 export const ConfirmedTextHighlight = memo(function ConfirmedTextHighlightRect({
   highlightId,
   classId,
+  schemaId,
   left,
   top,
   width,
@@ -20,6 +21,7 @@ export const ConfirmedTextHighlight = memo(function ConfirmedTextHighlightRect({
     if (window.TractorBeamDrawer) {
       window.TractorBeamDrawer.dispatch({
         actionType: 'deleteInstance',
+        schemaId,
         classId,
         instanceId: highlightId,
       });
@@ -32,12 +34,12 @@ export const ConfirmedTextHighlight = memo(function ConfirmedTextHighlightRect({
   const borderColor = color.replace(/[\d.]+\)$/, '0.6)');
 
   const hoverStyle = {
-      'background-color': `${color}`,
-      'border-bottom': `5px solid ${borderColor}`,
+      backgroundColor: color,
+      borderBottom: `5px solid ${borderColor}`,
   };
 
   const nonHoverStyle = {
-      'border-bottom': `5px solid ${borderColor}`,
+      borderBottom: `5px solid ${borderColor}`,
   }
 
   return (
