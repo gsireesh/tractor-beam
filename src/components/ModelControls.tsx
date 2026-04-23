@@ -134,7 +134,7 @@ export function ModelControls({status, progress, message} : ModelControlsProps) 
                     value={apiKey}
                     onChange={(e) => setApiKey(e.target.value)}
                 />
-                <IconButton title="Save API Key" icon={Save} size={"sm"} onClick={() => void saveApiKey()}/>
+                <IconButton title="Save API Key" icon={Save} size="icon-xs" onClick={() => void saveApiKey()}/>
                 {apiKeySaved && <span className="text-xs text-green-600">Saved!</span>}
             </div>
         )}
@@ -147,7 +147,7 @@ export function ModelControls({status, progress, message} : ModelControlsProps) 
                     value={ollamaUrl}
                     onChange={(e) => setOllamaUrl(e.target.value)}
                 />
-                <IconButton title="Save Ollama URL" icon={Save} size={"sm"} onClick={() => void saveOllamaUrl()} />
+                <IconButton title="Save Ollama URL" icon={Save} size="icon-xs" onClick={() => void saveOllamaUrl()} />
                 {ollamaUrlSaved && <span className="text-xs text-green-600">Saved!</span>}
             </div>
         )}

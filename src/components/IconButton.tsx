@@ -8,15 +8,15 @@ interface IconButtonProps {
     onClick?: ((e: React.MouseEvent) => void);
     disabled?: boolean;
     color?: string | null;
-    size?: number | null;
+    size?: "icon" | "icon-xs" | "icon-sm" | "icon-lg";
 }
 
 
 export function IconButton(props: IconButtonProps) {
     const {onClick, title, icon: Icon, color, size} = props;
     return (
-        <Button variant="ghost" title={title} onClick={onClick}>
-            <Icon strokeWidth={1} size={size ?? "1em"} color={color ?? "black"} />
+        <Button variant="ghost" size={size} title={title} onClick={onClick}>
+            <Icon strokeWidth={1} color={color ?? "black"} />
         </Button>
     )
 }
