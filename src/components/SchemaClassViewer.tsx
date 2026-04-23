@@ -1,7 +1,6 @@
 import { SchemaClass } from "@/lib/definitions";
 import { SchemaAction } from "@/lib/schema-reducer.ts";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuTrigger
@@ -54,8 +53,8 @@ export function SchemaClassViewer({
   const borderColor = rgbaToHex(schemaClass.color, 1.0);
 
   return (
-    <div className="border-2 rounded-lg mx-1 my-2 p-2 shadow-sm" style={{ backgroundColor: bodyColor,  borderColor: borderColor}}>
-    <div className="flex flex-row justify-between">
+    <div className="border-1 rounded-lg mx-1 my-2 p-2 shadow-sm" style={{ backgroundColor: bodyColor,  borderColor: borderColor}}>
+    <div className="flex flex-row justify-between align-baseline">
       <h1
         ref={titleRef}
         className="size-6 mb-4 w-fit text-base"
@@ -84,8 +83,8 @@ export function SchemaClassViewer({
         )}
       </h1>
       <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost"><Settings strokeWidth={1} size='24px'/></Button>
+        <DropdownMenuTrigger>
+          <IconButton title="Class Actions" icon={Settings} size={"icon"} />
         </DropdownMenuTrigger>
         <DropdownMenuContent >
           <DropdownMenuGroup>
@@ -103,13 +102,11 @@ export function SchemaClassViewer({
         </DropdownMenuContent>
 
       </DropdownMenu>
-
-
     </div>
       <label className="block text-sm">
         Class Description:
         <textarea
-          className="block p-0.5 w-4/5 border-2 rounded-lg bg-white"
+          className="block p-0.5 w-4/5 border-1 rounded-lg bg-white"
           style={{borderColor: borderColor}}
           autoFocus={false}
           rows={4}
