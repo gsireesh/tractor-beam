@@ -1,4 +1,4 @@
-import { useState, useLayoutEffect, useRef } from 'react';
+import { useState, useLayoutEffect, useRef, useEffect } from 'react';
 import {PdfBox, SchemaClass} from "@/lib/definitions.ts";
 import {rgbaToHex} from "@/lib/utils.ts";
 
@@ -54,6 +54,23 @@ export function SelectionPopover({
 
     setAdjustedPosition({ top, left, showAbove });
   }, [position]);
+
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    const onDocMouseDown = (e: MouseEvent) => {
+      if (popoverRef.current && !popoverRef.current.contains(e.target as Node)) {
+        onClose();
+      }
+    };
+    document.addEventListener('keydown', onKeyDown);
+    document.addEventListener('mousedown', onDocMouseDown);
+    return () => {
+      document.removeEventListener('keydown', onKeyDown);
+      document.removeEventListener('mousedown', onDocMouseDown);
+    };
+  }, [onClose]);
 
   const classesById = Object.fromEntries((activeSchema?.classes ?? []).map((c) => [c.id, c]));
   const accentColor = selectedClass?.color;
