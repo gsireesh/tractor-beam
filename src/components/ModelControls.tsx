@@ -20,6 +20,7 @@ import {WEBLLM_MODELS, CLAUDE_MODELS, OLLAMA_MODELS, type ModelProvider, type Mo
 import {DEFAULT_OLLAMA_BASE_URL} from '@/lib/ml/types';
 import {getModelConfig, setModelConfig, getClaudeApiKey, setClaudeApiKey, getOllamaBaseUrl, setOllamaBaseUrl} from '@/lib/ml/config';
 import { useDrawerContext } from '@/contexts/DrawerContext';
+import {IconButton} from "@/components/IconButton.tsx";
 
 export interface ModelControlsProps {
     status: MlProgressMessage["stage"]
@@ -89,10 +90,8 @@ export function ModelControls({status, progress, message} : ModelControlsProps) 
         <div className="flex items-center justify-between">
             <h1 className="font-semibold">Model Control Panel</h1>
             <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                    <button title="Model settings">
-                        <Settings strokeWidth={1} size={18} />
-                    </button>
+                <DropdownMenuTrigger>
+                    <IconButton icon={Settings} title="Model Settings" />
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-64 z-[10001]">
                     <DropdownMenuLabel>Provider</DropdownMenuLabel>
@@ -112,7 +111,7 @@ export function ModelControls({status, progress, message} : ModelControlsProps) 
                                         {CLAUDE_MODELS.map((m) => <DropdownMenuRadioItem key={m} value={m}>{m}</DropdownMenuRadioItem>)}
                                     </DropdownMenuRadioGroup>
                                 ) : config.provider === 'ollama' ? (
-                                    <DropdownMenuRadioGroup value={config.ollamaModel ?? ''} onValueChange={(v) => updateConfig({ ollamaModel: v as typeof OLLAMA_MODELS[number] })}>
+                                    <DropdownMenuRadioGroup value={config.ollamaModel ?? ''} onValueChange={(v) => updateConfig({ ollamaModel: v })}>
                                         {OLLAMA_MODELS.map((m) => <DropdownMenuRadioItem key={m} value={m}>{m}</DropdownMenuRadioItem>)}
                                     </DropdownMenuRadioGroup>
                                 ) : (
@@ -135,9 +134,7 @@ export function ModelControls({status, progress, message} : ModelControlsProps) 
                     value={apiKey}
                     onChange={(e) => setApiKey(e.target.value)}
                 />
-                <button onClick={() => void saveApiKey()} title="Save API key">
-                    <Save strokeWidth={1} size={16} />
-                </button>
+                <IconButton title="Save API Key" icon={Save} size={"sm"} onClick={() => void saveApiKey()}/>
                 {apiKeySaved && <span className="text-xs text-green-600">Saved!</span>}
             </div>
         )}
@@ -150,9 +147,7 @@ export function ModelControls({status, progress, message} : ModelControlsProps) 
                     value={ollamaUrl}
                     onChange={(e) => setOllamaUrl(e.target.value)}
                 />
-                <button onClick={() => void saveOllamaUrl()} title="Save Ollama URL">
-                    <Save strokeWidth={1} size={16} />
-                </button>
+                <IconButton title="Save Ollama URL" icon={Save} size={"sm"} onClick={() => void saveOllamaUrl()} />
                 {ollamaUrlSaved && <span className="text-xs text-green-600">Saved!</span>}
             </div>
         )}
@@ -173,32 +168,18 @@ export function ModelControls({status, progress, message} : ModelControlsProps) 
             </div>
         )}
         <div className="flex gap-1 mt-1">
-            <button
-                onClick={sendRunMessage}
-                disabled={isRunning}
-            >
-                <Play strokeWidth={1} color="green" />
-            </button>
+            <IconButton title="Start Annotation Pipeline" icon={Play} color={"green"} onClick={sendRunMessage} disabled={isRunning} />
             {isRunning && (
-                <button
-                    onClick={sendCancelMessage}
-                    title="Stop annotation"
-                >
-                    <Square strokeWidth={1} color="red" />
-                </button>
+                <IconButton title={"Stop Annotation"} icon={Square} color={"red"} onClick={sendCancelMessage} />
             )}
-            <button onClick={() => {
+            <IconButton title={"Run Segmentation Pipeline"} icon={LayoutPanelLeft} onClick={() => {
                 console.log('[drawer] Running segmentation pipeline!');
-                void window.TractorBeamDrawer.runSegmentationPipeline()
-            }}>
-                <LayoutPanelLeft strokeWidth={1} />
-            </button>
-            <button onClick={() => {
+                void window.TractorBeamDrawer.runSegmentationPipeline();}}
+            />
+            <IconButton title={"Load Prior Annotations"} icon={History} onClick={() => {
                 console.log('[ModelControls] Loading cached annotations');
                 void window.TractorBeamDrawer.loadCachedAnnotations(activeSchema.id, pdfUrl)
-            }} title="Load cached annotations">
-                <History strokeWidth={1} />
-            </button>
+            }} />
         </div>
     </div>
 }
