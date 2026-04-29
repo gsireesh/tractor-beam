@@ -1,6 +1,14 @@
 import { useState, useLayoutEffect, useRef, useEffect } from 'react';
 import {PdfBox, SchemaClass} from "@/lib/definitions.ts";
 import {rgbaToHex} from "@/lib/utils.ts";
+import {
+  Combobox,
+  ComboboxContent,
+  ComboboxEmpty,
+  ComboboxInput,
+  ComboboxItem,
+  ComboboxList,
+} from "@/components/ui/combobox"
 
 interface SelectionPopoverProps {
   text: string;
@@ -72,7 +80,6 @@ export function SelectionPopover({
     };
   }, [onClose]);
 
-  const classesById = Object.fromEntries((activeSchema?.classes ?? []).map((c) => [c.id, c]));
   const accentColor = selectedClass?.color;
 
 
@@ -111,15 +118,27 @@ export function SelectionPopover({
             {text}
           </div>
           <div className="flex gap-2">
-            <select
-              className="flex-1 px-2 py-2 rounded-md text-sm border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200"
-              value={selectedClass!.id}
-              onChange={(e) => setSelectedClass(classesById[e.target.value])}
+            <Combobox
+              items={activeSchema?.classes.map((c) => c.name) ?? []}
+              value={selectedClass?.name ?? null}
+              onValueChange={(name: string | null) =>
+                setSelectedClass(activeSchema?.classes.find((c) => c.name === name) ?? null)
+              }
             >
-              {activeSchema?.classes.map((c) => (
-                <option key={c.id} value={c.id}>{c.name}</option>
-              ))}
-            </select>
+              <ComboboxInput className="flex-1 bg-white" />
+              <ComboboxContent
+                container={document.getElementById('tractor-beam-popover-root')}
+                positionerClassName="z-[100001]"
+              >
+                <ComboboxList>
+                  {(name: string) => (
+                    <ComboboxItem key={name} value={name}>
+                      {name}
+                    </ComboboxItem>
+                  )}
+                </ComboboxList>
+              </ComboboxContent>
+            </Combobox>
             <button
                 onMouseEnter={() => setAddButtonHovered(true)}
                 onMouseLeave={() => setAddButtonHovered(false)}
