@@ -23,6 +23,16 @@ interface SelectionPopoverProps {
 const accentColorFallback = "rgba(0,0,0,0)";
 const CREATE_ITEM_PREFIX = "__create__:";
 
+// Action button slot — kept constant across hover state to prevent layout jitter.
+// Children use flex-1, so flexbox handles the half-vs-full geometry implicitly.
+const ACTION_SLOT_WIDTH_PX = 100;
+const ACTION_GAP_PX = 4;
+
+// Popover envelope. Must be wide enough that the action slot above + combobox +
+// padding + gap all fit comfortably; bumping the slot width requires bumping these.
+const POPOVER_MIN_WIDTH_PX = 320;
+const POPOVER_MAX_WIDTH_PX = 400;
+
 export function SelectionPopover({
   text,
   pdfUrl,
@@ -74,6 +84,16 @@ export function SelectionPopover({
       pdfUrl: pdfUrl,
       positiveExample: true,
       notes: null,
+  };
+
+  const submitInstance = (positiveExample: boolean) => {
+    if (!activeSchema || !selectedClass) return;
+    const instance: Instance = { ...currentInstance, positiveExample, notes: notesValue };
+    if (activeSchema.classes.some((c) => c.id === selectedClass.id)) {
+      onAddInstance(activeSchema.id, selectedClass.id, instance);
+    } else {
+      onAddClass(activeSchema.id, { ...selectedClass, instances: [instance] });
+    }
   };
 
 
@@ -147,8 +167,12 @@ export function SelectionPopover({
 
       {/* Content */}
       <div className="bg-white">
-      <div className="dark:bg-gray-800 rounded-lg shadow-xl min-w-[250px] max-w-[350px] overflow-hidden border border-gray-200 dark:border-gray-700"
-      style={{backgroundColor: accentColor}}
+      <div className="dark:bg-gray-800 rounded-lg shadow-xl overflow-hidden border border-gray-200 dark:border-gray-700"
+      style={{
+        backgroundColor: accentColor,
+        minWidth: POPOVER_MIN_WIDTH_PX,
+        maxWidth: POPOVER_MAX_WIDTH_PX,
+      }}
       >
 
         {/* Body */}
@@ -196,26 +220,31 @@ export function SelectionPopover({
                 </ComboboxList>
               </ComboboxContent>
             </Combobox>
-            <button
-                onMouseEnter={() => setAddButtonHovered(true)}
-                onMouseLeave={() => setAddButtonHovered(false)}
-              className="px-3 py-2 rounded-md text-sm font-medium cursor-pointer border-none transition-colors text-white disabled:opacity-50 disabled:cursor-not-allowed"
-
-              style={{
-                backgroundColor: addButtonHovered ? accentColor : rgbaToHex(accentColor, 1.0)
-              }}
-              onClick={() => {
-                if(activeSchema!.classes.some(c => c.id === selectedClass!.id)){
-                  onAddInstance(activeSchema!.id, selectedClass!.id, {...currentInstance, positiveExample: true, notes: notesValue});
-                } else {
-                  onAddClass(activeSchema!.id, {...selectedClass!, instances: [{...currentInstance, positiveExample: true, notes: notesValue}]});
-                }
-              }
-            }
-              disabled={!selectedClass?.id || !activeSchema}
+            <div
+              className="flex shrink-0"
+              style={{ width: ACTION_SLOT_WIDTH_PX, gap: ACTION_GAP_PX }}
+              onMouseEnter={() => setAddButtonHovered(true)}
+              onMouseLeave={() => setAddButtonHovered(false)}
             >
-              Add
-            </button>
+              <button
+                className="flex-1 px-3 py-2 rounded-md text-sm font-medium cursor-pointer border-none text-white disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90"
+                style={{ backgroundColor: rgbaToHex(accentColor, 1.0) }}
+                onClick={() => submitInstance(true)}
+                disabled={!selectedClass?.id || !activeSchema}
+              >
+                {addButtonHovered ? "+" : "Add"}
+              </button>
+              {addButtonHovered && (
+                <button
+                  className="flex-1 px-3 py-2 rounded-md text-sm font-medium cursor-pointer border-none text-white disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90"
+                  style={{ backgroundColor: rgbaToHex(accentColor, 1.0) }}
+                  onClick={() => submitInstance(false)}
+                  disabled={!selectedClass?.id || !activeSchema}
+                >
+                  −
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </div>
