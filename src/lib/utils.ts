@@ -1,6 +1,6 @@
 import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
-import {PdfBox} from "@/lib/definitions.ts";
+import {Instance, PdfBox} from "@/lib/definitions.ts";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -8,6 +8,16 @@ export function cn(...inputs: ClassValue[]) {
 
 export function generateId(): string {
   return crypto.randomUUID()
+}
+
+export function createNewClass(className: string, description: string, instances: Instance[]) {
+  return {
+    id: generateId(),
+    name: className,
+    description: description,
+    color: generateRandomRgbColor(),
+    instances: instances
+  }
 }
 
 export function rgbaToHex(rgba: string, overrideAlpha: number | null = null): string {

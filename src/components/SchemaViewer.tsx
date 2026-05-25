@@ -6,7 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PiListPlus } from "react-icons/pi";
 import { Schema } from "@/lib/definitions";
 import { SchemaAction } from "@/lib/schema-reducer.ts";
-import { generateId, generateRandomRgbColor } from "@/lib/utils.ts";
+import {createNewClass, generateId, generateRandomRgbColor} from "@/lib/utils.ts";
 import { ModelControls } from "@/components/ModelControls.tsx";
 
 interface SchemaViewerProps {
@@ -41,13 +41,7 @@ export function SchemaViewer({ schemas, dispatch, llmStatus, onActiveSchemaChang
               <Button variant="outline" className="h-6 mr-1 ml-1" onClick={() => dispatch({
                 actionType: "addClass",
                 schemaId: schema.id,
-                classInfo: {
-                  id: generateId(),
-                  name: "New Class",
-                  description: "",
-                  color: generateRandomRgbColor(),
-                  instances: []
-                }
+                classInfo: createNewClass("New Class", "This text describes what this class is.", [])
               })}>
                 <PiListPlus />
                 Add new class

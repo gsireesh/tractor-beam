@@ -33,40 +33,34 @@ function render() {
     return;
   }
 
+  const pdfUrl = new URLSearchParams(window.location.search).get('file') || '';
+
+
   root.render(
     <SelectionPopover
       text={state.text}
+      pdfUrl={pdfUrl}
       position={state.position}
       coords={state.coords}
       onClose={hidePopover}
-      onAddInstance={(text, schemaId, classId, coords) => {
-        const pdfUrl = new URLSearchParams(window.location.search).get('file') || '';
+      onAddInstance={(schemaId, classId, instance) => {
         if (window.TractorBeamDrawer) {
           window.TractorBeamDrawer.dispatch({
             actionType: 'addInstance',
             schemaId,
             classId,
-            instance: {
-              id: crypto.randomUUID(),
-              instanceType: 'text',
-              text,
-              range: null,
-              coords: coords ?? null,
-              pdfUrl,
-              positiveExample: true
-            },
+            instance: instance
           });
-        } else {
-          chrome.runtime.sendMessage({
-            type: 'addInstance',
-            text,
+        }
+        hidePopover();
+      }}
+      onAddClass={(schemaId, schemaClass) => {
+        if (window.TractorBeamDrawer) {
+          window.TractorBeamDrawer.dispatch({
+            actionType: "addClass",
             schemaId,
-            classId,
-
-            coords,
-
-            pdfUrl,
-          }).catch(() => {});
+            classInfo: schemaClass
+          })
         }
         hidePopover();
       }}

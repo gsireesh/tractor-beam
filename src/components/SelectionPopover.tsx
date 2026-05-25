@@ -1,10 +1,9 @@
 import { useState, useLayoutEffect, useRef, useEffect } from 'react';
-import {PdfBox, SchemaClass} from "@/lib/definitions.ts";
-import {rgbaToHex} from "@/lib/utils.ts";
+import {Instance, PdfBox, SchemaClass} from "@/lib/definitions.ts";
+import {createNewClass, generateId, rgbaToHex} from "@/lib/utils.ts";
 import {
   Combobox,
   ComboboxContent,
-  ComboboxEmpty,
   ComboboxInput,
   ComboboxItem,
   ComboboxList,
@@ -12,20 +11,25 @@ import {
 
 interface SelectionPopoverProps {
   text: string;
+  pdfUrl: string;
   position: { top: number; left: number; bottom: number };
   coords?: PdfBox[] | null;
   onClose: () => void;
-  onAddInstance: (text: string, schemaId: string, classId: string, coords?: PdfBox[] | null) => void;
+  onAddInstance: (schemaId: string, classId: string, instance: Instance) => void;
+  onAddClass: (schemaId: string, schemaClass: SchemaClass) => void;
 }
 
 const accentColorFallback = "rgba(0,0,0,0)";
+const CREATE_ITEM_PREFIX = "__create__:";
 
 export function SelectionPopover({
   text,
+  pdfUrl,
   position,
   coords,
   onClose,
   onAddInstance,
+  onAddClass,
 }: SelectionPopoverProps) {
   const popoverRef = useRef<HTMLDivElement>(null);
   const [adjustedPosition, setAdjustedPosition] = useState<{ top: number; left: number; showAbove: boolean } | null>(null);
@@ -37,7 +41,37 @@ export function SelectionPopover({
     activeSchema?.classes?.[0] ?? null,
   );
   if (selectedClass) lastValidClassRef.current = selectedClass;
+  const [inputValue, setInputValue] = useState<string>(
+    activeSchema?.classes?.[0]?.name ?? "",
+  );
   const [addButtonHovered, setAddButtonHovered] = useState<boolean>(false);
+
+  const trimmedInput = inputValue.trim();
+  const hasExactMatch =
+    (activeSchema?.classes.some((c) => c.name.toLowerCase() === trimmedInput.toLowerCase()) ?? false) ||
+    selectedClass?.name.toLowerCase() === trimmedInput.toLowerCase();
+  const showCreateOption = trimmedInput.length > 0 && !hasExactMatch;
+
+  const comboboxItems = (() => {
+    const names = activeSchema?.classes.map((c) => c.name) ?? [];
+    return showCreateOption ? [...names, CREATE_ITEM_PREFIX + trimmedInput] : names;
+  })();
+
+  const comboboxFilter = (itemValue: string, query: string) => {
+    if (itemValue.startsWith(CREATE_ITEM_PREFIX)) return true;
+    return itemValue.toLowerCase().includes(query.toLowerCase());
+  };
+
+  // the instance to be added
+  const currentInstance: Instance = {
+      id: generateId(),
+      instanceType: "text",
+      text: text,
+      range: null,
+      coords: coords ?? null,
+      pdfUrl: pdfUrl,
+      positiveExample: true,
+  };
 
 
   useLayoutEffect(() => {
@@ -88,7 +122,6 @@ export function SelectionPopover({
 
   const accentColor = lastValidClassRef.current?.color ?? accentColorFallback;
 
-
   return (
     <div
       ref={popoverRef}
@@ -125,11 +158,20 @@ export function SelectionPopover({
           </div>
           <div className="flex gap-2">
             <Combobox
-              items={activeSchema?.classes.map((c) => c.name) ?? []}
+              items={comboboxItems}
               value={selectedClass?.name ?? null}
-              onValueChange={(name: string | null) =>
-                setSelectedClass(activeSchema?.classes.find((c) => c.name === name) ?? null)
-              }
+              defaultInputValue={activeSchema?.classes?.[0]?.name ?? ""}
+              onInputValueChange={(v: string) => setInputValue(v)}
+              filter={comboboxFilter}
+              onValueChange={(name: string | null) => {
+                if (typeof name === "string" && name.startsWith(CREATE_ITEM_PREFIX)) {
+                  const newClassName = name.slice(CREATE_ITEM_PREFIX.length);
+                  const schemaClass = createNewClass(newClassName, "", []);
+                  setSelectedClass(schemaClass);
+                } else {
+                  setSelectedClass(activeSchema?.classes.find((c) => c.name === name) ?? null);
+                }
+              }}
             >
               <ComboboxInput
                 className="flex-1 bg-white"
@@ -142,7 +184,9 @@ export function SelectionPopover({
                 <ComboboxList>
                   {(name: string) => (
                     <ComboboxItem key={name} value={name}>
-                      {name}
+                      {name.startsWith(CREATE_ITEM_PREFIX)
+                        ? `Create new class "${name.slice(CREATE_ITEM_PREFIX.length)}"`
+                        : name}
                     </ComboboxItem>
                   )}
                 </ComboboxList>
@@ -156,8 +200,15 @@ export function SelectionPopover({
               style={{
                 backgroundColor: addButtonHovered ? accentColor : rgbaToHex(accentColor, 1.0)
               }}
-              onClick={() => onAddInstance(text, activeSchema!.id, selectedClass!.id, coords)}
-              disabled={!selectedClass?.id}
+              onClick={() => {
+                if(activeSchema!.classes.some(c => c.id === selectedClass!.id)){
+                  onAddInstance(activeSchema!.id, selectedClass!.id, {...currentInstance, positiveExample: true});
+                } else {
+                  onAddClass(activeSchema!.id, {...selectedClass!, instances: [{...currentInstance, positiveExample: true}]});
+                }
+              }
+            }
+              disabled={!selectedClass?.id || !activeSchema}
             >
               Add
             </button>
