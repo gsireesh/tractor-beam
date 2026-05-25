@@ -18,6 +18,8 @@ interface SelectionPopoverProps {
   onAddInstance: (text: string, schemaId: string, classId: string, coords?: PdfBox[] | null) => void;
 }
 
+const accentColorFallback = "rgba(0,0,0,0)";
+
 export function SelectionPopover({
   text,
   position,
@@ -31,6 +33,10 @@ export function SelectionPopover({
   const [selectedClass, setSelectedClass] = useState<SchemaClass | null>(
     () => activeSchema?.classes?.[0] ?? null,
   );
+  const lastValidClassRef = useRef<SchemaClass | null>(
+    activeSchema?.classes?.[0] ?? null,
+  );
+  if (selectedClass) lastValidClassRef.current = selectedClass;
   const [addButtonHovered, setAddButtonHovered] = useState<boolean>(false);
 
 
@@ -80,7 +86,7 @@ export function SelectionPopover({
     };
   }, [onClose]);
 
-  const accentColor = selectedClass?.color;
+  const accentColor = lastValidClassRef.current?.color ?? accentColorFallback;
 
 
   return (
@@ -125,7 +131,10 @@ export function SelectionPopover({
                 setSelectedClass(activeSchema?.classes.find((c) => c.name === name) ?? null)
               }
             >
-              <ComboboxInput className="flex-1 bg-white" />
+              <ComboboxInput
+                className="flex-1 bg-white"
+                onClick={() => setSelectedClass(null)}
+              />
               <ComboboxContent
                 container={document.getElementById('tractor-beam-popover-root')}
                 positionerClassName="z-[100001]"
@@ -145,10 +154,10 @@ export function SelectionPopover({
               className="px-3 py-2 rounded-md text-sm font-medium cursor-pointer border-none transition-colors text-white disabled:opacity-50 disabled:cursor-not-allowed"
 
               style={{
-                backgroundColor: addButtonHovered ? accentColor : rgbaToHex(accentColor!, 1.0)
+                backgroundColor: addButtonHovered ? accentColor : rgbaToHex(accentColor, 1.0)
               }}
               onClick={() => onAddInstance(text, activeSchema!.id, selectedClass!.id, coords)}
-              disabled={!selectedClass!.id}
+              disabled={!selectedClass?.id}
             >
               Add
             </button>
