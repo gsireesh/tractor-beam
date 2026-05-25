@@ -187,8 +187,7 @@ export function SelectionPopover({
           <div className="flex gap-2">
             <Combobox
               items={comboboxItems}
-              value={selectedClass?.name ?? null}
-              defaultInputValue={activeSchema?.classes?.[0]?.name ?? ""}
+              value={selectedClass?.name ?? ""}
               onInputValueChange={(v: string) => setInputValue(v)}
               filter={comboboxFilter}
               onValueChange={(name: string | null) => {
