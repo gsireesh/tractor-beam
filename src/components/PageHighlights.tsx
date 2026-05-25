@@ -9,6 +9,7 @@ interface HighlightProps {
   source?: 'manual' | 'ml';
   text?: string;
   color: string;
+  positiveExample: boolean;
 }
 
 interface PageHighlightsProps {
@@ -37,6 +38,7 @@ export function PageHighlights({ pageNumber, highlights }: PageHighlightsProps) 
               source={hl.source}
               text={hl.text}
               allCoords={hl.coords}
+              positiveExample={hl.positiveExample}
             />
           ));
       })}

@@ -281,7 +281,7 @@ function DrawerContent({ initialSchemas }: { initialSchemas: Schema[] }) {
       for (const cls of activeSchema.classes) {
         for (const inst of cls.instances) {
           if (inst.coords && inst.pdfUrl === pdfUrl) {
-            instances.push({ id: inst.id, classId: cls.id, schemaId: activeSchema.id, coords: inst.coords, source: 'manual', color: cls.color});
+            instances.push({ id: inst.id, classId: cls.id, schemaId: activeSchema.id, coords: inst.coords, source: 'manual', color: cls.color, positiveExample: inst.positiveExample});
           }
         }
       }

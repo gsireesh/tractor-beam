@@ -53,6 +53,7 @@ function render() {
               range: null,
               coords: coords ?? null,
               pdfUrl,
+              positiveExample: true
             },
           });
         } else {
@@ -61,7 +62,9 @@ function render() {
             text,
             schemaId,
             classId,
+
             coords,
+
             pdfUrl,
           }).catch(() => {});
         }

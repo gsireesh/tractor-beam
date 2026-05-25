@@ -24,6 +24,7 @@ export interface Highlight {
   source?: 'manual' | 'ml';
   text?: string;
   color: string;
+  positiveExample: boolean;
 }
 
 export type HighlightType = 'confirmed' | 'provisional' | 'layout';

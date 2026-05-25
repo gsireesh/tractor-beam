@@ -12,6 +12,7 @@ export const ConfirmedTextHighlight = memo(function ConfirmedTextHighlightRect({
   width,
   height,
   color,
+  positiveExample
 }: HighlightRectProps) {
   const [hovered, setHovered] = useState(false);
   const [acting, setActing] = useState(false);
@@ -35,11 +36,11 @@ export const ConfirmedTextHighlight = memo(function ConfirmedTextHighlightRect({
 
   const hoverStyle = {
       backgroundColor: color,
-      borderBottom: `5px solid ${borderColor}`,
+      borderBottom: `5px ${positiveExample? "solid": "dashed"} ${borderColor}`,
   };
 
   const nonHoverStyle = {
-      borderBottom: `5px solid ${borderColor}`,
+      borderBottom: `5px ${positiveExample? "solid": "dashed"} ${borderColor}`,
   }
 
   return (

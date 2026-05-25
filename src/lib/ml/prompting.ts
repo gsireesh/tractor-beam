@@ -11,7 +11,7 @@ Return ONLY the annotated text. Do not add any explanation or commentary.
 
 
 
-export function selectExamples(instances: Instance[]) {
+export function selectExamples<T>(instances: T[]) {
     if(instances.length > 0) {
         return instances.slice(0, 3)
     } else {
@@ -28,12 +28,17 @@ export function abbreviateClassName(className: string) {
 
 export function constructSchemaNERPrompt(schema:Schema) {
     const schemaStrings = schema.classes.map(schemaClass => {
-        const classExamples = selectExamples(schemaClass.instances).map(instance => instance.text);
+        const positiveExamples = selectExamples(schemaClass.instances.filter((instance: Instance) => instance.positiveExample).map(instance => instance.text));
+        const negativeExamples = selectExamples(schemaClass.instances.filter((instance: Instance) => !instance.positiveExample).map(instance => instance.text));
+
         const abbreviatedClassName = abbreviateClassName(schemaClass.name);
-        return `${schemaClass.name} (${abbreviatedClassName}): ${schemaClass.description}\nExamples: ${classExamples.join(", ")}`;
+
+        return `${schemaClass.name} (${abbreviatedClassName}): ${schemaClass.description}\nPositive examples: ${positiveExamples.join(", ")}\nNegative examples: ${negativeExamples.join(", ")}`;
     });
 
-    return `${DEFAULT_NER_SYSTEM_PROMPT}\n\nThe schema is as follows:\n\n${schemaStrings.join('\n\n')}`
+    const schemaNERPrompt = `${DEFAULT_NER_SYSTEM_PROMPT}\n\nThe schema is as follows:\n\n${schemaStrings.join('\n\n')}`;
+    console.log("[prompting] Constructed Schema NER Prompt:", schemaNERPrompt);
+    return schemaNERPrompt;
 }
 
 export function formatBlocksForNer(blocks: VisualBlock[]): string {

@@ -16,4 +16,5 @@ export interface HighlightRectProps {
   source?: 'manual' | 'ml';
   text?: string;
   allCoords?: PdfBox[];
+  positiveExample: boolean,
 }
