@@ -14,6 +14,7 @@ export interface Instance {
   range: Range | null;
   coords: PdfBox[] | null;
   pdfUrl: string;
+  notes?: string | null;
 }
 
 // ─── Visual block extraction (PDF text segmented by spatial proximity) ───

@@ -8,6 +8,7 @@ import {
   ComboboxItem,
   ComboboxList,
 } from "@/components/ui/combobox"
+import {Textarea} from "@/components/ui/textarea.tsx";
 
 interface SelectionPopoverProps {
   text: string;
@@ -45,6 +46,7 @@ export function SelectionPopover({
     activeSchema?.classes?.[0]?.name ?? "",
   );
   const [addButtonHovered, setAddButtonHovered] = useState<boolean>(false);
+  const [notesValue, setNotesValue] = useState<string|null>(null);
 
   const trimmedInput = inputValue.trim();
   const hasExactMatch =
@@ -71,6 +73,7 @@ export function SelectionPopover({
       coords: coords ?? null,
       pdfUrl: pdfUrl,
       positiveExample: true,
+      notes: null,
   };
 
 
@@ -156,6 +159,7 @@ export function SelectionPopover({
           >
             {text}
           </div>
+          <Textarea className="bg-white rounded px-2.5 py-2 mb-3 text-sm " placeholder={"Notes..."} onChange={(e) => {setNotesValue(e.target.value)}}/>
           <div className="flex gap-2">
             <Combobox
               items={comboboxItems}
@@ -202,9 +206,9 @@ export function SelectionPopover({
               }}
               onClick={() => {
                 if(activeSchema!.classes.some(c => c.id === selectedClass!.id)){
-                  onAddInstance(activeSchema!.id, selectedClass!.id, {...currentInstance, positiveExample: true});
+                  onAddInstance(activeSchema!.id, selectedClass!.id, {...currentInstance, positiveExample: true, notes: notesValue});
                 } else {
-                  onAddClass(activeSchema!.id, {...selectedClass!, instances: [{...currentInstance, positiveExample: true}]});
+                  onAddClass(activeSchema!.id, {...selectedClass!, instances: [{...currentInstance, positiveExample: true, notes: notesValue}]});
                 }
               }
             }

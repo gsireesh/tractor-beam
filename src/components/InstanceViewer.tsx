@@ -24,6 +24,7 @@ export function InstanceViewer(props: InstanceViewerProps) {
                 <Badge className="bg-red-50 text-red-700 dark:bg-red-950 dark:text-red-300"><Minus/>Negative Example</Badge>
                 }
             </div>
+            {instance.notes && <div className="rounded-sm mx-3 my-1 p-2 bg-white" style={{borderColor: borderColor}}>{instance.notes}</div>}
             <div className="m-3 flex flex-row justify-end align-middle">
                 <button className={"mx-3 my-1"} onClick={() => instance.coords && scrollToAnnotation(instance.coords)}>
                     <LocateFixed size={"16px"}/>
