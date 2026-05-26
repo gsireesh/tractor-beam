@@ -107,9 +107,7 @@ export const ProvisionalHighlight = memo(function ProvisionalHighlight({
               ...wavyStyle
             }}
           />
-        </div>
-      })}
-      {hovered && !acting && (
+          {hovered && !acting && index === allCoords.length - 1 && (
             <div className="flex flex-row">
               <HighlightActionButton
                 onClick={() => handlePromote(true)}
@@ -127,6 +125,8 @@ export const ProvisionalHighlight = memo(function ProvisionalHighlight({
               />
             </div>
           )}
+        </div>
+      })}
     </>
   );
 });

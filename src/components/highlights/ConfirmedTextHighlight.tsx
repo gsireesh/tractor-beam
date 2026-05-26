@@ -65,9 +65,7 @@ export const ConfirmedTextHighlight = memo(function ConfirmedTextHighlightRect({
             className="w-full h-full rounded-sm mix-blend-multiply pb-5px"
             style={(hovered ? hoverStyle : nonHoverStyle)}
           />
-        </div>
-          }))}
-        {hovered && !acting && (
+          {hovered && !acting && index === allCoords.length - 1 && (
             <HighlightActionButton
               onClick={handleDelete}
               title="Delete highlight"
@@ -76,6 +74,8 @@ export const ConfirmedTextHighlight = memo(function ConfirmedTextHighlightRect({
               right="2px"
             />
           )}
+        </div>
+          }))}
       </>
   );
 });
