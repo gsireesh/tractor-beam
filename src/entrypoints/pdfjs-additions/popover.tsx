@@ -1,90 +1,139 @@
 /**
- * Selection popover — moved from viewer-popover.tsx.
- * Exposes window.TractorBeamPopover API.
+ * Popover mount point — switches among CreateInstancePopover / PromoteInstancePopover /
+ * EditInstancePopover based on the calling mode. Exposes window.TractorBeamPopover API.
  */
 
 import { createRoot, Root } from 'react-dom/client';
-import { SelectionPopover } from '@/components/SelectionPopover';
-import { PdfBox } from '@/lib/definitions';
+import { CreateInstancePopover } from '@/components/popovers/CreateInstancePopover';
+import { PromoteInstancePopover } from '@/components/popovers/PromoteInstancePopover';
+import { EditInstancePopover } from '@/components/popovers/EditInstancePopover';
+import { Highlight, PdfBox } from '@/lib/definitions';
 import cssText from './popover-styles.css?inline';
 
 let root: Root | null = null;
 let container: HTMLDivElement | null = null;
 
-interface PopoverState {
-  visible: boolean;
-  text: string;
-  position: { top: number; left: number; bottom: number };
-  coords: PdfBox[] | null;
-}
+type Position = { top: number; left: number; bottom: number };
 
-let state: PopoverState = {
-  visible: false,
-  text: '',
-  position: { top: 0, left: 0, bottom: 0 },
-  coords: null,
-};
+type PopoverState =
+  | null
+  | { mode: 'create'; text: string; position: Position; coords: PdfBox[] | null }
+  | { mode: 'promote'; highlight: Highlight; position: Position }
+  | { mode: 'edit'; schemaId: string; classId: string; instanceId: string; position: Position };
+
+let state: PopoverState = null;
+
+function rectToPosition(rect: DOMRect): Position {
+  return { top: rect.top, left: rect.left, bottom: rect.bottom };
+}
 
 function render() {
   if (!root || !container) return;
-
-  if (!state.visible) {
+  if (!state) {
     root.render(null);
     return;
   }
 
-  const pdfUrl = new URLSearchParams(window.location.search).get('file') || '';
-
-
-  root.render(
-    <SelectionPopover
-      text={state.text}
-      pdfUrl={pdfUrl}
-      position={state.position}
-      coords={state.coords}
-      onClose={hidePopover}
-      onAddInstance={(schemaId, classId, instance) => {
-        if (window.TractorBeamDrawer) {
-          window.TractorBeamDrawer.dispatch({
-            actionType: 'addInstance',
-            schemaId,
-            classId,
-            instance: instance
-          });
-        }
-        hidePopover();
-      }}
-      onAddClass={(schemaId, schemaClass) => {
-        if (window.TractorBeamDrawer) {
-          window.TractorBeamDrawer.dispatch({
-            actionType: "addClass",
-            schemaId,
-            classInfo: schemaClass
-          })
-        }
-        hidePopover();
-      }}
-    />
-  );
+  switch (state.mode) {
+    case 'create': {
+      const pdfUrl = new URLSearchParams(window.location.search).get('file') ?? '';
+      root.render(
+        <CreateInstancePopover
+          text={state.text}
+          pdfUrl={pdfUrl}
+          position={state.position}
+          coords={state.coords}
+          onClose={hidePopover}
+          onAddInstance={(schemaId, classId, instance) => {
+            window.TractorBeamDrawer?.dispatch({
+              actionType: 'addInstance',
+              schemaId,
+              classId,
+              instance,
+            });
+            hidePopover();
+          }}
+          onAddClass={(schemaId, schemaClass) => {
+            window.TractorBeamDrawer?.dispatch({
+              actionType: 'addClass',
+              schemaId,
+              classInfo: schemaClass,
+            });
+            hidePopover();
+          }}
+        />,
+      );
+      return;
+    }
+    case 'promote': {
+      root.render(
+        <PromoteInstancePopover
+          highlight={state.highlight}
+          position={state.position}
+          onClose={hidePopover}
+        />,
+      );
+      return;
+    }
+    case 'edit': {
+      root.render(
+        <EditInstancePopover
+          schemaId={state.schemaId}
+          classId={state.classId}
+          instanceId={state.instanceId}
+          position={state.position}
+          onClose={hidePopover}
+        />,
+      );
+      return;
+    }
+  }
 }
 
 function showPopover(text: string, rect: DOMRect, coords?: PdfBox[]) {
   state = {
-    visible: true,
+    mode: 'create',
     text,
-    position: {
-      top: rect.top,
-      left: rect.left,
-      bottom: rect.bottom,
-    },
+    position: rectToPosition(rect),
     coords: coords && coords.length > 0 ? coords : null,
   };
   render();
 }
 
-function hidePopover() {
-  state = { ...state, visible: false };
+function showPromotePopover(highlight: Highlight, rect: DOMRect) {
+  state = {
+    mode: 'promote',
+    highlight,
+    position: rectToPosition(rect),
+  };
   render();
+}
+
+function showEditPopover(schemaId: string, classId: string, instanceId: string, rect: DOMRect) {
+  state = {
+    mode: 'edit',
+    schemaId,
+    classId,
+    instanceId,
+    position: rectToPosition(rect),
+  };
+  render();
+}
+
+function hidePopover() {
+  state = null;
+  render();
+}
+
+declare global {
+  interface Window {
+    TractorBeamPopover: {
+      show: (text: string, rect: DOMRect, coords?: PdfBox[]) => void;
+      showPromote: (highlight: Highlight, rect: DOMRect) => void;
+      showEdit: (schemaId: string, classId: string, instanceId: string, rect: DOMRect) => void;
+      hide: () => void;
+    };
+  }
 }
 
 function init() {
@@ -98,8 +147,10 @@ function init() {
 
   root = createRoot(container);
 
-  (window as any).TractorBeamPopover = {
+  window.TractorBeamPopover = {
     show: showPopover,
+    showPromote: showPromotePopover,
+    showEdit: showEditPopover,
     hide: hidePopover,
   };
 

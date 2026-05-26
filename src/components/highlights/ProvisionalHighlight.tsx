@@ -1,17 +1,16 @@
-import { useState, useRef, useLayoutEffect, memo } from 'react';
-import { HighlightActionButton } from './HighlightActionButton.tsx';
-import type {HighlightOverlayProps} from './types';
-import {CirclePlus, CircleMinus} from "lucide-react";
+import { useRef, useLayoutEffect, useState, memo, MouseEvent } from 'react';
+import type { HighlightOverlayProps } from './types';
+import type { Highlight } from '@/lib/definitions';
 
 export const ProvisionalHighlight = memo(function ProvisionalHighlight({
   classId,
+  schemaId,
   highlightId,
   color,
   text,
   allCoords,
+  positiveExample,
 }: HighlightOverlayProps) {
-  const [hovered, setHovered] = useState(false);
-  const [acting, setActing] = useState(false);
   const firstBoxRef = useRef<HTMLDivElement>(null);
   // @ts-expect-error: mounted is used to ensure component presence before reading firstBoxRef's
   // parent height. Parent height is used for consistent appearance of squiggly boxes.
@@ -20,33 +19,6 @@ export const ProvisionalHighlight = memo(function ProvisionalHighlight({
   useLayoutEffect(() => { setMounted(true); }, []);
 
   if (allCoords == null || allCoords.length === 0) return <></>;
-
-  function handlePromote(positiveExample: boolean) {
-    setActing(true);
-    if (window.TractorBeamDrawer) {
-      const schema = window.TractorBeamDrawer.getActiveSchema();
-      if (schema && text && allCoords) {
-        const pdfUrl = new URLSearchParams(window.location.search).get('file') ?? '';
-        window.TractorBeamDrawer.dispatch({
-          actionType: 'addInstance',
-          schemaId: schema.id,
-          classId,
-          instance: {
-            id: crypto.randomUUID(),
-            instanceType: 'text',
-            text,
-            positiveExample: positiveExample,
-            range: null,
-            coords: allCoords,
-            pdfUrl,
-          },
-        });
-      }
-    } else {
-      console.warn('[HighlightRect] TractorBeamDrawer not available for promote');
-    }
-  }
-  const pad = hovered ? 44 : 0;
 
   // Tunable wave parameters (as fraction of rendered highlight height)
   const waveLengthFrac = 1.8;     // wavelength as fraction of height
@@ -71,6 +43,22 @@ export const ProvisionalHighlight = memo(function ProvisionalHighlight({
   // ref look like it belonged to each box rather than to the page.
   const parentHeight = firstBoxRef.current?.parentElement?.offsetHeight ?? 0;
 
+  const handleClick = (e: MouseEvent<HTMLDivElement>) => {
+    e.stopPropagation();
+    const rect = e.currentTarget.getBoundingClientRect();
+    const highlight: Highlight = {
+      id: highlightId,
+      classId,
+      schemaId,
+      coords: allCoords,
+      source: 'ml',
+      text,
+      color,
+      positiveExample,
+    };
+    window.TractorBeamPopover?.showPromote(highlight, rect);
+  };
+
   return (
     <>
       {allCoords.map((box, index) => {
@@ -83,50 +71,29 @@ export const ProvisionalHighlight = memo(function ProvisionalHighlight({
           mask: wavyMask,
         } : {};
 
-
-        return <div
-            key={`${highlightId}-${index}`}
-          onMouseEnter={() => setHovered(true)}
-          onMouseLeave={() => setHovered(false)}
-          ref={index === 0 ? firstBoxRef : undefined}
-          className="absolute transition-opacity duration-200 ease-out"
-          style={{
-            left: `${box.left * 100}%`,
-            top: `${box.top * 100}%`,
-            width: `${box.width * 100}%`,
-            height: `calc(${box.height * 100}% + ${Math.ceil(1.5 * waveDepth)}px)`,
-            paddingRight: `${pad}px`,
-            marginRight: `-${pad}px`,
-            opacity: acting ? 0 : 1,
-            pointerEvents: 'auto',
-          }}
-        >
+        return (
           <div
-            className="w-full h-full rounded-sm mix-blend-multiply"
+            key={`${highlightId}-${index}`}
+            ref={index === 0 ? firstBoxRef : undefined}
+            onClick={handleClick}
+            className="absolute cursor-pointer"
             style={{
-              background: color,
-              ...wavyStyle
+              left: `${box.left * 100}%`,
+              top: `${box.top * 100}%`,
+              width: `${box.width * 100}%`,
+              height: `calc(${box.height * 100}% + ${Math.ceil(1.5 * waveDepth)}px)`,
+              pointerEvents: 'auto',
             }}
-          />
-          {hovered && !acting && index === allCoords.length - 1 && (
-            <div className="flex flex-row">
-              <HighlightActionButton
-                onClick={() => handlePromote(true)}
-                title="Add to schema"
-                icon={<CirclePlus size={"11px"} strokeWidth={1} />}
-                variant="success"
-                right="2px"
-              />
-              <HighlightActionButton
-                onClick={()=> handlePromote(false)}
-                title="Add to schema (negative example)"
-                icon={<CircleMinus size={"11px"} strokeWidth={1} />}
-                variant="success"
-                right="24px"
-              />
-            </div>
-          )}
-        </div>
+          >
+            <div
+              className="w-full h-full rounded-sm mix-blend-multiply"
+              style={{
+                background: color,
+                ...wavyStyle,
+              }}
+            />
+          </div>
+        );
       })}
     </>
   );

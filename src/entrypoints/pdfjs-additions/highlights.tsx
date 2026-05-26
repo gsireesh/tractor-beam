@@ -16,6 +16,7 @@ declare global {
   interface Window {
     TractorBeamHighlights: {
       setHighlights: (highlightType: HighlightType, highlights: Highlight[]) => void;
+      setHighlightColor: (highlightId: string, color: string) => void;
       renderPage: (pageNumber: number) => void;
       renderAll: () => void;
       clearContainers: () => void;
@@ -107,6 +108,21 @@ function setHighlights(highlightType: HighlightType, newHighlights: Highlight[])
   render();
 }
 
+function setHighlightColor(highlightId: string, color: string) {
+  for (const type of ['confirmed', 'provisional', 'layout'] as const) {
+    const idx = highlights[type].findIndex((h) => h.id === highlightId);
+    if (idx !== -1) {
+      highlights[type] = [
+        ...highlights[type].slice(0, idx),
+        { ...highlights[type][idx], color },
+        ...highlights[type].slice(idx + 1),
+      ];
+      render();
+      return;
+    }
+  }
+}
+
 function renderPage(pageNumber: number) {
   ensureContainer(pageNumber);
   render();
@@ -143,6 +159,7 @@ export function initHighlights() {
 
   window.TractorBeamHighlights = {
     setHighlights,
+    setHighlightColor,
     renderPage,
     renderAll,
     clearContainers,

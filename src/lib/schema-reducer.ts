@@ -33,7 +33,19 @@ interface DeleteInstance {
   instanceId: string;
 }
 
-export type SchemaAction = AddClass | UpdateClass | DeleteClass | AddInstance | DeleteInstance;
+interface UpdateInstance {
+  actionType: "updateInstance";
+  schemaId: string;
+  classId: string;
+  instanceId: string;
+  updates: {
+    notes?: string | null;
+    positiveExample?: boolean;
+    newClassId?: string;
+  };
+}
+
+export type SchemaAction = AddClass | UpdateClass | DeleteClass | AddInstance | DeleteInstance | UpdateInstance;
 
 export function schemasReducer(draft: Schema[], action: SchemaAction) {
   console.log("action", action);
@@ -77,6 +89,29 @@ export function schemasReducer(draft: Schema[], action: SchemaAction) {
           cls.instances = cls.instances.filter((i) => i.id !== action.instanceId);
           return;
         }
+      }
+      return;
+    }
+    case "updateInstance": {
+      const schema = draft.find((s) => s.id === action.schemaId);
+      if (!schema) return;
+      const currentClass = schema.classes.find((c) => c.id === action.classId);
+      if (!currentClass) return;
+      const instIdx = currentClass.instances.findIndex((i) => i.id === action.instanceId);
+      if (instIdx === -1) return;
+
+      const updated: Instance = { ...currentClass.instances[instIdx] };
+      if (action.updates.notes !== undefined) updated.notes = action.updates.notes;
+      if (action.updates.positiveExample !== undefined) updated.positiveExample = action.updates.positiveExample;
+
+      const moving = action.updates.newClassId !== undefined && action.updates.newClassId !== action.classId;
+      if (moving) {
+        const newClass = schema.classes.find((c) => c.id === action.updates.newClassId);
+        if (!newClass) return;
+        currentClass.instances.splice(instIdx, 1);
+        newClass.instances.push(updated);
+      } else {
+        currentClass.instances[instIdx] = updated;
       }
       return;
     }

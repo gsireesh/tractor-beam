@@ -11,7 +11,7 @@ import { createRoot, Root } from 'react-dom/client';
 import { SchemaViewer } from '@/components/SchemaViewer';
 import { getStates, storeMlAnnotationRun, getMlAnnotationRuns } from '@/lib/schema-storage';
 import { APP_CONFIG } from '@/app-config';
-import { Schema, PdfBox } from '@/lib/definitions';
+import { Schema, PdfBox, Instance } from '@/lib/definitions';
 import { schemasReducer, SchemaAction } from '@/lib/schema-reducer';
 import { usePersistedReducer } from '@/hooks/persisted-reducer';
 import type { ExtensionMessage } from '@/lib/messaging/message_definitions';
@@ -309,6 +309,7 @@ declare global {
       close: () => void;
       dispatch: (action: SchemaAction) => void;
       getActiveSchema: () => Schema | null;
+      getInstance: (schemaId: string, classId: string, instanceId: string) => Instance | null;
       runAnnotationPipeline: (schema: Schema, requestId: string) => Promise<void>;
       runSegmentationPipeline: () => Promise<void>;
       loadCachedAnnotations: (schemaId: string, pdfUrl: string) => Promise<void>;
@@ -342,6 +343,13 @@ function init() {
       else console.warn('[drawer] dispatch called before drawer is ready');
     },
     getActiveSchema: () => getActiveSchemaFn(),
+    getInstance: (schemaId: string, classId: string, instanceId: string) => {
+      const schema = getActiveSchemaFn();
+      if (!schema || schema.id !== schemaId) return null;
+      const cls = schema.classes.find((c) => c.id === classId);
+      if (!cls) return null;
+      return cls.instances.find((i) => i.id === instanceId) ?? null;
+    },
     runAnnotationPipeline,
     runSegmentationPipeline,
     loadCachedAnnotations,
