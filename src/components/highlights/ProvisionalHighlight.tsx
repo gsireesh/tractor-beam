@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, memo } from 'react';
+import { useState, useRef, useLayoutEffect, memo } from 'react';
 import { HighlightActionButton } from './HighlightActionButton.tsx';
 import type {HighlightOverlayProps} from './types';
 import {CirclePlus, CircleMinus} from "lucide-react";
@@ -12,12 +12,12 @@ export const ProvisionalHighlight = memo(function ProvisionalHighlight({
 }: HighlightOverlayProps) {
   const [hovered, setHovered] = useState(false);
   const [acting, setActing] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
-  // @ts-expect-error: mounted is used to ensure component presence before calculating element
-  // height. Element height is used for consistent appearance of squiggly boxes.
+  const firstBoxRef = useRef<HTMLDivElement>(null);
+  // @ts-expect-error: mounted is used to ensure component presence before reading firstBoxRef's
+  // parent height. Parent height is used for consistent appearance of squiggly boxes.
   // eslint-disable-next-line
   const [mounted, setMounted] = useState(false);
-  useEffect(() => { setMounted(true); }, []);
+  useLayoutEffect(() => { setMounted(true); }, []);
 
   if (allCoords == null || allCoords.length === 0) return <></>;
 
@@ -66,13 +66,14 @@ export const ProvisionalHighlight = memo(function ProvisionalHighlight({
     `.trim();
   }
 
+  // Read parent height once from the first box's parent — all boxes share the same parent
+  // (the page's overlay container), so per-iteration reads were redundant and made the
+  // ref look like it belonged to each box rather than to the page.
+  const parentHeight = firstBoxRef.current?.parentElement?.offsetHeight ?? 0;
+
   return (
     <>
       {allCoords.map((box, index) => {
-
-        // Use the container's parent height * normalized height to get the base highlight
-        // height before wave extension, avoiding a feedback loop with offsetHeight.
-        const parentHeight = containerRef.current?.parentElement?.offsetHeight ?? 0;
         const baseHeight = parentHeight * box.height;
         const waveLength = waveLengthFrac * baseHeight;
         const waveDepth = waveDepthFrac * baseHeight;
@@ -87,7 +88,7 @@ export const ProvisionalHighlight = memo(function ProvisionalHighlight({
             key={`${highlightId}-${index}`}
           onMouseEnter={() => setHovered(true)}
           onMouseLeave={() => setHovered(false)}
-          ref={containerRef}
+          ref={index === 0 ? firstBoxRef : undefined}
           className="absolute transition-opacity duration-200 ease-out"
           style={{
             left: `${box.left * 100}%`,
