@@ -19,7 +19,7 @@ import { getModelConfig, getClaudeApiKey, getOllamaBaseUrl } from '@/lib/ml/conf
 import { DrawerContext } from '@/contexts/DrawerContext';
 import cssText from './drawer-styles.css?inline';
 import {mergePdfBoxes} from "@/lib/utils.ts";
-import { VISUAL_BLOCK_CLASS_ID } from '@/components/Highlight.tsx';
+import { VISUAL_BLOCK_CLASS_ID } from '@/components/HighlightOverlay.tsx';
 import type { Highlight } from '@/entrypoints/pdfjs-additions/highlights.tsx';
 
 const DRAWER_WIDTH = 380;
@@ -54,7 +54,8 @@ async function runSegmentationPipeline() {
       classId: VISUAL_BLOCK_CLASS_ID,
       schemaId: "visual",
       color: "visual",
-      coords: [superBlock]
+      coords: [superBlock],
+      positiveExample: true,
   }}));
 
 }

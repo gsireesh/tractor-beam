@@ -6,26 +6,9 @@
 import { createRoot, Root } from 'react-dom/client';
 import { createPortal } from 'react-dom';
 import { PageHighlights } from '@/components/PageHighlights';
+import {Highlight} from '@/lib/definitions.ts'
 import cssText from './popover-styles.css?inline';
 
-interface PdfBox {
-  pageNumber: number;
-  left: number;
-  top: number;
-  width: number;
-  height: number;
-}
-
-export interface Highlight {
-  id: string;
-  classId: string;
-  schemaId: string;
-  coords: PdfBox[];
-  source?: 'manual' | 'ml';
-  text?: string;
-  color: string;
-  positiveExample: boolean;
-}
 
 export type HighlightType = 'confirmed' | 'provisional' | 'layout';
 
@@ -98,14 +81,14 @@ function ensureContainer(pageNumber: number): HTMLElement | null {
   const cached = pageContainers.get(pageNumber);
   if (cached?.isConnected) return cached;
 
-  const pageEl = document.querySelector(
+  const pageEl: HTMLElement = document.querySelector(
     `.page[data-page-number="${pageNumber}"]`,
-  );
+  )!;
   if (!pageEl) return null;
 
-  let container = pageEl.querySelector(
+  let container :HTMLElement = pageEl.querySelector(
     '.tractor-beam-highlights',
-  );
+  )!;
   if (!container) {
     container = document.createElement('div');
     container.className = 'tractor-beam-highlights';

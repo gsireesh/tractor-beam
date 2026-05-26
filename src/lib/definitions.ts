@@ -17,6 +17,17 @@ export interface Instance {
   notes?: string | null;
 }
 
+export interface Highlight {
+  id: string;
+  classId: string;
+  schemaId: string;
+  coords: PdfBox[];
+  source?: 'manual' | 'ml';
+  text?: string;
+  color: string;
+  positiveExample: boolean;
+}
+
 // ─── Visual block extraction (PDF text segmented by spatial proximity) ───
 
 export interface VisualBlockItem {

@@ -1,20 +1,9 @@
-import { Highlight } from './Highlight.tsx';
-import { PdfBox } from '@/lib/definitions';
-
-interface HighlightProps {
-  id: string;
-  classId: string;
-  schemaId: string;
-  coords: PdfBox[];
-  source?: 'manual' | 'ml';
-  text?: string;
-  color: string;
-  positiveExample: boolean;
-}
+import { HighlightOverlay } from './HighlightOverlay.tsx';
+import { Highlight } from '@/lib/definitions';
 
 interface PageHighlightsProps {
   pageNumber: number;
-  highlights: HighlightProps[];
+  highlights: Highlight[];
 }
 
 export function PageHighlights({ pageNumber, highlights }: PageHighlightsProps) {
@@ -25,7 +14,7 @@ export function PageHighlights({ pageNumber, highlights }: PageHighlightsProps) 
         return hl.coords
           .filter((box) => box.pageNumber === pageNumber)
           .map((box, i) => (
-            <Highlight
+            <HighlightOverlay
               key={`${hl.id}-${i}`}
               highlightId={hl.id}
               classId={hl.classId}

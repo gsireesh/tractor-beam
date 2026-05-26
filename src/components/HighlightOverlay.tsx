@@ -8,7 +8,7 @@ import type { HighlightRectProps } from './highlights/types';
 export { VISUAL_BLOCK_CLASS_ID };
 export type { HighlightRectProps };
 
-export const Highlight = memo(function HighlightRect(props: HighlightRectProps) {
+export const HighlightOverlay = memo(function HighlightRect(props: HighlightRectProps) {
   if (props.classId === VISUAL_BLOCK_CLASS_ID) {
     return <VisualBlockRect {...props} />;
   }
