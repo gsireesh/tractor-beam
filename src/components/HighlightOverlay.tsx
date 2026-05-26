@@ -3,12 +3,11 @@ import { VISUAL_BLOCK_CLASS_ID } from './highlights/types';
 import { VisualBlockRect } from './highlights/VisualBlockRect';
 import { ConfirmedTextHighlight } from './highlights/ConfirmedTextHighlight.tsx';
 import { ProvisionalHighlight } from './highlights/ProvisionalHighlight.tsx';
-import type { HighlightRectProps } from './highlights/types';
+import type { HighlightOverlayProps } from './highlights/types';
 
 export { VISUAL_BLOCK_CLASS_ID };
-export type { HighlightRectProps };
 
-export const HighlightOverlay = memo(function HighlightRect(props: HighlightRectProps) {
+export const HighlightOverlay = memo(function HighlightOverlay(props: HighlightOverlayProps) {
   if (props.classId === VISUAL_BLOCK_CLASS_ID) {
     return <VisualBlockRect {...props} />;
   }

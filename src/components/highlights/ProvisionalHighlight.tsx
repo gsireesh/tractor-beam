@@ -1,18 +1,15 @@
 import { useState, useRef, useEffect, memo } from 'react';
 import { HighlightActionButton } from './HighlightActionButton.tsx';
-import type { HighlightRectProps } from './types';
+import type {HighlightOverlayProps} from './types';
 import {CirclePlus, CircleMinus} from "lucide-react";
 
-export const ProvisionalHighlight = memo(function ProvisionalHighlightRect({
+export const ProvisionalHighlight = memo(function ProvisionalHighlight({
   classId,
-  left,
-  top,
-  width,
-  height,
+  highlightId,
   color,
   text,
   allCoords,
-}: HighlightRectProps) {
+}: HighlightOverlayProps) {
   const [hovered, setHovered] = useState(false);
   const [acting, setActing] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -22,12 +19,14 @@ export const ProvisionalHighlight = memo(function ProvisionalHighlightRect({
   const [mounted, setMounted] = useState(false);
   useEffect(() => { setMounted(true); }, []);
 
+  if (allCoords == null || allCoords.length === 0) return <></>;
+
   function handlePromote(positiveExample: boolean) {
     setActing(true);
     if (window.TractorBeamDrawer) {
       const schema = window.TractorBeamDrawer.getActiveSchema();
       if (schema && text && allCoords) {
-        const pdfUrl = new URLSearchParams(window.location.search).get('file') || '';
+        const pdfUrl = new URLSearchParams(window.location.search).get('file') ?? '';
         window.TractorBeamDrawer.dispatch({
           actionType: 'addInstance',
           schemaId: schema.id,
@@ -67,60 +66,67 @@ export const ProvisionalHighlight = memo(function ProvisionalHighlightRect({
     `.trim();
   }
 
-  // Use the container's parent height * normalized height to get the base highlight
-  // height before wave extension, avoiding a feedback loop with offsetHeight.
-  const parentHeight = containerRef.current?.parentElement?.offsetHeight ?? 0;
-  const baseHeight = parentHeight * height;
-  const waveLength = waveLengthFrac * baseHeight;
-  const waveDepth = waveDepthFrac * baseHeight;
-  const wavyMask = baseHeight > 0 ? buildWavyMask(waveLength, waveDepth) : '';
-  const wavyStyle = baseHeight > 0 ? {
-    WebkitMask: wavyMask,
-    mask: wavyMask,
-  } : {};
-
   return (
-    <div
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      ref={containerRef}
-      className="absolute transition-opacity duration-200 ease-out"
-      style={{
-        left: `${left * 100}%`,
-        top: `${top * 100}%`,
-        width: `${width * 100}%`,
-        height: `calc(${height * 100}% + ${Math.ceil(1.5 * waveDepth)}px)`,
-        paddingRight: `${pad}px`,
-        marginRight: `-${pad}px`,
-        opacity: acting ? 0 : 1,
-        pointerEvents: 'auto',
-      }}
-    >
-      <div
-        className="w-full h-full rounded-sm mix-blend-multiply"
-        style={{
-          background: color,
-          ...wavyStyle
-        }}
-      />
-      {hovered && !acting && (
-        <div className="flex flex-row">
-          <HighlightActionButton
-            onClick={() => handlePromote(true)}
-            title="Add to schema"
-            icon={<CirclePlus size={"11px"} strokeWidth={1} />}
-            variant="success"
-            right="2px"
-          />
-          <HighlightActionButton
-            onClick={()=> handlePromote(false)}
-            title="Add to schema (negative example)"
-            icon={<CircleMinus size={"11px"} strokeWidth={1} />}
-            variant="success"
-            right="24px"
+    <>
+      {allCoords.map((box, index) => {
+
+        // Use the container's parent height * normalized height to get the base highlight
+        // height before wave extension, avoiding a feedback loop with offsetHeight.
+        const parentHeight = containerRef.current?.parentElement?.offsetHeight ?? 0;
+        const baseHeight = parentHeight * box.height;
+        const waveLength = waveLengthFrac * baseHeight;
+        const waveDepth = waveDepthFrac * baseHeight;
+        const wavyMask = baseHeight > 0 ? buildWavyMask(waveLength, waveDepth) : '';
+        const wavyStyle = baseHeight > 0 ? {
+          WebkitMask: wavyMask,
+          mask: wavyMask,
+        } : {};
+
+
+        return <div
+            key={`${highlightId}-${index}`}
+          onMouseEnter={() => setHovered(true)}
+          onMouseLeave={() => setHovered(false)}
+          ref={containerRef}
+          className="absolute transition-opacity duration-200 ease-out"
+          style={{
+            left: `${box.left * 100}%`,
+            top: `${box.top * 100}%`,
+            width: `${box.width * 100}%`,
+            height: `calc(${box.height * 100}% + ${Math.ceil(1.5 * waveDepth)}px)`,
+            paddingRight: `${pad}px`,
+            marginRight: `-${pad}px`,
+            opacity: acting ? 0 : 1,
+            pointerEvents: 'auto',
+          }}
+        >
+          <div
+            className="w-full h-full rounded-sm mix-blend-multiply"
+            style={{
+              background: color,
+              ...wavyStyle
+            }}
           />
         </div>
-      )}
-    </div>
+      })}
+      {hovered && !acting && (
+            <div className="flex flex-row">
+              <HighlightActionButton
+                onClick={() => handlePromote(true)}
+                title="Add to schema"
+                icon={<CirclePlus size={"11px"} strokeWidth={1} />}
+                variant="success"
+                right="2px"
+              />
+              <HighlightActionButton
+                onClick={()=> handlePromote(false)}
+                title="Add to schema (negative example)"
+                icon={<CircleMinus size={"11px"} strokeWidth={1} />}
+                variant="success"
+                right="24px"
+              />
+            </div>
+          )}
+    </>
   );
 });

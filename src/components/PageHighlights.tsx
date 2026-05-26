@@ -9,27 +9,18 @@ interface PageHighlightsProps {
 export function PageHighlights({ pageNumber, highlights }: PageHighlightsProps) {
   return (
     <>
-      {highlights.flatMap((hl) => {
-        if (!hl.coords) return [];
-        return hl.coords
-          .filter((box) => box.pageNumber === pageNumber)
-          .map((box, i) => (
-            <HighlightOverlay
-              key={`${hl.id}-${i}`}
-              highlightId={hl.id}
-              classId={hl.classId}
-              schemaId={hl.schemaId}
-              left={box.left}
-              top={box.top}
-              width={box.width}
-              height={box.height}
-              color={hl.color}
-              source={hl.source}
-              text={hl.text}
-              allCoords={hl.coords}
-              positiveExample={hl.positiveExample}
-            />
-          ));
+      {highlights.filter((hl) => hl.coords != null).map((hl) => {
+        return <HighlightOverlay
+          key={hl.id}
+          highlightId={hl.id}
+          classId={hl.classId}
+          schemaId={hl.schemaId}
+          allCoords={hl.coords.filter(box => box.pageNumber === pageNumber)}
+          color={hl.color}
+          source={hl.source}
+          text={hl.text}
+          positiveExample={hl.positiveExample}
+          />
       })}
     </>
   );
