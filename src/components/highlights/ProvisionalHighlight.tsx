@@ -12,6 +12,7 @@ export const ProvisionalHighlight = memo(function ProvisionalHighlight({
   positiveExample,
 }: HighlightOverlayProps) {
   const firstBoxRef = useRef<HTMLDivElement>(null);
+  const [hovered, setHovered] = useState(false);
   // @ts-expect-error: mounted is used to ensure component presence before reading firstBoxRef's
   // parent height. Parent height is used for consistent appearance of squiggly boxes.
   // eslint-disable-next-line
@@ -42,6 +43,11 @@ export const ProvisionalHighlight = memo(function ProvisionalHighlight({
   // (the page's overlay container), so per-iteration reads were redundant and made the
   // ref look like it belonged to each box rather than to the page.
   const parentHeight = firstBoxRef.current?.parentElement?.offsetHeight ?? 0;
+
+  // Higher-alpha variant of the color for the hover state — the color prop is typically
+  // low-alpha (~0.4) for the resting "draft" wash. On hover we swap to alpha 0.8 so the
+  // multiply blend produces a clearly stronger color without fully obscuring underlying text.
+  const hoverColor = color.replace(/[\d.]+\)$/, '0.6)');
 
   const handleClick = (e: MouseEvent<HTMLDivElement>) => {
     e.stopPropagation();
@@ -76,6 +82,8 @@ export const ProvisionalHighlight = memo(function ProvisionalHighlight({
             key={`${highlightId}-${index}`}
             ref={index === 0 ? firstBoxRef : undefined}
             onClick={handleClick}
+            onMouseEnter={() => setHovered(true)}
+            onMouseLeave={() => setHovered(false)}
             className="absolute cursor-pointer"
             style={{
               left: `${box.left * 100}%`,
@@ -86,9 +94,9 @@ export const ProvisionalHighlight = memo(function ProvisionalHighlight({
             }}
           >
             <div
-              className="w-full h-full rounded-sm mix-blend-multiply"
+              className="w-full h-full rounded-sm mix-blend-multiply transition-[background-color] duration-150 ease-out"
               style={{
-                background: color,
+                backgroundColor: hovered ? hoverColor : color,
                 ...wavyStyle,
               }}
             />
