@@ -1,6 +1,6 @@
 import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
-import {Instance, PdfBox} from "@/lib/definitions.ts";
+import {Instance, PdfBox, Schema} from "@/lib/definitions.ts";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -17,6 +17,14 @@ export function createNewClass(className: string, description: string, instances
     description: description,
     color: generateRandomRgbColor(),
     instances: instances
+  }
+}
+
+export function createNewSchema(name: string): Schema {
+  return {
+    id: generateId(),
+    name,
+    classes: [],
   }
 }
 

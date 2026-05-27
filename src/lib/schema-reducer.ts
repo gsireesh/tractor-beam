@@ -1,5 +1,16 @@
 import { Instance, SchemaClass, Schema } from "@/lib/definitions.ts";
 
+interface AddSchema {
+  actionType: "addSchema";
+  schema: Schema;
+}
+
+interface UpdateSchema {
+  actionType: "updateSchema";
+  schemaId: string;
+  schemaInfo: Schema;
+}
+
 interface AddClass {
   actionType: "addClass";
   schemaId: string;
@@ -45,11 +56,22 @@ interface UpdateInstance {
   };
 }
 
-export type SchemaAction = AddClass | UpdateClass | DeleteClass | AddInstance | DeleteInstance | UpdateInstance;
+export type SchemaAction = AddSchema | UpdateSchema | AddClass | UpdateClass | DeleteClass | AddInstance | DeleteInstance | UpdateInstance;
 
 export function schemasReducer(draft: Schema[], action: SchemaAction) {
   console.log("action", action);
   switch (action.actionType) {
+    case "addSchema": {
+      draft.push(action.schema);
+      return;
+    }
+    case "updateSchema": {
+      const idx = draft.findIndex((s) => s.id === action.schemaId);
+      if (idx !== -1) {
+        draft[idx] = action.schemaInfo;
+      }
+      return;
+    }
     case "addClass": {
       const schema = draft.find((s) => s.id == action.schemaId);
       if (schema) {

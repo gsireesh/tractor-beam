@@ -6,8 +6,9 @@
  * orchestration (visual block extraction → offscreen ML → highlight rendering).
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { createRoot, Root } from 'react-dom/client';
+import { PencilLine, ArrowLeftRight, Plus } from 'lucide-react';
 import { SchemaViewer } from '@/components/SchemaViewer';
 import { getStates, storeMlAnnotationRun, getMlAnnotationRuns } from '@/lib/schema-storage';
 import { APP_CONFIG } from '@/app-config';
@@ -18,10 +19,17 @@ import type { ExtensionMessage } from '@/lib/messaging/message_definitions';
 import { getModelConfig, getClaudeApiKey, getOllamaBaseUrl } from '@/lib/ml/config';
 import { DrawerContext } from '@/contexts/DrawerContext';
 import cssText from './drawer-styles.css?inline';
-import {mergePdfBoxes} from "@/lib/utils.ts";
+import {createNewSchema, mergePdfBoxes} from "@/lib/utils.ts";
 import { VISUAL_BLOCK_CLASS_ID } from '@/components/HighlightOverlay.tsx';
 import type { Highlight } from '@/lib/definitions.ts';
 import {ModelControls} from "@/components/ModelControls.tsx";
+import { IconButton } from '@/components/IconButton';
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from '@/components/ui/dropdown-menu';
 
 const DRAWER_WIDTH = 380;
 
@@ -214,6 +222,80 @@ function SidebarVisibilityToggle({ isOpen, onToggle }: { isOpen: boolean; onTogg
     </div>
   );
 }
+
+function SchemaHeader({
+  activeSchema,
+  schemas,
+  editing,
+  onEditingChange,
+  onRename,
+  onSwitch,
+  onNew,
+}: {
+  activeSchema: Schema | null;
+  schemas: Schema[];
+  editing: boolean;
+  onEditingChange: (editing: boolean) => void;
+  onRename: (name: string) => void;
+  onSwitch: (id: string) => void;
+  onNew: () => void;
+}) {
+  const titleRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!editing) return;
+    const handler = (e: MouseEvent) => {
+      if (titleRef.current && !titleRef.current.contains(e.target as Node)) {
+        onEditingChange(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [editing, onEditingChange]);
+
+  if (!activeSchema) return null;
+
+  return (
+    <div className="flex items-center gap-1 p-3 border-b border-gray-200">
+      <div
+        ref={titleRef}
+        className="w-fit"
+        onClick={() => { if (!editing) onEditingChange(true); }}
+      >
+        {editing ? (
+          <input
+            autoFocus
+            placeholder="Schema name"
+            className="border-2 bg-white text-base px-1 py-0.5 rounded"
+            value={activeSchema.name}
+            onChange={(e) => onRename(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter') onEditingChange(false); }}
+          />
+        ) : (
+          <div className="flex items-center gap-1 group cursor-pointer">
+            <span className="text-base">{activeSchema.name || 'Untitled schema'}</span>
+            <PencilLine strokeWidth={1} size={16} className="invisible group-hover:visible shrink-0" />
+          </div>
+        )}
+      </div>
+      <div className="ml-auto flex items-center gap-1">
+        <DropdownMenu>
+          <DropdownMenuTrigger>
+            <IconButton title="Switch schema" icon={ArrowLeftRight} size="icon" />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            {schemas.map((s) => (
+              <DropdownMenuItem key={s.id} onClick={() => onSwitch(s.id)}>
+                {s.name || 'Untitled schema'}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+        <IconButton title="New schema" icon={Plus} size="icon" onClick={onNew} />
+      </div>
+    </div>
+  );
+}
 function DrawerContent({ initialSchemas }: { initialSchemas: Schema[] }) {
   const [schemas, dispatch] = usePersistedReducer<Schema[], SchemaAction>(
     schemasReducer,
@@ -226,6 +308,7 @@ function DrawerContent({ initialSchemas }: { initialSchemas: Schema[] }) {
   const pdfUrl = new URLSearchParams(window.location.search).get('file') ?? '';
   const [activeSchemaId, setActiveSchemaId] = useState<string>(schemas[0]?.id ?? '');
   const activeSchema = schemas.find(s => s.id === activeSchemaId) ?? schemas[0];
+  const [titleEditing, setTitleEditing] = useState<boolean>(false);
 
   // Expose refs for the window API
   useEffect(() => {
@@ -294,6 +377,30 @@ function DrawerContent({ initialSchemas }: { initialSchemas: Schema[] }) {
 
   return (
     <DrawerContext.Provider value={{ activeSchema, pdfUrl, dispatch }}>
+      <SchemaHeader
+        activeSchema={activeSchema}
+        schemas={schemas}
+        editing={titleEditing}
+        onEditingChange={setTitleEditing}
+        onRename={(name) => {
+          if (!activeSchema) return;
+          dispatch({
+            actionType: 'updateSchema',
+            schemaId: activeSchema.id,
+            schemaInfo: { ...activeSchema, name },
+          });
+        }}
+        onSwitch={(id) => {
+          setActiveSchemaId(id);
+          setTitleEditing(false);
+        }}
+        onNew={() => {
+          const newSchema = createNewSchema('');
+          dispatch({ actionType: 'addSchema', schema: newSchema });
+          setActiveSchemaId(newSchema.id);
+          setTitleEditing(true);
+        }}
+      />
       <SchemaViewer schema={activeSchema} dispatch={dispatch} llmStatus={llmLoaded} />
       <div className="shrink-0">
         <ModelControls status={llmLoaded.stage} progress={llmLoaded.progress} message={llmLoaded.message} />
