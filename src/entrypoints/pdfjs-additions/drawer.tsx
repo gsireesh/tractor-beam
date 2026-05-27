@@ -20,7 +20,7 @@ import { DrawerContext } from '@/contexts/DrawerContext';
 import cssText from './drawer-styles.css?inline';
 import {mergePdfBoxes} from "@/lib/utils.ts";
 import { VISUAL_BLOCK_CLASS_ID } from '@/components/HighlightOverlay.tsx';
-import type { Highlight } from '@/entrypoints/pdfjs-additions/highlights.tsx';
+import type { Highlight } from '@/lib/definitions.ts';
 
 const DRAWER_WIDTH = 380;
 
@@ -85,7 +85,7 @@ function syncProvisionalHighlights() {
   const schema = getActiveSchemaFn();
   if (!schema) return;
   const colorsByClass = schema.classes.reduce((acc: Record<string, string>, cls) => { acc[cls.id] = cls.color; return acc; }, {});
-  const highlights: Highlight[] = mlHighlights.map((h) => ({ ...h, schemaId: schema.id, color: colorsByClass[h.classId] }));
+  const highlights: Highlight[] = mlHighlights.map((h) => ({ ...h, schemaId: schema.id, color: colorsByClass[h.classId], positiveExample: true}));
   console.log(`[drawer] provisional highlight sync: ${highlights.length} ML`);
   window.TractorBeamHighlights.setHighlights('provisional', highlights);
 }
@@ -103,7 +103,7 @@ async function runAnnotationPipeline(schema: Schema, requestId: string) {
     console.error('[drawer] TractorBeamTextExtraction not available');
     return;
   }
-  const PDFViewerApplication = (window as any).PDFViewerApplication;
+  const PDFViewerApplication = window.PDFViewerApplication;
   if (!PDFViewerApplication) {
     console.error('[drawer] PDFViewerApplication not available');
     return;
@@ -142,7 +142,7 @@ function cancelAnnotationPipeline(requestId: string) {
   chrome.runtime.sendMessage({
     type: 'cancelAnnotationPipeline',
     requestId,
-  }).catch(() => {});
+  }).catch(() => {console.log("Failed to cancel annotation!")});
 }
 
 // ─── React components ───
@@ -186,7 +186,7 @@ function DrawerContainer() {
   if (!initialState) {
     return (
       <>
-        <ToggleTab isOpen={isOpen} onToggle={toggle} />
+        <SidebarVisibilityToggle isOpen={isOpen} onToggle={toggle} />
         <div className={`tractor-beam-drawer ${isOpen ? 'open' : ''}`}>
           <div className="p-4 text-sm text-gray-500">Loading...</div>
         </div>
@@ -196,7 +196,7 @@ function DrawerContainer() {
 
   return (
     <>
-      <ToggleTab isOpen={isOpen} onToggle={toggle} />
+      <SidebarVisibilityToggle isOpen={isOpen} onToggle={toggle} />
       <div className={`tractor-beam-drawer ${isOpen ? 'open' : ''}`}>
         <DrawerContent initialSchemas={initialState} />
       </div>
@@ -204,7 +204,7 @@ function DrawerContainer() {
   );
 }
 
-function ToggleTab({ isOpen, onToggle }: { isOpen: boolean; onToggle: () => void }) {
+function SidebarVisibilityToggle({ isOpen, onToggle }: { isOpen: boolean; onToggle: () => void }) {
   return (
     <div className={`tractor-beam-toggle-tab ${isOpen ? 'drawer-open' : ''}`}>
       <button onClick={onToggle} title={isOpen ? 'Collapse panel' : 'Open panel'}>
@@ -213,7 +213,6 @@ function ToggleTab({ isOpen, onToggle }: { isOpen: boolean; onToggle: () => void
     </div>
   );
 }
-
 function DrawerContent({ initialSchemas }: { initialSchemas: Schema[] }) {
   const [schemas, dispatch] = usePersistedReducer<Schema[], SchemaAction>(
     schemasReducer,
