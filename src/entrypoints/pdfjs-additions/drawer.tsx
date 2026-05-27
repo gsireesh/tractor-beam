@@ -21,6 +21,7 @@ import cssText from './drawer-styles.css?inline';
 import {mergePdfBoxes} from "@/lib/utils.ts";
 import { VISUAL_BLOCK_CLASS_ID } from '@/components/HighlightOverlay.tsx';
 import type { Highlight } from '@/lib/definitions.ts';
+import {ModelControls} from "@/components/ModelControls.tsx";
 
 const DRAWER_WIDTH = 380;
 
@@ -293,7 +294,10 @@ function DrawerContent({ initialSchemas }: { initialSchemas: Schema[] }) {
 
   return (
     <DrawerContext.Provider value={{ activeSchema, pdfUrl, dispatch }}>
-      <SchemaViewer schemas={schemas} dispatch={dispatch} llmStatus={llmLoaded} onActiveSchemaChange={setActiveSchemaId} />
+      <SchemaViewer schema={activeSchema} dispatch={dispatch} llmStatus={llmLoaded} />
+      <div className="shrink-0">
+        <ModelControls status={llmLoaded.stage} progress={llmLoaded.progress} message={llmLoaded.message} />
+      </div>
     </DrawerContext.Provider>
   );
 }
