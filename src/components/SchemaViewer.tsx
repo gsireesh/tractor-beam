@@ -9,10 +9,9 @@ import {createNewClass} from "@/lib/utils.ts";
 interface SchemaViewerProps {
   schema: Schema;
   dispatch: (action: SchemaAction) => void;
-  llmStatus: { stage: string; progress: string; message: string };
 }
 
-export function SchemaViewer({ schema, dispatch, llmStatus}: SchemaViewerProps) {
+export function SchemaViewer({ schema, dispatch}: SchemaViewerProps) {
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
