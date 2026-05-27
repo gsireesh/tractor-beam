@@ -6,7 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PiListPlus } from "react-icons/pi";
 import { Schema } from "@/lib/definitions";
 import { SchemaAction } from "@/lib/schema-reducer.ts";
-import {createNewClass, generateId, generateRandomRgbColor} from "@/lib/utils.ts";
+import {createNewClass} from "@/lib/utils.ts";
 import { ModelControls } from "@/components/ModelControls.tsx";
 
 interface SchemaViewerProps {

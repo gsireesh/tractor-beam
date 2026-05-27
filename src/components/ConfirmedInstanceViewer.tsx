@@ -10,7 +10,7 @@ export interface InstanceViewerProps {
     borderColor: string;
 }
 
-export function InstanceViewer(props: InstanceViewerProps) {
+export function ConfirmedInstanceViewer(props: InstanceViewerProps) {
     const {instance, schemaClassId, borderColor} = props;
 
     const {activeSchema, dispatch} = useDrawerContext();

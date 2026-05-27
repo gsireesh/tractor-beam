@@ -8,7 +8,7 @@ import {
 import {Settings, PencilLine, Trash2} from 'lucide-react';
 import { useEffect, useRef, useState } from "react";
 import {rgbaToHex} from '@/lib/utils.ts';
-import {InstanceViewer} from "@/components/InstanceViewer.tsx";
+import {ConfirmedInstanceViewer} from "@/components/ConfirmedInstanceViewer.tsx";
 
 function useClickOutside<T extends HTMLElement>(callback: () => void) {
   const ref = useRef<T>(null);
@@ -127,7 +127,7 @@ export function SchemaClassViewer({
                 <AccordionTrigger>Instances</AccordionTrigger>
                 <AccordionContent>
                     {
-                        schemaClass.instances.length ? (schemaClass.instances.map((instance) => <InstanceViewer key={instance.id} instance={instance} schemaClassId={schemaClass.id} borderColor={borderColor} />)) : <p>Empty.</p>
+                        schemaClass.instances.length ? (schemaClass.instances.map((instance) => <ConfirmedInstanceViewer key={instance.id} instance={instance} schemaClassId={schemaClass.id} borderColor={borderColor} />)) : <p>Empty.</p>
                     }
                 </AccordionContent>
             </AccordionItem>
