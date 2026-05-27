@@ -1,17 +1,10 @@
 import { ReactNode, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { SchemaClass } from '@/lib/definitions';
-import {
-  Combobox,
-  ComboboxContent,
-  ComboboxInput,
-  ComboboxItem,
-  ComboboxList,
-} from '@/components/ui/combobox';
+import { CreatableCombobox } from '@/components/ui/creatable-combobox';
 import { Textarea } from '@/components/ui/textarea';
 import { createNewClass } from '@/lib/utils';
 
 const accentColorFallback = 'rgba(0,0,0,0)';
-export const CREATE_ITEM_PREFIX = '__create__:';
 
 const POPOVER_MIN_WIDTH_PX = 320;
 const POPOVER_MAX_WIDTH_PX = 400;
@@ -53,22 +46,6 @@ export function InstancePopover({
   // while the user is typing into the combobox (selectedClass goes null).
   const lastValidClassRef = useRef<SchemaClass | null>(selectedClass);
   if (selectedClass) lastValidClassRef.current = selectedClass;
-
-  const trimmedInput = inputValue.trim();
-  const hasExactMatch =
-    (activeSchema?.classes.some((c) => c.name.toLowerCase() === trimmedInput.toLowerCase()) ?? false) ||
-    selectedClass?.name.toLowerCase() === trimmedInput.toLowerCase();
-  const showCreateOption = allowCreateClass && trimmedInput.length > 0 && !hasExactMatch;
-
-  const comboboxItems = (() => {
-    const names = activeSchema?.classes.map((c) => c.name) ?? [];
-    return showCreateOption ? [...names, CREATE_ITEM_PREFIX + trimmedInput] : names;
-  })();
-
-  const comboboxFilter = (itemValue: string, query: string) => {
-    if (itemValue.startsWith(CREATE_ITEM_PREFIX)) return true;
-    return itemValue.toLowerCase().includes(query.toLowerCase());
-  };
 
   useLayoutEffect(() => {
     if (!popoverRef.current) return;
@@ -158,40 +135,25 @@ export function InstancePopover({
               onChange={(e) => onNotesChange(e.target.value)}
             />
             <div className="flex gap-2">
-              <Combobox
-                items={comboboxItems}
+              <CreatableCombobox
+                items={activeSchema?.classes.map((c) => c.name) ?? []}
                 value={selectedClass?.name ?? ''}
-                onInputValueChange={(v: string) => onInputValueChange(v)}
-                filter={comboboxFilter}
-                onValueChange={(name: string | null) => {
-                  if (typeof name === 'string' && name.startsWith(CREATE_ITEM_PREFIX)) {
-                    const newClassName = name.slice(CREATE_ITEM_PREFIX.length);
-                    const schemaClass = createNewClass(newClassName, '', []);
-                    onSelectedClassChange(schemaClass);
-                  } else {
-                    onSelectedClassChange(activeSchema?.classes.find((c) => c.name === name) ?? null);
-                  }
+                inputValue={inputValue}
+                onInputValueChange={onInputValueChange}
+                allowCreate={allowCreateClass}
+                onSelect={(name) => {
+                  onSelectedClassChange(
+                    activeSchema?.classes.find((c) => c.name === name) ?? null
+                  );
                 }}
-              >
-                <ComboboxInput
-                  className="flex-1 bg-white"
-                  onClick={() => onSelectedClassChange(null)}
-                />
-                <ComboboxContent
-                  container={document.getElementById('tractor-beam-popover-root')}
-                  positionerClassName="z-[100001]"
-                >
-                  <ComboboxList>
-                    {(name: string) => (
-                      <ComboboxItem key={name} value={name}>
-                        {name.startsWith(CREATE_ITEM_PREFIX)
-                          ? `Create new class "${name.slice(CREATE_ITEM_PREFIX.length)}"`
-                          : name}
-                      </ComboboxItem>
-                    )}
-                  </ComboboxList>
-                </ComboboxContent>
-              </Combobox>
+                onCreate={(name) => {
+                  onSelectedClassChange(createNewClass(name, '', []));
+                }}
+                renderCreateLabel={(label) => `Create new class "${label}"`}
+                inputClassName="flex-1 bg-white"
+                contentContainer={document.getElementById('tractor-beam-popover-root')}
+                contentPositionerClassName="z-[100001]"
+              />
               <div
                 className="flex shrink-0"
                 style={{ width: actionSlotWidthPx, gap: 4 }}
