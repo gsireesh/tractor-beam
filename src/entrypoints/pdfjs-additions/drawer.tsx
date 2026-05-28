@@ -257,7 +257,7 @@ function SchemaHeader({
   if (!activeSchema) return null;
 
   return (
-    <div className="flex items-center gap-1 p-3 border-b border-gray-200">
+    <div className="flex items-center gap-1 px-3 py-1.5 border-b border-gray-200">
       <div
         ref={titleRef}
         className="w-fit"
@@ -282,7 +282,7 @@ function SchemaHeader({
       <div className="ml-auto flex items-center gap-1">
         <DropdownMenu>
           <DropdownMenuTrigger>
-            <IconButton title="Switch schema" icon={ArrowLeftRight} size="icon" />
+            <IconButton title="Switch schema" icon={ArrowLeftRight} size="icon-sm" />
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             {schemas.map((s) => (
@@ -292,7 +292,7 @@ function SchemaHeader({
             ))}
           </DropdownMenuContent>
         </DropdownMenu>
-        <IconButton title="New schema" icon={Plus} size="icon" onClick={onNew} />
+        <IconButton title="New schema" icon={Plus} size="icon-sm" onClick={onNew} />
       </div>
     </div>
   );
