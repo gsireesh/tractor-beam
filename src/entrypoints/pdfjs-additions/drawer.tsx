@@ -6,30 +6,31 @@
  * orchestration (visual block extraction → offscreen ML → highlight rendering).
  */
 
-import { useState, useEffect, useRef } from 'react';
-import { createRoot, Root } from 'react-dom/client';
-import { PencilLine, ArrowLeftRight, Plus } from 'lucide-react';
-import { SchemaViewer } from '@/components/SchemaViewer';
-import { getStates, storeMlAnnotationRun, getMlAnnotationRuns } from '@/lib/schema-storage';
-import { APP_CONFIG } from '@/app-config';
-import { Schema, PdfBox, Instance } from '@/lib/definitions';
-import { schemasReducer, SchemaAction } from '@/lib/schema-reducer';
-import { usePersistedReducer } from '@/hooks/persisted-reducer';
-import type { ExtensionMessage } from '@/lib/messaging/message_definitions';
-import { getModelConfig, getClaudeApiKey, getOllamaBaseUrl } from '@/lib/ml/config';
-import { DrawerContext } from '@/contexts/DrawerContext';
+import {useEffect, useRef, useState} from 'react';
+import {createRoot, Root} from 'react-dom/client';
+import {ArrowLeftRight, Layers2Icon, PencilLine, Plus, SignpostIcon} from 'lucide-react';
+import {SchemaViewer} from '@/components/SchemaViewer';
+import {getMlAnnotationRuns, getStates, storeMlAnnotationRun} from '@/lib/schema-storage';
+import {APP_CONFIG} from '@/app-config';
+import {Instance, PdfBox, Schema} from '@/lib/definitions';
+import {SchemaAction, schemasReducer} from '@/lib/schema-reducer';
+import {usePersistedReducer} from '@/hooks/persisted-reducer';
+import type {ExtensionMessage} from '@/lib/messaging/message_definitions';
+import {getClaudeApiKey, getModelConfig, getOllamaBaseUrl} from '@/lib/ml/config';
+import {DrawerContext} from '@/contexts/DrawerContext';
 import cssText from './drawer-styles.css?inline';
 import {createNewSchema, mergePdfBoxes} from "@/lib/utils.ts";
-import { VISUAL_BLOCK_CLASS_ID } from '@/components/HighlightOverlay.tsx';
-import type { Highlight } from '@/lib/definitions.ts';
+import {VISUAL_BLOCK_CLASS_ID} from '@/components/HighlightOverlay.tsx';
+import type {Highlight} from '@/lib/definitions.ts';
 import {ModelControls} from "@/components/ModelControls.tsx";
-import { IconButton } from '@/components/IconButton';
+import {IconButton} from '@/components/IconButton';
 import {
   DropdownMenu,
-  DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Tabs, TabsContent, TabsList, TabsTrigger} from '@/components/ui/tabs';
 
 const DRAWER_WIDTH = 380;
 
@@ -401,7 +402,20 @@ function DrawerContent({ initialSchemas }: { initialSchemas: Schema[] }) {
           setTitleEditing(true);
         }}
       />
-      <SchemaViewer schema={activeSchema} dispatch={dispatch} llmStatus={llmLoaded} />
+      <div className="flex flex-col h-full overflow-scroll">
+      <Tabs defaultValue="schema">
+        <TabsList className="w-full">
+          <TabsTrigger value={"schema"}><Layers2Icon/> Schema Editor</TabsTrigger>
+          <TabsTrigger value={"navigation"}><SignpostIcon/>Semantic Index</TabsTrigger>
+        </TabsList>
+        <TabsContent value={"schema"}>
+          <SchemaViewer schema={activeSchema} dispatch={dispatch} llmStatus={llmLoaded} />
+        </TabsContent>
+        <TabsContent value={"navigation"}>
+          <div>wazoop</div>
+        </TabsContent>
+      </Tabs>
+      </div>
       <div className="shrink-0">
         <ModelControls status={llmLoaded.stage} progress={llmLoaded.progress} message={llmLoaded.message} />
       </div>
