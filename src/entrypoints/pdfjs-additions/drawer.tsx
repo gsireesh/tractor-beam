@@ -8,7 +8,7 @@
 
 import {useEffect, useRef, useState} from 'react';
 import {createRoot, Root} from 'react-dom/client';
-import {ArrowLeftRight, Layers2Icon, PencilLine, Plus, Settings, SignpostIcon, Trash2, EllipsisVerticalIcon} from 'lucide-react';
+import {ArrowLeftRight, Layers2Icon, PencilLine, Plus, SignpostIcon, Trash2, EllipsisVerticalIcon} from 'lucide-react';
 import {SchemaViewer} from '@/components/SchemaViewer';
 import {getMlAnnotationRuns, getStates, storeMlAnnotationRun} from '@/lib/schema-storage';
 import {APP_CONFIG} from '@/app-config';
@@ -41,7 +41,7 @@ let drawerDispatch: ((action: SchemaAction) => void) | null = null;
 let getActiveSchemaFn: (() => Schema | null) = () => null;
 let setOpenFn: ((value: boolean | ((prev: boolean) => boolean)) => void) | null = null;
 
-interface MlHighlight { id: string; classId: string; coords: PdfBox[]; source: 'ml'; text?: string }
+interface MlHighlight { id: string; classId: string; schemaId: string; coords: PdfBox[]; source: 'ml'; text?: string }
 
 // Module-level accumulator for ML highlights (set directly via highlights API, no React state needed)
 let mlHighlights: MlHighlight[] = [];
@@ -83,6 +83,7 @@ async function loadCachedAnnotations(schemaId: string, pdfUrl: string) {
   mlHighlights = mostRecent.annotations.map((a) => ({
     id: a.id,
     classId: a.classId,
+    schemaId,
     coords: a.coords,
     source: 'ml' as const,
     text: a.text,
@@ -94,10 +95,15 @@ async function loadCachedAnnotations(schemaId: string, pdfUrl: string) {
 function syncProvisionalHighlights() {
   if (!window.TractorBeamHighlights) return;
   const schema = getActiveSchemaFn();
-  if (!schema) return;
+  if (!schema) {
+    window.TractorBeamHighlights.setHighlights('provisional', []);
+    return;
+  }
   const colorsByClass = schema.classes.reduce((acc: Record<string, string>, cls) => { acc[cls.id] = cls.color; return acc; }, {});
-  const highlights: Highlight[] = mlHighlights.map((h) => ({ ...h, schemaId: schema.id, color: colorsByClass[h.classId], positiveExample: true}));
-  console.log(`[drawer] provisional highlight sync: ${highlights.length} ML`);
+  const highlights: Highlight[] = mlHighlights
+    .filter((h) => h.schemaId === schema.id && colorsByClass[h.classId] !== undefined)
+    .map((h) => ({ ...h, color: colorsByClass[h.classId], positiveExample: true }));
+  console.log(`[drawer] provisional highlight sync: ${highlights.length} ML for schema ${schema.id}`);
   window.TractorBeamHighlights.setHighlights('provisional', highlights);
 }
 
@@ -336,6 +342,12 @@ function DrawerContent({ initialSchemas }: { initialSchemas: Schema[] }) {
     };
   }, [dispatch, activeSchema]);
 
+  // Re-sync provisional highlights when the active schema changes so only
+  // ML annotations for the current schema are rendered.
+  useEffect(() => {
+    syncProvisionalHighlights();
+  }, [activeSchema?.id]);
+
   // Listen for messages from offscreen document (ML results)
   useEffect(() => {
     const listener = (message: ExtensionMessage) => {
@@ -358,6 +370,7 @@ function DrawerContent({ initialSchemas }: { initialSchemas: Schema[] }) {
             const newMlHighlights: MlHighlight[] = message.annotations.map((a) => ({
               id: a.id,
               classId: a.classId,
+              schemaId: activeSchema?.id ?? '',
               coords: a.coords,
               source: 'ml' as const,
               text: a.text,
