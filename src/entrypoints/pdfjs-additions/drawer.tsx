@@ -8,7 +8,7 @@
 
 import {useEffect, useRef, useState} from 'react';
 import {createRoot, Root} from 'react-dom/client';
-import {ArrowLeftRight, Layers2Icon, PencilLine, Plus, SignpostIcon} from 'lucide-react';
+import {ArrowLeftRight, Layers2Icon, PencilLine, Plus, Settings, SignpostIcon, Trash2, EllipsisVerticalIcon} from 'lucide-react';
 import {SchemaViewer} from '@/components/SchemaViewer';
 import {getMlAnnotationRuns, getStates, storeMlAnnotationRun} from '@/lib/schema-storage';
 import {APP_CONFIG} from '@/app-config';
@@ -27,6 +27,7 @@ import {IconButton} from '@/components/IconButton';
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
@@ -232,6 +233,7 @@ function SchemaHeader({
   onRename,
   onSwitch,
   onNew,
+  onDelete,
 }: {
   activeSchema: Schema | null;
   schemas: Schema[];
@@ -240,6 +242,7 @@ function SchemaHeader({
   onRename: (name: string) => void;
   onSwitch: (id: string) => void;
   onNew: () => void;
+  onDelete: () => void;
 }) {
   const titleRef = useRef<HTMLDivElement>(null);
 
@@ -293,6 +296,18 @@ function SchemaHeader({
           </DropdownMenuContent>
         </DropdownMenu>
         <IconButton title="New schema" icon={Plus} size="icon-sm" onClick={onNew} />
+        <DropdownMenu>
+          <DropdownMenuTrigger>
+            <IconButton title="Schema actions" icon={EllipsisVerticalIcon} size="icon-sm" />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuGroup>
+              <DropdownMenuItem variant="destructive" onClick={onDelete}>
+                <Trash2 strokeWidth={1} size="1em" />Delete Schema
+              </DropdownMenuItem>
+            </DropdownMenuGroup>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </div>
   );
@@ -400,6 +415,20 @@ function DrawerContent({ initialSchemas }: { initialSchemas: Schema[] }) {
           dispatch({ actionType: 'addSchema', schema: newSchema });
           setActiveSchemaId(newSchema.id);
           setTitleEditing(true);
+        }}
+        onDelete={() => {
+          if (!activeSchema) return;
+          const next = schemas.find((s) => s.id !== activeSchema.id);
+          dispatch({ actionType: 'deleteSchema', schemaId: activeSchema.id });
+          if (next) {
+            setActiveSchemaId(next.id);
+            setTitleEditing(false);
+          } else {
+            const fresh = createNewSchema('');
+            dispatch({ actionType: 'addSchema', schema: fresh });
+            setActiveSchemaId(fresh.id);
+            setTitleEditing(true);
+          }
         }}
       />
       <div className="flex flex-col h-full overflow-scroll">
