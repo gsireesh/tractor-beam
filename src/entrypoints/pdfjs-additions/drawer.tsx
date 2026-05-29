@@ -6,13 +6,13 @@
  * orchestration (visual block extraction → offscreen ML → highlight rendering).
  */
 
-import {useEffect, useRef, useState} from 'react';
+import {useEffect, useMemo, useRef, useState} from 'react';
 import {createRoot, Root} from 'react-dom/client';
 import {ArrowLeftRight, Layers2Icon, PencilLine, Plus, SignpostIcon, Trash2, EllipsisVerticalIcon} from 'lucide-react';
 import {SchemaViewer} from '@/components/SchemaViewer';
 import {getMlAnnotationRuns, getStates, storeMlAnnotationRun} from '@/lib/schema-storage';
 import {APP_CONFIG} from '@/app-config';
-import {Instance, MLHighlight, Schema} from '@/lib/definitions';
+import {Instance, MlHighlight, Schema} from '@/lib/definitions';
 import {SchemaAction, schemasReducer} from '@/lib/schema-reducer';
 import {usePersistedReducer} from '@/hooks/persisted-reducer';
 import type {ExtensionMessage} from '@/lib/messaging/message_definitions';
@@ -334,6 +334,7 @@ function DrawerContent({ initialSchemas }: { initialSchemas: Schema[] }) {
   const pdfUrl = new URLSearchParams(window.location.search).get('file') ?? '';
   const [activeSchemaId, setActiveSchemaId] = useState<string>(schemas[0]?.id ?? '');
   const activeSchema = schemas.find(s => s.id === activeSchemaId) ?? schemas[0];
+  const confirmedHighlights = useMemo<Highlight[]>(() => (activeSchema ? getHighlightsFromSchema(activeSchema, pdfUrl) : []), [activeSchema, pdfUrl]);
   const [titleEditing, setTitleEditing] = useState<boolean>(false);
 
   // Expose refs for the window API
@@ -392,11 +393,9 @@ function DrawerContent({ initialSchemas }: { initialSchemas: Schema[] }) {
   // Push confirmed (human) highlights to the in-page highlights module
   useEffect(() => {
     if (!window.TractorBeamHighlights) return;
-    const instances: Highlight[] = activeSchema ? getHighlightsFromSchema(activeSchema, pdfUrl) : [];
-
-    console.log(`[drawer] confirmed highlight sync: ${instances.length} manual, pdfUrl="${pdfUrl}"`);
-    window.TractorBeamHighlights.setHighlights('confirmed', instances);
-  }, [schemas, activeSchema, pdfUrl]);
+    console.log(`[drawer] confirmed highlight sync: ${confirmedHighlights.length} manual, pdfUrl="${pdfUrl}"`);
+    window.TractorBeamHighlights.setHighlights('confirmed', confirmedHighlights);
+  }, [confirmedHighlights, pdfUrl]);
 
   return (
     <DrawerContext.Provider value={{ activeSchema, pdfUrl, dispatch }}>
@@ -448,7 +447,7 @@ function DrawerContent({ initialSchemas }: { initialSchemas: Schema[] }) {
           <SchemaViewer schema={activeSchema} dispatch={dispatch} llmStatus={llmLoaded} />
         </TabsContent>
         <TabsContent value={"navigation"}>
-          <InstanceNavigator mlHighlights={mlHighlights} confirmedHighlights={getHighlightsFromSchema(activeSchema, pdfUrl)}/>
+          <InstanceNavigator mlHighlights={mlHighlights} confirmedHighlights={confirmedHighlights}/>
         </TabsContent>
       </Tabs>
       </div>
