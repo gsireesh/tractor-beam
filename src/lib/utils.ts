@@ -1,6 +1,6 @@
 import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
-import {Instance, PdfBox, Schema, Highlight} from "@/lib/definitions.ts";
+import {Instance, PdfBox, Schema, Highlight, Signpost} from "@/lib/definitions.ts";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -34,6 +34,14 @@ export function getHighlightsFromSchema(schema: Schema, onPdfUrl?: string) {
           .filter(instance => ((onPdfUrl == null) || instance.pdfUrl == onPdfUrl))
           .filter((instance): instance is Instance & { coords: PdfBox[] } => instance.coords != null)
           .map(instance => instanceToHighlight(instance, schemaClass.id, schema.id, schemaClass.color)))
+}
+
+export function getSignpostsFromHighlights(highlights: Highlight[], schema: Schema): Signpost[] {
+  const nameByClass = schema.classes.reduce<Record<string, string>>(
+      (acc, cls) => { acc[cls.id] = cls.name; return acc; }, {});
+  return highlights
+      .filter((h) => nameByClass[h.classId] !== undefined)
+      .map((h) => ({ ...h, className: nameByClass[h.classId] }));
 }
 
 function instanceToHighlight(inst: Instance & { coords: PdfBox[] }, classId:string, schemaId: string, color: string): Highlight {

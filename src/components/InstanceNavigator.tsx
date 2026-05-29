@@ -1,16 +1,12 @@
 import {ConfirmedHighlightSignpost} from "@/components/ConfirmedHighlightSignpost.tsx";
-import {Highlight, MlHighlight} from "@/lib/definitions.ts";
+import {Signpost} from "@/lib/definitions.ts";
 
 interface InstanceNavigatorProps {
-    mlHighlights: MlHighlightL[],
-    confirmedHighlights: Highlight[],
+    signposts: Signpost[],
 }
 
-export function InstanceNavigator({mlHighlights, confirmedHighlights}: InstanceNavigatorProps) {
+export function InstanceNavigator({signposts}: InstanceNavigatorProps) {
     return <>
-        {confirmedHighlights.map(hl =>{
-            console.log(hl);
-           return <ConfirmedHighlightSignpost key={hl.id} {...hl} />
-        })}
+        {signposts.map(sp => <ConfirmedHighlightSignpost key={sp.id} {...sp} />)}
     </>
 }

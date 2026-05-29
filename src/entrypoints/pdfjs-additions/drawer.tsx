@@ -12,7 +12,7 @@ import {ArrowLeftRight, Layers2Icon, PencilLine, Plus, SignpostIcon, Trash2, Ell
 import {SchemaViewer} from '@/components/SchemaViewer';
 import {getMlAnnotationRuns, getStates, storeMlAnnotationRun} from '@/lib/schema-storage';
 import {APP_CONFIG} from '@/app-config';
-import {Instance, MlHighlight, Schema} from '@/lib/definitions';
+import {Instance, Schema} from '@/lib/definitions';
 import {SchemaAction, schemasReducer} from '@/lib/schema-reducer';
 import {usePersistedReducer} from '@/hooks/persisted-reducer';
 import type {ExtensionMessage} from '@/lib/messaging/message_definitions';
@@ -22,11 +22,11 @@ import cssText from './drawer-styles.css?inline';
 import {
   createNewSchema,
   getHighlightsFromSchema,
-  instanceToHighlight,
+  getSignpostsFromHighlights,
   mergePdfBoxes
 } from "@/lib/utils.ts";
 import {VISUAL_BLOCK_CLASS_ID} from '@/components/HighlightOverlay.tsx';
-import type {Highlight} from '@/lib/definitions.ts';
+import type {Highlight, Signpost} from '@/lib/definitions.ts';
 import {ModelControls} from "@/components/ModelControls.tsx";
 import {IconButton} from '@/components/IconButton';
 import {
@@ -48,7 +48,13 @@ let getActiveSchemaFn: (() => Schema | null) = () => null;
 let setOpenFn: ((value: boolean | ((prev: boolean) => boolean)) => void) | null = null;
 
 // Module-level accumulator for ML highlights (set directly via highlights API, no React state needed)
-let mlHighlights: MlHighlight[] = [];
+let mlHighlights: Highlight[] = [];
+
+/** Build a classId → color lookup from a schema (empty if no schema). */
+function colorMapForSchema(schema: Schema | null): Record<string, string> {
+  if (!schema) return {};
+  return schema.classes.reduce<Record<string, string>>((acc, cls) => { acc[cls.id] = cls.color; return acc; }, {});
+}
 
 async function runSegmentationPipeline() {
   console.log('[drawer] Drawing segmentation boxes');
@@ -68,6 +74,7 @@ async function runSegmentationPipeline() {
       id: block.blockId,
       classId: VISUAL_BLOCK_CLASS_ID,
       schemaId: "visual",
+      source: 'ml' as const,
       color: "visual",
       coords: [superBlock],
       positiveExample: true,
@@ -84,6 +91,7 @@ async function loadCachedAnnotations(schemaId: string, pdfUrl: string) {
   }
   const mostRecent = runs.sort((a, b) => b.createdAt - a.createdAt)[0];
   console.log(`[drawer] Loaded cached run ${mostRecent.id} with ${mostRecent.annotations.length} annotations`);
+  const colorsByClass = colorMapForSchema(getActiveSchemaFn());
   mlHighlights = mostRecent.annotations.map((a) => ({
     id: a.id,
     classId: a.classId,
@@ -91,6 +99,8 @@ async function loadCachedAnnotations(schemaId: string, pdfUrl: string) {
     coords: a.coords,
     source: 'ml' as const,
     text: a.text,
+    color: colorsByClass[a.classId] ?? '',
+    positiveExample: true,
   }));
   syncProvisionalHighlights();
 }
@@ -103,10 +113,10 @@ function syncProvisionalHighlights() {
     window.TractorBeamHighlights.setHighlights('provisional', []);
     return;
   }
-  const colorsByClass = schema.classes.reduce((acc: Record<string, string>, cls) => { acc[cls.id] = cls.color; return acc; }, {});
+  const colorsByClass = colorMapForSchema(schema);
   const highlights: Highlight[] = mlHighlights
     .filter((h) => h.schemaId === schema.id && colorsByClass[h.classId] !== undefined)
-    .map((h) => ({ ...h, color: colorsByClass[h.classId], positiveExample: true }));
+    .map((h) => ({ ...h, color: colorsByClass[h.classId] ?? h.color }));
   console.log(`[drawer] provisional highlight sync: ${highlights.length} ML for schema ${schema.id}`);
   window.TractorBeamHighlights.setHighlights('provisional', highlights);
 }
@@ -335,6 +345,7 @@ function DrawerContent({ initialSchemas }: { initialSchemas: Schema[] }) {
   const [activeSchemaId, setActiveSchemaId] = useState<string>(schemas[0]?.id ?? '');
   const activeSchema = schemas.find(s => s.id === activeSchemaId) ?? schemas[0];
   const confirmedHighlights = useMemo<Highlight[]>(() => (activeSchema ? getHighlightsFromSchema(activeSchema, pdfUrl) : []), [activeSchema, pdfUrl]);
+  const confirmedSignposts = useMemo<Signpost[]>(() => (activeSchema ? getSignpostsFromHighlights(confirmedHighlights, activeSchema) : []), [confirmedHighlights, activeSchema]);
   const [titleEditing, setTitleEditing] = useState<boolean>(false);
 
   // Expose refs for the window API
@@ -372,13 +383,16 @@ function DrawerContent({ initialSchemas }: { initialSchemas: Schema[] }) {
             }).catch((err: unknown) => console.error('[drawer] Failed to store ML annotations:', err));
 
             // Accumulate and render ML annotations as provisional highlights
-            const newMlHighlights: MlHighlight[] = message.annotations.map((a) => ({
+            const colorsByClass = colorMapForSchema(activeSchema ?? null);
+            const newMlHighlights: Highlight[] = message.annotations.map((a) => ({
               id: a.id,
               classId: a.classId,
               schemaId: activeSchema?.id ?? '',
               coords: a.coords,
               source: 'ml' as const,
               text: a.text,
+              color: colorsByClass[a.classId] ?? '',
+              positiveExample: true,
             }));
             mlHighlights = [...mlHighlights, ...newMlHighlights];
             syncProvisionalHighlights();
@@ -447,7 +461,7 @@ function DrawerContent({ initialSchemas }: { initialSchemas: Schema[] }) {
           <SchemaViewer schema={activeSchema} dispatch={dispatch} llmStatus={llmLoaded} />
         </TabsContent>
         <TabsContent value={"navigation"}>
-          <InstanceNavigator mlHighlights={mlHighlights} confirmedHighlights={confirmedHighlights}/>
+          <InstanceNavigator signposts={confirmedSignposts}/>
         </TabsContent>
       </Tabs>
       </div>
