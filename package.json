@@ -10,6 +10,7 @@
     "build:firefox": "wxt build -b firefox",
     "zip": "wxt zip",
     "zip:firefox": "wxt zip -b firefox",
+    "ladle": "ladle serve",
     "postinstall": "wxt prepare"
   },
   "dependencies": {
@@ -35,6 +36,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.21.0",
+    "@ladle/react": "^5.1.1",
     "@types/chrome": "^0.1.36",
     "@types/react": "^19.0.10",
     "@types/react-dom": "^19.0.4",
