@@ -1,4 +1,4 @@
-import { ReactNode } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
 import { Combobox as ComboboxPrimitive } from '@base-ui/react';
 import {
   Combobox,
@@ -25,6 +25,12 @@ export interface CreatableComboboxProps {
   inputClassName?: string;
   contentContainer?: ComboboxPrimitive.Portal.Props['container'];
   contentPositionerClassName?: string;
+  /**
+   * Close the dropdown when any ancestor scrolls. Needed when the dropdown is
+   * portaled to a fixed layer (e.g. the popover root) while the trigger lives in
+   * a scrolling panel — otherwise the open list stays put as the panel scrolls.
+   */
+  closeOnScroll?: boolean;
 }
 
 export function CreatableCombobox({
@@ -40,7 +46,19 @@ export function CreatableCombobox({
   inputClassName,
   contentContainer,
   contentPositionerClassName,
+  closeOnScroll = false,
 }: CreatableComboboxProps) {
+  // Only take control of `open` when closeOnScroll is requested; otherwise the
+  // combobox stays uncontrolled (unchanged behavior for the floating popovers).
+  const [open, setOpen] = useState(false);
+  useEffect(() => {
+    if (!closeOnScroll || !open) return;
+    const close = () => setOpen(false);
+    // Capture phase: scroll doesn't bubble, so this catches any scrolling ancestor.
+    window.addEventListener('scroll', close, true);
+    return () => window.removeEventListener('scroll', close, true);
+  }, [closeOnScroll, open]);
+
   const trimmed = inputValue.trim();
   const hasExactMatch =
     items.some((i) => i.toLowerCase() === trimmed.toLowerCase()) ||
@@ -60,6 +78,7 @@ export function CreatableCombobox({
       value={value}
       onInputValueChange={onInputValueChange}
       filter={filter}
+      {...(closeOnScroll ? { open, onOpenChange: setOpen } : {})}
       onValueChange={(picked: string | null) => {
         if (typeof picked === 'string' && picked.startsWith(CREATE_ITEM_PREFIX)) {
           onCreate(picked.slice(CREATE_ITEM_PREFIX.length));

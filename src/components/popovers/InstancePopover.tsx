@@ -1,16 +1,13 @@
 import { ReactNode, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { SchemaClass } from '@/lib/definitions';
-import { CreatableCombobox } from '@/components/ui/creatable-combobox';
-import { Textarea } from '@/components/ui/textarea';
-import { createNewClass } from '@/lib/utils';
-
-const accentColorFallback = 'rgba(0,0,0,0)';
+import { InstancePopoverContent, useStableAccentColor } from './InstancePopoverContent';
 
 const POPOVER_MIN_WIDTH_PX = 320;
 const POPOVER_MAX_WIDTH_PX = 400;
 
 export interface InstancePopoverProps {
   text: string;
+  positiveExample?: boolean;
   position: { top: number; left: number; bottom: number };
   notesValue: string | null;
   onNotesChange: (v: string) => void;
@@ -24,8 +21,14 @@ export interface InstancePopoverProps {
   allowCreateClass?: boolean;
 }
 
+/**
+ * Floating chrome for the instance form: rect-anchored positioning, the caret
+ * arrow, and the card shell. The form itself lives in InstancePopoverContent so
+ * it can be reused outside this floating context (e.g. inline in the navigator).
+ */
 export function InstancePopover({
   text,
+  positiveExample,
   position,
   notesValue,
   onNotesChange,
@@ -41,11 +44,7 @@ export function InstancePopover({
   const popoverRef = useRef<HTMLDivElement>(null);
   const [adjustedPosition, setAdjustedPosition] = useState<{ top: number; left: number; showAbove: boolean } | null>(null);
   const activeSchema = window.TractorBeamDrawer?.getActiveSchema() ?? null;
-
-  // Track the last *valid* selected class so the accent color stays stable
-  // while the user is typing into the combobox (selectedClass goes null).
-  const lastValidClassRef = useRef<SchemaClass | null>(selectedClass);
-  if (selectedClass) lastValidClassRef.current = selectedClass;
+  const accentColor = useStableAccentColor(selectedClass);
 
   useLayoutEffect(() => {
     if (!popoverRef.current) return;
@@ -91,8 +90,6 @@ export function InstancePopover({
     };
   }, [onClose]);
 
-  const accentColor = lastValidClassRef.current?.color ?? accentColorFallback;
-
   return (
     <div
       ref={popoverRef}
@@ -121,47 +118,23 @@ export function InstancePopover({
             maxWidth: POPOVER_MAX_WIDTH_PX,
           }}
         >
-          <div className="p-3">
-            <div
-              className="bg-gray-100 dark:bg-gray-700 rounded px-2.5 py-2 mb-3 text-sm text-gray-700 dark:text-gray-200 max-h-20 overflow-y-auto break-words border-l-3 italic"
-              style={{ borderLeftColor: accentColor }}
-            >
-              {text}
-            </div>
-            <Textarea
-              className="bg-white rounded px-2.5 py-2 mb-3 text-sm"
-              placeholder="Notes..."
-              value={notesValue ?? ''}
-              onChange={(e) => onNotesChange(e.target.value)}
-            />
-            <div className="flex gap-2">
-              <CreatableCombobox
-                items={activeSchema?.classes.map((c) => c.name) ?? []}
-                value={selectedClass?.name ?? ''}
-                inputValue={inputValue}
-                onInputValueChange={onInputValueChange}
-                allowCreate={allowCreateClass}
-                onSelect={(name) => {
-                  onSelectedClassChange(
-                    activeSchema?.classes.find((c) => c.name === name) ?? null
-                  );
-                }}
-                onCreate={(name) => {
-                  onSelectedClassChange(createNewClass(name, '', []));
-                }}
-                renderCreateLabel={(label) => `Create new class "${label}"`}
-                inputClassName="flex-1 bg-white"
-                contentContainer={document.getElementById('tractor-beam-popover-root')}
-                contentPositionerClassName="z-[100001]"
-              />
-              <div
-                className="flex shrink-0"
-                style={{ width: actionSlotWidthPx, gap: 4 }}
-              >
-                {actionButtons}
-              </div>
-            </div>
-          </div>
+          <InstancePopoverContent
+            text={text}
+            positiveExample={positiveExample}
+            notesValue={notesValue}
+            onNotesChange={onNotesChange}
+            selectedClass={selectedClass}
+            onSelectedClassChange={onSelectedClassChange}
+            inputValue={inputValue}
+            onInputValueChange={onInputValueChange}
+            actionButtons={actionButtons}
+            actionSlotWidthPx={actionSlotWidthPx}
+            allowCreateClass={allowCreateClass}
+            classes={activeSchema?.classes ?? []}
+            accentColor={accentColor}
+            comboboxContainer={document.getElementById('tractor-beam-popover-root')}
+            comboboxPositionerClassName="z-[100001]"
+          />
         </div>
       </div>
     </div>
