@@ -1,12 +1,18 @@
+import type {MouseEvent} from "react";
 import {Signpost} from "@/lib/definitions.ts"
 import {scrollToAnnotation} from "@/lib/pdf-navigation.ts";
 import {EditInstanceInline} from "@/components/EditInstanceInline.tsx";
 
 export function ConfirmedHighlightSignpost({id, schemaId, classId, coords}: Signpost) {
-    return <div className="my-3" onClick={() => (coords && scrollToAnnotation(coords))}>
-        {/* Stop form interactions (typing, selecting a class) from triggering the scroll-to-annotation click. */}
-        <div onClick={(e) => e.stopPropagation()}>
-            <EditInstanceInline schemaId={schemaId} classId={classId} instanceId={id} />
-        </div>
+    // Clicking the card navigates to the annotation in the PDF — except when the
+    // click lands on a form control (notes textarea, class picker, delete), which
+    // should do their own thing. The class dropdown is portaled out of the card,
+    // so its option clicks never reach this handler.
+    const handleClick = (e: MouseEvent<HTMLDivElement>) => {
+        if ((e.target as HTMLElement).closest('input, textarea, button')) return;
+        if (coords) scrollToAnnotation(coords);
+    };
+    return <div className="my-3 cursor-pointer" onClick={handleClick}>
+        <EditInstanceInline schemaId={schemaId} classId={classId} instanceId={id} />
     </div>
 }
