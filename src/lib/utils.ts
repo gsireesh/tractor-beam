@@ -1,6 +1,6 @@
 import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
-import {Instance, PdfBox, Schema} from "@/lib/definitions.ts";
+import {Instance, PdfBox, Schema, Highlight} from "@/lib/definitions.ts";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -28,16 +28,32 @@ export function createNewSchema(name: string): Schema {
   }
 }
 
+export function getHighlightsFromSchema(schema: Schema, onPdfUrl?: string) {
+  return schema.classes.flatMap((schemaClass) =>
+      schemaClass.instances
+          .filter(instance => ((onPdfUrl == null) || instance.pdfUrl == onPdfUrl))
+          .filter((instance): instance is Instance & { coords: PdfBox[] } => instance.coords != null)
+          .map(instance => instanceToHighlight(instance, schemaClass.id, schema.id, schemaClass.color)))
+}
+
+function instanceToHighlight(inst: Instance & { coords: PdfBox[] }, classId:string, schemaId: string, color: string): Highlight {
+  return { id: inst.id, classId: classId, schemaId: schemaId, text: inst.text, coords: inst.coords, source: 'manual', color: color, positiveExample: inst.positiveExample};
+}
+
 export function rgbaToHex(rgba: string, overrideAlpha: number | null = null): string {
   const match = /rgba?\((\d+),\s*(\d+),\s*(\d+),?\s*([\d.]*)\)/.exec(rgba);
   if (!match) throw new Error(`Invalid rgba string: ${rgba}`);
 
-  const [, r, g, b, a] = match
+  const [, r, g, b, a] = match;
   const toHex = (n: number) => n.toString(16).padStart(2, "0");
 
   const hex = `#${toHex(+r)}${toHex(+g)}${toHex(+b)}`;
   const alpha = overrideAlpha ? toHex(Math.round(overrideAlpha * 255)) : toHex(Math.round(parseFloat(a) * 255));
   return `${hex}${alpha}`;
+}
+
+export function bodyToBorderColor(rgbaColor:string) {
+  return rgbaToHex(rgbaColor, 1.0)
 }
 
 export function generateRandomRgbColor(){

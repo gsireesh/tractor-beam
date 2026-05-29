@@ -12,14 +12,19 @@ import {ArrowLeftRight, Layers2Icon, PencilLine, Plus, SignpostIcon, Trash2, Ell
 import {SchemaViewer} from '@/components/SchemaViewer';
 import {getMlAnnotationRuns, getStates, storeMlAnnotationRun} from '@/lib/schema-storage';
 import {APP_CONFIG} from '@/app-config';
-import {Instance, PdfBox, Schema} from '@/lib/definitions';
+import {Instance, MLHighlight, Schema} from '@/lib/definitions';
 import {SchemaAction, schemasReducer} from '@/lib/schema-reducer';
 import {usePersistedReducer} from '@/hooks/persisted-reducer';
 import type {ExtensionMessage} from '@/lib/messaging/message_definitions';
 import {getClaudeApiKey, getModelConfig, getOllamaBaseUrl} from '@/lib/ml/config';
 import {DrawerContext} from '@/contexts/DrawerContext';
 import cssText from './drawer-styles.css?inline';
-import {createNewSchema, mergePdfBoxes} from "@/lib/utils.ts";
+import {
+  createNewSchema,
+  getHighlightsFromSchema,
+  instanceToHighlight,
+  mergePdfBoxes
+} from "@/lib/utils.ts";
 import {VISUAL_BLOCK_CLASS_ID} from '@/components/HighlightOverlay.tsx';
 import type {Highlight} from '@/lib/definitions.ts';
 import {ModelControls} from "@/components/ModelControls.tsx";
@@ -32,6 +37,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Tabs, TabsContent, TabsList, TabsTrigger} from '@/components/ui/tabs';
+import {InstanceNavigator} from "@/components/InstanceNavigator.tsx";
 
 const DRAWER_WIDTH = 380;
 
@@ -40,8 +46,6 @@ const DRAWER_WIDTH = 380;
 let drawerDispatch: ((action: SchemaAction) => void) | null = null;
 let getActiveSchemaFn: (() => Schema | null) = () => null;
 let setOpenFn: ((value: boolean | ((prev: boolean) => boolean)) => void) | null = null;
-
-interface MlHighlight { id: string; classId: string; schemaId: string; coords: PdfBox[]; source: 'ml'; text?: string }
 
 // Module-level accumulator for ML highlights (set directly via highlights API, no React state needed)
 let mlHighlights: MlHighlight[] = [];
@@ -388,17 +392,7 @@ function DrawerContent({ initialSchemas }: { initialSchemas: Schema[] }) {
   // Push confirmed (human) highlights to the in-page highlights module
   useEffect(() => {
     if (!window.TractorBeamHighlights) return;
-    const instances: Highlight[] = [];
-
-    if (activeSchema) {
-      for (const cls of activeSchema.classes) {
-        for (const inst of cls.instances) {
-          if (inst.coords && inst.pdfUrl === pdfUrl) {
-            instances.push({ id: inst.id, classId: cls.id, schemaId: activeSchema.id, coords: inst.coords, source: 'manual', color: cls.color, positiveExample: inst.positiveExample});
-          }
-        }
-      }
-    }
+    const instances: Highlight[] = activeSchema ? getHighlightsFromSchema(activeSchema, pdfUrl) : [];
 
     console.log(`[drawer] confirmed highlight sync: ${instances.length} manual, pdfUrl="${pdfUrl}"`);
     window.TractorBeamHighlights.setHighlights('confirmed', instances);
@@ -454,7 +448,7 @@ function DrawerContent({ initialSchemas }: { initialSchemas: Schema[] }) {
           <SchemaViewer schema={activeSchema} dispatch={dispatch} llmStatus={llmLoaded} />
         </TabsContent>
         <TabsContent value={"navigation"}>
-          <div>wazoop</div>
+          <InstanceNavigator mlHighlights={mlHighlights} confirmedHighlights={getHighlightsFromSchema(activeSchema, pdfUrl)}/>
         </TabsContent>
       </Tabs>
       </div>

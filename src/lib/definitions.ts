@@ -17,6 +17,16 @@ export interface Instance {
   notes?: string | null;
 }
 
+export interface MlHighlight {
+  id: string;
+  classId: string;
+  schemaId: string;
+  coords: PdfBox[];
+  source: 'ml';
+  text?: string
+}
+
+
 export interface Highlight {
   id: string;
   classId: string;
@@ -26,6 +36,11 @@ export interface Highlight {
   text?: string;
   color: string;
   positiveExample: boolean;
+}
+
+export interface Signpost {
+
+  highlight: Highlight,
 }
 
 // ─── Visual block extraction (PDF text segmented by spatial proximity) ───
