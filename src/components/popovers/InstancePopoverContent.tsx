@@ -25,6 +25,8 @@ export interface InstancePopoverContentProps {
   text: string;
   /** Positive/negative indicator, shown under the quote. Omit when there's no instance yet (create/promote). */
   positiveExample?: boolean;
+  /** PDF page of the annotation. Passed only by the navigation-view host, so the page badge is nav-only. */
+  pageNumber?: number;
   notesValue: string | null;
   onNotesChange: (v: string) => void;
   /** Fired when the notes textarea loses focus — used by the inline host to persist. */
@@ -50,6 +52,7 @@ export interface InstancePopoverContentProps {
 export function InstancePopoverContent({
   text,
   positiveExample,
+  pageNumber,
   notesValue,
   onNotesChange,
   onNotesBlur,
@@ -74,12 +77,15 @@ export function InstancePopoverContent({
       >
         {text}
       </div>
-      {positiveExample !== undefined && (
-        <div className="mb-3">
-          {positiveExample ? (
+      {(positiveExample !== undefined || pageNumber !== undefined) && (
+        <div className="mb-3 flex items-center gap-2">
+          {positiveExample !== undefined && (positiveExample ? (
             <Badge className="bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-300"><Plus />Positive Example</Badge>
           ) : (
             <Badge className="bg-red-50 text-red-700 dark:bg-red-950 dark:text-red-300"><Minus />Negative Example</Badge>
+          ))}
+          {pageNumber !== undefined && (
+            <Badge className="bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300">Page {pageNumber}</Badge>
           )}
         </div>
       )}
