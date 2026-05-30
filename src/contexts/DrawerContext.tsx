@@ -6,6 +6,8 @@ export interface DrawerContextValue {
     activeSchema: Schema;
     pdfUrl: string;
     dispatch: (action: SchemaAction) => void;
+    /** Drop a provisional (ML) highlight, e.g. after it's promoted to an instance. */
+    removeMlHighlight: (highlightId: string) => void;
 }
 
 export const DrawerContext = createContext<DrawerContextValue | null>(null);

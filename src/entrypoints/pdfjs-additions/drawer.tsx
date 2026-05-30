@@ -6,7 +6,7 @@
  * orchestration (visual block extraction → offscreen ML → highlight rendering).
  */
 
-import {useEffect, useMemo, useRef, useState} from 'react';
+import {useCallback, useEffect, useMemo, useRef, useState, type Dispatch, type SetStateAction} from 'react';
 import {createRoot, Root} from 'react-dom/client';
 import {ArrowLeftRight, Layers2Icon, PencilLine, Plus, SignpostIcon, Trash2, EllipsisVerticalIcon} from 'lucide-react';
 import {SchemaViewer} from '@/components/SchemaViewer';
@@ -47,8 +47,9 @@ let drawerDispatch: ((action: SchemaAction) => void) | null = null;
 let getActiveSchemaFn: (() => Schema | null) = () => null;
 let setOpenFn: ((value: boolean | ((prev: boolean) => boolean)) => void) | null = null;
 
-// Module-level accumulator for ML highlights (set directly via highlights API, no React state needed)
-let mlHighlights: Highlight[] = [];
+// Bridge so module-scope pipeline functions (invoked via the window API) can push
+// ML highlights into the component's reactive state. Null until the drawer mounts.
+let setMlHighlightsFn: Dispatch<SetStateAction<Highlight[]>> | null = null;
 
 /** Build a classId → color lookup from a schema (empty if no schema). */
 function colorMapForSchema(schema: Schema | null): Record<string, string> {
@@ -92,7 +93,7 @@ async function loadCachedAnnotations(schemaId: string, pdfUrl: string) {
   const mostRecent = runs.sort((a, b) => b.createdAt - a.createdAt)[0];
   console.log(`[drawer] Loaded cached run ${mostRecent.id} with ${mostRecent.annotations.length} annotations`);
   const colorsByClass = colorMapForSchema(getActiveSchemaFn());
-  mlHighlights = mostRecent.annotations.map((a) => ({
+  const loaded: Highlight[] = mostRecent.annotations.map((a) => ({
     id: a.id,
     classId: a.classId,
     schemaId,
@@ -102,11 +103,12 @@ async function loadCachedAnnotations(schemaId: string, pdfUrl: string) {
     color: colorsByClass[a.classId] ?? '',
     positiveExample: true,
   }));
-  syncProvisionalHighlights();
+  // State change drives the viewer sync via the [mlHighlights] effect.
+  setMlHighlightsFn?.(loaded);
 }
 
 /** Map raw ML highlights to colored Highlight objects and push to the highlights module. */
-function syncProvisionalHighlights() {
+function syncProvisionalHighlights(mlHighlights: Highlight[]) {
   if (!window.TractorBeamHighlights) return;
   const schema = getActiveSchemaFn();
   if (!schema) {
@@ -125,9 +127,8 @@ function syncProvisionalHighlights() {
 async function runAnnotationPipeline(schema: Schema, requestId: string) {
   console.log('[drawer] Starting annotation pipeline:', requestId);
 
-  // Reset ML highlights for the new run
-  mlHighlights = [];
-  syncProvisionalHighlights();
+  // Reset ML highlights for the new run (state change re-syncs the viewer).
+  setMlHighlightsFn?.([]);
 
   // 1. Extract visual blocks directly from the in-page API
   if (!window.TractorBeamTextExtraction) {
@@ -346,23 +347,27 @@ function DrawerContent({ initialSchemas }: { initialSchemas: Schema[] }) {
   const activeSchema = schemas.find(s => s.id === activeSchemaId) ?? schemas[0];
   const confirmedHighlights = useMemo<Highlight[]>(() => (activeSchema ? getHighlightsFromSchema(activeSchema, pdfUrl) : []), [activeSchema, pdfUrl]);
   const confirmedSignposts = useMemo<Signpost[]>(() => (activeSchema ? getSignpostsFromHighlights(confirmedHighlights, activeSchema) : []), [confirmedHighlights, activeSchema]);
+  const [mlHighlights, setMlHighlights] = useState<Highlight[]>([]);
+  const mlSignposts = useMemo<Signpost[]>(() => (activeSchema ? getSignpostsFromHighlights(mlHighlights, activeSchema) : []), [mlHighlights, activeSchema]);
+  const removeMlHighlight = useCallback((highlightId: string) => setMlHighlights((prev) => prev.filter((h) => h.id !== highlightId)), []);
   const [titleEditing, setTitleEditing] = useState<boolean>(false);
 
   // Expose refs for the window API
   useEffect(() => {
     drawerDispatch = dispatch;
     getActiveSchemaFn = () => activeSchema ?? null;
+    setMlHighlightsFn = setMlHighlights;
     return () => {
       drawerDispatch = null;
       getActiveSchemaFn = () => null;
+      setMlHighlightsFn = null;
     };
   }, [dispatch, activeSchema]);
 
-  // Re-sync provisional highlights when the active schema changes so only
-  // ML annotations for the current schema are rendered.
+  // Push ML highlights to the viewer whenever they (or the active schema) change.
   useEffect(() => {
-    syncProvisionalHighlights();
-  }, [activeSchema?.id]);
+    syncProvisionalHighlights(mlHighlights);
+  }, [mlHighlights, activeSchema?.id]);
 
   // Listen for messages from offscreen document (ML results)
   useEffect(() => {
@@ -394,8 +399,7 @@ function DrawerContent({ initialSchemas }: { initialSchemas: Schema[] }) {
               color: colorsByClass[a.classId] ?? '',
               positiveExample: true,
             }));
-            mlHighlights = [...mlHighlights, ...newMlHighlights];
-            syncProvisionalHighlights();
+            setMlHighlights((prev) => [...prev, ...newMlHighlights]);
           }
           break;
       }
@@ -412,7 +416,7 @@ function DrawerContent({ initialSchemas }: { initialSchemas: Schema[] }) {
   }, [confirmedHighlights, pdfUrl]);
 
   return (
-    <DrawerContext.Provider value={{ activeSchema, pdfUrl, dispatch }}>
+    <DrawerContext.Provider value={{ activeSchema, pdfUrl, dispatch, removeMlHighlight }}>
       <SchemaHeader
         activeSchema={activeSchema}
         schemas={schemas}
@@ -461,8 +465,7 @@ function DrawerContent({ initialSchemas }: { initialSchemas: Schema[] }) {
           <SchemaViewer schema={activeSchema} dispatch={dispatch} llmStatus={llmLoaded} />
         </TabsContent>
         <TabsContent value={"navigation"}>
-          {/* ML signposts deferred until mlHighlights is reactive state; confirmed-only for now. */}
-          <InstanceNavigator confirmedSignposts={confirmedSignposts} mlSignposts={[]}/>
+          <InstanceNavigator confirmedSignposts={confirmedSignposts} mlSignposts={mlSignposts}/>
         </TabsContent>
       </Tabs>
       </div>
