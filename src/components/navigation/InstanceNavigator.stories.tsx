@@ -27,7 +27,7 @@ const Frame = ({ children }: { children: React.ReactNode }) => (
 export const Default: Story = () => (
   <DrawerContext.Provider value={stubContext}>
     <Frame>
-      <InstanceNavigator signposts={signposts} />
+      <InstanceNavigator confirmedSignposts={signposts} />
     </Frame>
   </DrawerContext.Provider>
 );

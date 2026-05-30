@@ -461,7 +461,7 @@ function DrawerContent({ initialSchemas }: { initialSchemas: Schema[] }) {
           <SchemaViewer schema={activeSchema} dispatch={dispatch} llmStatus={llmLoaded} />
         </TabsContent>
         <TabsContent value={"navigation"}>
-          <InstanceNavigator signposts={confirmedSignposts}/>
+          <InstanceNavigator confirmedSignposts={confirmedSignposts}/>
         </TabsContent>
       </Tabs>
       </div>
