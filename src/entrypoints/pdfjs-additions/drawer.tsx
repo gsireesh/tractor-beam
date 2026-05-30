@@ -37,7 +37,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Tabs, TabsContent, TabsList, TabsTrigger} from '@/components/ui/tabs';
-import {InstanceNavigator} from "@/components/InstanceNavigator.tsx";
+import {InstanceNavigator} from "@/components/navigation/InstanceNavigator.tsx";
 
 const DRAWER_WIDTH = 380;
 
@@ -461,7 +461,8 @@ function DrawerContent({ initialSchemas }: { initialSchemas: Schema[] }) {
           <SchemaViewer schema={activeSchema} dispatch={dispatch} llmStatus={llmLoaded} />
         </TabsContent>
         <TabsContent value={"navigation"}>
-          <InstanceNavigator confirmedSignposts={confirmedSignposts}/>
+          {/* ML signposts deferred until mlHighlights is reactive state; confirmed-only for now. */}
+          <InstanceNavigator confirmedSignposts={confirmedSignposts} mlSignposts={[]}/>
         </TabsContent>
       </Tabs>
       </div>

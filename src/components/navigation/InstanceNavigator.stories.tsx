@@ -13,6 +13,11 @@ const activeSchema = placeholderSchemas[1];
 // drawer feeds the navigator.
 const signposts = getSignpostsFromHighlights(getHighlightsFromSchema(activeSchema), activeSchema);
 
+// Sample "ML" (provisional) signposts. In the app these come from the offscreen
+// annotation pipeline; here we reuse a couple of the schema's real instances so
+// the inline editors can resolve them through the stub DrawerContext below.
+const mlSignposts = signposts.slice(0, 2);
+
 // Each signpost renders an inline editor that reads/writes through DrawerContext.
 // Provide a stub provider so the editors resolve their instances; dispatch is a
 // no-op here (Ladle just renders the form — edits aren't persisted in the story).
@@ -27,7 +32,7 @@ const Frame = ({ children }: { children: React.ReactNode }) => (
 export const Default: Story = () => (
   <DrawerContext.Provider value={stubContext}>
     <Frame>
-      <InstanceNavigator confirmedSignposts={signposts} />
+      <InstanceNavigator confirmedSignposts={signposts} mlSignposts={mlSignposts} />
     </Frame>
   </DrawerContext.Provider>
 );

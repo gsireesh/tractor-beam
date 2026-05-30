@@ -1,7 +1,7 @@
 import type {MouseEvent} from "react";
 import {Signpost} from "@/lib/definitions.ts"
 import {scrollToAnnotation} from "@/lib/pdf-navigation.ts";
-import {EditInstanceInline} from "@/components/EditInstanceInline.tsx";
+import {EditInstanceInline} from "@/components/navigation/EditInstanceInline.tsx";
 
 export function ConfirmedHighlightSignpost({id, schemaId, classId, coords}: Signpost) {
     // Clicking the card navigates to the annotation in the PDF — except when the
