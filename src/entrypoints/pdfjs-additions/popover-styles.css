@@ -119,3 +119,15 @@
    Spans keep pointer-events so text selection still works. */
 .textLayer { pointer-events: none; }
 .textLayer span { pointer-events: auto; }
+
+/* Transient flash when navigating to a highlight from the index.
+   Ring color comes from --tb-flash-color (set per-highlight to its own
+   color); falls back to amber if unset. */
+@keyframes tractor-beam-flash {
+  0%, 100% { box-shadow: 0 0 0 0 var(--tb-flash-color, rgba(250, 204, 21, 0.85)); }
+  25%, 75% { box-shadow: 0 0 0 4px var(--tb-flash-color, rgba(250, 204, 21, 0.85)); }
+}
+.tractor-beam-flash {
+  border-radius: 2px;
+  animation: tractor-beam-flash 0.6s ease-in-out 3;
+}

@@ -4,9 +4,10 @@ import { Highlight } from '@/lib/definitions';
 interface PageHighlightsProps {
   pageNumber: number;
   highlights: Highlight[];
+  flashingId: string | null;
 }
 
-export function PageHighlights({ pageNumber, highlights }: PageHighlightsProps) {
+export function PageHighlights({ pageNumber, highlights, flashingId }: PageHighlightsProps) {
   return (
     <>
       {highlights.filter((hl) => hl.coords != null).map((hl) => {
@@ -20,6 +21,7 @@ export function PageHighlights({ pageNumber, highlights }: PageHighlightsProps) 
           source={hl.source}
           text={hl.text}
           positiveExample={hl.positiveExample}
+          flashing={hl.id === flashingId}
           />
       })}
     </>

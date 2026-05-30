@@ -26,7 +26,11 @@ export function ConfirmedInstanceViewer(props: InstanceViewerProps) {
             </div>
             {instance.notes && <div className="rounded-sm mx-3 my-1 p-2 bg-white" style={{borderColor: borderColor}}>{instance.notes}</div>}
             <div className="m-3 flex flex-row justify-end align-middle">
-                <button className={"mx-3 my-1"} onClick={() => instance.coords && scrollToAnnotation(instance.coords)}>
+                <button className={"mx-3 my-1"} onClick={() => {
+                    if (!instance.coords) { return; }
+                    scrollToAnnotation(instance.coords);
+                    window.TractorBeamHighlights?.flashHighlight(instance.id);
+                }}>
                     <LocateFixed size={"16px"}/>
                 </button>
                 <button className={"mx-3 my-1"} onClick={() => dispatch({

@@ -17,6 +17,7 @@ declare global {
     TractorBeamHighlights: {
       setHighlights: (highlightType: HighlightType, highlights: Highlight[]) => void;
       setHighlightColor: (highlightId: string, color: string) => void;
+      flashHighlight: (highlightId: string) => void;
       renderPage: (pageNumber: number) => void;
       renderAll: () => void;
       clearContainers: () => void;
@@ -34,6 +35,12 @@ const highlights: Record<HighlightType, Highlight[]> = {
 let pageContainers = new Map<number, HTMLElement>();
 let root: Root | null = null;
 
+// Id of the highlight currently flashing (after a navigate-to from the index),
+// or null. Auto-clears after the animation so the flash is one-shot.
+let flashingId: string | null = null;
+let flashTimer: ReturnType<typeof setTimeout> | null = null;
+const FLASH_DURATION_MS = 2000;
+
 // ─── React root component ───
 
 function allHighlights(): Highlight[] {
@@ -43,9 +50,11 @@ function allHighlights(): Highlight[] {
 function HighlightsRoot({
   highlights,
   pageContainers,
+  flashingId,
 }: {
   highlights: Highlight[];
   pageContainers: Map<number, HTMLElement>;
+  flashingId: string | null;
 }) {
   return (
     <>
@@ -55,6 +64,7 @@ function HighlightsRoot({
             key={pageNumber}
             pageNumber={pageNumber}
             highlights={highlights}
+            flashingId={flashingId}
           />,
           container,
         ),
@@ -71,6 +81,7 @@ function render() {
     <HighlightsRoot
       highlights={mergedHighlights}
       pageContainers={new Map(pageContainers)}
+      flashingId={flashingId}
     />
   );
 }
@@ -123,6 +134,18 @@ function setHighlightColor(highlightId: string, color: string) {
   }
 }
 
+/** Briefly flash a highlight (e.g. after navigating to it from the index). */
+function flashHighlight(highlightId: string) {
+  if (flashTimer) clearTimeout(flashTimer);
+  flashingId = highlightId;
+  render();
+  flashTimer = setTimeout(() => {
+    flashingId = null;
+    flashTimer = null;
+    render();
+  }, FLASH_DURATION_MS);
+}
+
 function renderPage(pageNumber: number) {
   ensureContainer(pageNumber);
   render();
@@ -160,6 +183,7 @@ export function initHighlights() {
   window.TractorBeamHighlights = {
     setHighlights,
     setHighlightColor,
+    flashHighlight,
     renderPage,
     renderAll,
     clearContainers,

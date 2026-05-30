@@ -10,7 +10,10 @@ export function ConfirmedHighlightSignpost({id, schemaId, classId, coords}: Sign
     // so its option clicks never reach this handler.
     const handleClick = (e: MouseEvent<HTMLDivElement>) => {
         if ((e.target as HTMLElement).closest('input, textarea, button')) return;
-        if (coords) scrollToAnnotation(coords);
+        if (coords) {
+            scrollToAnnotation(coords);
+            window.TractorBeamHighlights?.flashHighlight(id);
+        }
     };
     return <div className="my-3 cursor-pointer" onClick={handleClick}>
         <EditInstanceInline schemaId={schemaId} classId={classId} instanceId={id} />

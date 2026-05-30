@@ -13,4 +13,6 @@ export interface HighlightOverlayProps {
   text?: string;
   allCoords?: PdfBox[];
   positiveExample: boolean,
+  /** When true, briefly flash this highlight (navigated-to from the index). */
+  flashing?: boolean,
 }

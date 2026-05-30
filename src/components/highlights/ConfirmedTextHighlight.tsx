@@ -8,6 +8,7 @@ export const ConfirmedTextHighlight = memo(function ConfirmedTextHighlightRect({
   allCoords,
   color,
   positiveExample,
+  flashing,
 }: HighlightOverlayProps) {
   const [hovered, setHovered] = useState(false);
 
@@ -38,13 +39,15 @@ export const ConfirmedTextHighlight = memo(function ConfirmedTextHighlightRect({
           onMouseEnter={() => setHovered(true)}
           onMouseLeave={() => setHovered(false)}
           onClick={handleClick}
-          className="absolute cursor-pointer"
+          className={`absolute cursor-pointer${flashing ? ' tractor-beam-flash' : ''}`}
           style={{
             left: `${box.left * 100}%`,
             top: `${box.top * 100}%`,
             width: `${box.width * 100}%`,
             height: `${box.height * 100}%`,
             pointerEvents: 'auto',
+            // Flash ring color (consumed by the .tractor-beam-flash animation).
+            ['--tb-flash-color' as string]: borderColor,
           }}
         >
           <div
