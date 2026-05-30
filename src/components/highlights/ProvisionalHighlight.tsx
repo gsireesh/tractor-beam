@@ -10,6 +10,7 @@ export const ProvisionalHighlight = memo(function ProvisionalHighlight({
   text,
   allCoords,
   positiveExample,
+  flashing,
 }: HighlightOverlayProps) {
   const firstBoxRef = useRef<HTMLDivElement>(null);
   const [hovered, setHovered] = useState(false);
@@ -84,13 +85,15 @@ export const ProvisionalHighlight = memo(function ProvisionalHighlight({
             onClick={handleClick}
             onMouseEnter={() => setHovered(true)}
             onMouseLeave={() => setHovered(false)}
-            className="absolute cursor-pointer"
+            className={`absolute cursor-pointer${flashing ? ' tractor-beam-flash' : ''}`}
             style={{
               left: `${box.left * 100}%`,
               top: `${box.top * 100}%`,
               width: `${box.width * 100}%`,
               height: `calc(${box.height * 100}% + ${Math.ceil(1.5 * waveDepth)}px)`,
               pointerEvents: 'auto',
+              // Flash ring color (consumed by the .tractor-beam-flash animation).
+              ['--tb-flash-color' as string]: hoverColor,
             }}
           >
             <div
