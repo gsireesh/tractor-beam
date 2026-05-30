@@ -84,7 +84,7 @@ export function ProvisionalHighlightSignpost({id, classId, coords, text}: Signpo
     );
 
     return (
-        <div className="my-3 cursor-pointer" onClick={handleCardClick}>
+        <div className="mx-1 my-2 cursor-pointer" onClick={handleCardClick}>
             <div className="rounded-lg overflow-hidden border border-dashed border-gray-300 dark:border-gray-600" style={{backgroundColor: accentColor}}>
                 <InstancePopoverContent
                     text={text ?? ''}

@@ -15,7 +15,7 @@ export function ConfirmedHighlightSignpost({id, schemaId, classId, coords}: Sign
             window.TractorBeamHighlights?.flashHighlight(id);
         }
     };
-    return <div className="my-3 cursor-pointer" onClick={handleClick}>
+    return <div className="mx-1 my-2 cursor-pointer" onClick={handleClick}>
         <EditInstanceInline schemaId={schemaId} classId={classId} instanceId={id} />
     </div>
 }

@@ -90,3 +90,18 @@ export function mergePdfBoxes(boxes: PdfBox[]): PdfBox {
     height: maxBottom! - minTop!
   }
 }
+
+export function sortByPageCompare(a: {coords: PdfBox[]}, b: {coords: PdfBox[]}) {
+  const aFirst = a.coords[0];
+  const bFirst = b.coords[0];
+
+  if (aFirst.pageNumber != bFirst.pageNumber) {
+    return aFirst.pageNumber - bFirst.pageNumber;
+  } else {
+    if (aFirst.top != bFirst.top) {
+      return aFirst.top - bFirst.top;
+    } else {
+      return aFirst.left - bFirst.left;
+    }
+  }
+}
