@@ -85,11 +85,15 @@ export interface SchemaSnapshot {
   schemaId: string;
   schema: Schema;
   createdAt: number;
-  updateIndex: number;
+  lastAppliedUpdateIndex: number;
 }
 
-export interface BackgroundState {
-  activeSchema: Schema | null;
+export interface SchemaUpdate {
+  updateIndex: number;
+  schemaId: string;
+  action: SchemaAction;
+  createdAt: number;
+
 }
 
 interface AddSchema {
