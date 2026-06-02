@@ -1,6 +1,5 @@
 import { createContext, useContext } from 'react';
-import type { Schema } from '@/lib/definitions';
-import type { SchemaAction } from '@/lib/schema-reducer';
+import type {Schema, SchemaAction} from '@/lib/definitions';
 
 export interface DrawerContextValue {
     activeSchema: Schema;

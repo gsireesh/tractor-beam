@@ -1,5 +1,4 @@
-import { SchemaClass } from "@/lib/definitions";
-import { SchemaAction } from "@/lib/schema-reducer.ts";
+import {SchemaAction, SchemaClass} from "@/lib/definitions";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import {
   DropdownMenu,

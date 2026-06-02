@@ -12,8 +12,8 @@ import {ArrowLeftRight, Layers2Icon, PencilLine, Plus, SignpostIcon, Trash2, Ell
 import {SchemaViewer} from '@/components/SchemaViewer';
 import {getMlAnnotationRuns, getStates, storeMlAnnotationRun} from '@/lib/schema-storage';
 import {APP_CONFIG} from '@/app-config';
-import {Instance, Schema} from '@/lib/definitions';
-import {SchemaAction, schemasReducer} from '@/lib/schema-reducer';
+import {Instance, Schema, SchemaAction} from '@/lib/definitions';
+import {schemasReducer} from '@/lib/schema-reducer';
 import {usePersistedReducer} from '@/hooks/persisted-reducer';
 import type {ExtensionMessage} from '@/lib/messaging/message_definitions';
 import {getClaudeApiKey, getModelConfig, getOllamaBaseUrl} from '@/lib/ml/config';

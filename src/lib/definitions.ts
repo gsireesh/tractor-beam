@@ -81,6 +81,85 @@ export interface Schema {
   classes: SchemaClass[];
 }
 
+export interface SchemaSnapshot {
+  schemaId: string;
+  schema: Schema;
+  createdAt: number;
+  updateIndex: number;
+}
+
 export interface BackgroundState {
   activeSchema: Schema | null;
 }
+
+interface AddSchema {
+  actionType: "addSchema";
+  schema: Schema;
+}
+
+interface UpdateSchema {
+  actionType: "updateSchema";
+  schemaId: string;
+  schemaInfo: Schema;
+}
+
+interface DeleteSchema {
+  actionType: "deleteSchema";
+  schemaId: string;
+}
+
+interface AddClass {
+  actionType: "addClass";
+  schemaId: string;
+  classInfo: SchemaClass;
+}
+
+interface UpdateClass {
+  actionType: "updateClass";
+  schemaId: string;
+  classId: string;
+  classInfo: SchemaClass;
+}
+
+interface DeleteClass {
+  actionType: "deleteClass";
+  schemaId: string;
+  classId: string;
+}
+
+interface AddInstance {
+  actionType: "addInstance",
+  schemaId: string;
+  classId: string;
+  instance: Instance;
+}
+
+interface DeleteInstance {
+  actionType: "deleteInstance";
+  schemaId: string;
+  classId: string;
+  instanceId: string;
+}
+
+interface UpdateInstance {
+  actionType: "updateInstance";
+  schemaId: string;
+  classId: string;
+  instanceId: string;
+  updates: {
+    notes?: string | null;
+    positiveExample?: boolean;
+    newClassId?: string;
+  };
+}
+
+export type SchemaAction =
+    AddSchema
+    | UpdateSchema
+    | DeleteSchema
+    | AddClass
+    | UpdateClass
+    | DeleteClass
+    | AddInstance
+    | DeleteInstance
+    | UpdateInstance;

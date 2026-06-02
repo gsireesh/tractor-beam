@@ -1,7 +1,6 @@
 import { useRef, useState } from 'react';
-import { Instance, Schema, SchemaClass } from '@/lib/definitions';
+import {Instance, Schema, SchemaAction, SchemaClass} from '@/lib/definitions';
 import { rgbaToHex } from '@/lib/utils';
-import { SchemaAction } from '@/lib/schema-reducer';
 import { normalizeNoteText } from '@/components/popovers/utils';
 import { Trash2 } from 'lucide-react';
 import { createElement } from 'react';

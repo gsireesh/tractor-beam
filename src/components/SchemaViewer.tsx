@@ -2,8 +2,7 @@ import { SchemaClassViewer } from "@/components/SchemaClassViewer";
 
 import { Button } from "@/components/ui/button";
 import { PiListPlus } from "react-icons/pi";
-import { Schema } from "@/lib/definitions";
-import { SchemaAction } from "@/lib/schema-reducer.ts";
+import {Schema, SchemaAction} from "@/lib/definitions";
 import {createNewClass} from "@/lib/utils.ts";
 
 interface SchemaViewerProps {
