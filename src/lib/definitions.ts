@@ -11,7 +11,6 @@ export interface Instance {
   instanceType: "text" | "box";
   text: string;
   positiveExample: boolean;
-  range: Range | null;
   coords: PdfBox[] | null;
   pdfUrl: string;
   notes?: string | null;

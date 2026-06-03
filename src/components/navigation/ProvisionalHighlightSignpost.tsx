@@ -32,7 +32,6 @@ export function ProvisionalHighlightSignpost({id, classId, coords, text}: Signpo
             id: generateId(),
             instanceType: 'text',
             text: text ?? '',
-            range: null,
             coords,
             pdfUrl,
             positiveExample,

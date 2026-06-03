@@ -38,7 +38,6 @@ export function CreateInstancePopover({
       id: generateId(),
       instanceType: 'text',
       text,
-      range: null,
       coords: coords ?? null,
       pdfUrl,
       positiveExample,

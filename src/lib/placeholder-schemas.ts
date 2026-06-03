@@ -76,7 +76,6 @@ export const placeholderSchemas: Schema[] = [
                     "id": "7b3b4b12-2ade-4311-93e5-123c08855c0e",
                     "instanceType": "text",
                     "text": "impacting",
-                    "range": null,
                     "coords": [
                         {
                             "pageNumber": 1,
@@ -94,7 +93,6 @@ export const placeholderSchemas: Schema[] = [
                     "id": "42a89696-060c-4ff7-8f0c-bc4de428e579",
                     "instanceType": "text",
                     "text": "software",
-                    "range": null,
                     "coords": [
                         {
                             "pageNumber": 1,
@@ -112,7 +110,6 @@ export const placeholderSchemas: Schema[] = [
                     "id": "f9de73df-ddba-43ec-9260-668607417508",
                     "instanceType": "text",
                     "text": "institution",
-                    "range": null,
                     "coords": [
                         {
                             "pageNumber": 1,
@@ -139,7 +136,6 @@ export const placeholderSchemas: Schema[] = [
                     "instanceType": "text",
                     "text": "categorization",
                     "positiveExample": true,
-                    "range": null,
                     "coords": [
                         {
                             "pageNumber": 1,
@@ -155,7 +151,6 @@ export const placeholderSchemas: Schema[] = [
                     "id": "32dbccc0-8b28-4107-a763-e5f71511d572",
                     "instanceType": "text",
                     "text": "infrastructure",
-                    "range": null,
                     "coords": [
                         {
                             "pageNumber": 1,
@@ -173,7 +168,6 @@ export const placeholderSchemas: Schema[] = [
                     "id": "60b1c356-a661-4b8d-8146-3ba09d4998c3",
                     "instanceType": "text",
                     "text": "to tackle these big challenges, we must understand\nthe factors — norms, incentives, technology and\nculture — that led to our current crossroads.\nWe presen",
-                    "range": null,
                     "coords": [
                         {
                             "pageNumber": 1,

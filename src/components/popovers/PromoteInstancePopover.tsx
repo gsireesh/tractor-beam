@@ -47,7 +47,6 @@ export function PromoteInstancePopover({ highlight, position, onClose }: Promote
       id: generateId(),
       instanceType: 'text',
       text: highlight.text ?? '',
-      range: null,
       coords: highlight.coords,
       pdfUrl: new URLSearchParams(window.location.search).get('file') ?? '',
       positiveExample,
