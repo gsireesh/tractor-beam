@@ -82,6 +82,7 @@ export interface Schema {
 }
 
 export interface SchemaSnapshot {
+  snapshotIndex: number,
   schemaId: string;
   schema: Schema;
   createdAt: number;

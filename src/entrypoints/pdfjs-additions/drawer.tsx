@@ -10,11 +10,15 @@ import {useCallback, useEffect, useMemo, useRef, useState, type Dispatch, type S
 import {createRoot, Root} from 'react-dom/client';
 import {ArrowLeftRight, Layers2Icon, PencilLine, Plus, SignpostIcon, Trash2, EllipsisVerticalIcon} from 'lucide-react';
 import {SchemaViewer} from '@/components/SchemaViewer';
-import {getMlAnnotationRuns, getStates, storeMlAnnotationRun} from '@/lib/schema-storage';
+import {
+  getMlAnnotationRuns,
+  rebuildState,
+  storeMlAnnotationRun
+} from '@/lib/schema-storage';
 import {APP_CONFIG} from '@/app-config';
 import {Instance, Schema, SchemaAction} from '@/lib/definitions';
 import {schemasReducer} from '@/lib/schema-reducer';
-import {usePersistedReducer} from '@/hooks/persisted-reducer';
+import {usePersistedSchemaReducer} from '@/hooks/persisted-reducer';
 import type {ExtensionMessage} from '@/lib/messaging/message_definitions';
 import {getClaudeApiKey, getModelConfig, getOllamaBaseUrl} from '@/lib/ml/config';
 import {DrawerContext} from '@/contexts/DrawerContext';
@@ -186,9 +190,7 @@ function DrawerContainer() {
   });
   // Load initial schema state from IndexedDB
   useEffect(() => {
-    void getStates(APP_CONFIG.indexedDBConfig).then((request) => {
-      request.onsuccess = () => setInitialState(request.result);
-    });
+    void rebuildState(APP_CONFIG.indexedDBConfig).then((result) => setInitialState(result));
   }, []);
 
   // Persist open/closed state
@@ -334,7 +336,7 @@ function SchemaHeader({
   );
 }
 function DrawerContent({ initialSchemas }: { initialSchemas: Schema[] }) {
-  const [schemas, dispatch] = usePersistedReducer<Schema[], SchemaAction>(
+  const [schemas, dispatch ] = usePersistedSchemaReducer(
     schemasReducer,
     initialSchemas,
     APP_CONFIG.indexedDBConfig,

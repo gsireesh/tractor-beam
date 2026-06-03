@@ -1,6 +1,12 @@
 import {placeholderSchemas} from "@/lib/placeholder-schemas.ts";
 import {IndexedDBConfig} from "@/app-config.ts";
-import type {MlAnnotationRun, Schema, SchemaSnapshot, SchemaUpdate} from "@/lib/definitions.ts";
+import type {
+    MlAnnotationRun,
+    Schema,
+    SchemaAction,
+    SchemaSnapshot,
+    SchemaUpdate
+} from "@/lib/definitions.ts";
 import {schemasReducer} from "@/lib/schema-reducer.ts";
 import {produce} from 'immer';
 
@@ -16,18 +22,6 @@ export function getDB({dbSchemaName, schemaVersion, schemaObjectStoreName, snaps
                 const db = (event.target as IDBOpenDBRequest).result;
                 const oldVersion = event.oldVersion;
 
-                if (oldVersion < 1) {
-                    const objectStore = db.createObjectStore(schemaObjectStoreName, {keyPath: 'id'});
-                    objectStore.createIndex('name', 'name', {unique: false});
-
-                    objectStore.transaction.oncomplete = () => {
-                        const schemaObjectStore = db.transaction(schemaObjectStoreName, 'readwrite').objectStore(schemaObjectStoreName);
-                        placeholderSchemas.forEach((schema) => {
-                            schemaObjectStore.add(schema)
-                        })
-                    }
-                }
-
                 if (oldVersion < 2) {
                     const annotationStore = db.createObjectStore(mlAnnotationsObjectStore, {keyPath: 'id'});
                     annotationStore.createIndex("pdfUrl", "pdfUrl", {unique: false})
@@ -42,7 +36,7 @@ export function getDB({dbSchemaName, schemaVersion, schemaObjectStoreName, snaps
                         existingSchemasRequest.onsuccess = () => {
                             const existingSchemas =  existingSchemasRequest.result;
                             for (const schema of existingSchemas) {
-                                const schemaSnapshot: SchemaSnapshot = {schemaId: schema.id, schema: schema, createdAt:Date.now(), lastAppliedUpdateIndex: 0};
+                                const schemaSnapshot: Omit<SchemaSnapshot, 'snapshotIndex'> = {schemaId: schema.id, schema: schema, createdAt:Date.now(), lastAppliedUpdateIndex: 0};
                                 snapshotStore.put(schemaSnapshot)
                             }
                             // remove this comment after testing migration.
@@ -50,10 +44,11 @@ export function getDB({dbSchemaName, schemaVersion, schemaObjectStoreName, snaps
                         }
                     } else {
                         for (const schema of placeholderSchemas) {
-                            snapshotStore.put({schemaId: schema.id, schema: schema, createdAt:Date.now(), updateIndex: 0})
+                            const snapshot: Omit<SchemaSnapshot, 'snapshotIndex'> = {schemaId: schema.id, schema: schema, createdAt:Date.now(), lastAppliedUpdateIndex: 0};
+                            snapshotStore.put(snapshot)
                         }
                     }
-                    const updateStore = db.createObjectStore(updatesObjectStoreName, {keyPath: "updateIndex", autoIncrement: true})
+                    const updateStore = db.createObjectStore(updatesObjectStoreName, {keyPath: "updateIndex", autoIncrement: true});
                     updateStore.createIndex("schemaId", "schemaId", {unique: false})
                 }
             }
@@ -88,6 +83,23 @@ export async function getLatestSnapshotBySchema(indexedDBConfig: IndexedDBConfig
     });
 }
 
+export async function createSnapshot(indexedDBConfig: IndexedDBConfig, schema: Schema): Promise<void> {
+    const db = await getDB(indexedDBConfig);
+    const tx = db.transaction([indexedDBConfig.snapshotObjectStoreName, indexedDBConfig.updatesObjectStoreName], 'readwrite');
+    const maxReq = tx.objectStore(indexedDBConfig.updatesObjectStoreName).openKeyCursor(null, 'prev'); // first hit = highest updateIndex
+    maxReq.onsuccess = () => {
+        const lastAppliedUpdateIndex = maxReq.result ? Number(maxReq.result.key) : 0;
+        const snapshot: Omit<SchemaSnapshot, 'snapshotIndex'> = {schemaId: schema.id, schema, createdAt: Date.now(), lastAppliedUpdateIndex: lastAppliedUpdateIndex};
+        tx.objectStore(indexedDBConfig.snapshotObjectStoreName).add(snapshot);
+    };
+
+    return new Promise((resolve, reject) => {
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error as Error);
+    });
+
+}
+
 export async function getUpdates(indexedDBConfig: IndexedDBConfig, schemaId: string, afterUpdateIndex: number): Promise<SchemaUpdate[]> {
     const db = await getDB(indexedDBConfig);
     const updateStore = db.transaction(indexedDBConfig.updatesObjectStoreName, 'readonly').objectStore(indexedDBConfig.updatesObjectStoreName);
@@ -105,6 +117,19 @@ export async function getUpdates(indexedDBConfig: IndexedDBConfig, schemaId: str
     });
 }
 
+export async function createUpdate(indexedDBConfig: IndexedDBConfig, schemaId: string, schemaAction: SchemaAction): Promise<void> {
+    const update: Omit<SchemaUpdate, 'updateIndex'> = {schemaId, action:schemaAction, createdAt: Date.now()};
+    const db = await getDB(indexedDBConfig);
+    const tx = db.transaction(indexedDBConfig.updatesObjectStoreName, 'readwrite');
+    const updateStore = tx.objectStore(indexedDBConfig.updatesObjectStoreName);
+    updateStore.add(update);
+
+    return new Promise((resolve, reject) => {
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error as Error);
+    });
+}
+
 export async function rebuildState(indexedDBConfig: IndexedDBConfig): Promise<Schema[]> {
     const snapshotsById= await getLatestSnapshotBySchema(indexedDBConfig);
     let allSchemas = Object.values(snapshotsById).map(s => s.schema);
@@ -115,20 +140,6 @@ export async function rebuildState(indexedDBConfig: IndexedDBConfig): Promise<Sc
             allSchemas)
     }
     return allSchemas;
-}
-
-export async function getStates(indexedDBConfig: IndexedDBConfig) {
-    const db = await getDB(indexedDBConfig);
-    const schemaObjectStore = db.transaction(indexedDBConfig.schemaObjectStoreName, 'readwrite').objectStore(indexedDBConfig.schemaObjectStoreName);
-    return schemaObjectStore.getAll()
-}
-
-export async function storeStates<S>(indexedDBConfig: IndexedDBConfig, updatedState: S[]) {
-    const db = await getDB(indexedDBConfig);
-    const schemaObjectStore = db.transaction(indexedDBConfig.schemaObjectStoreName, 'readwrite').objectStore(indexedDBConfig.schemaObjectStoreName);
-    updatedState.forEach((schema: S) => {
-        schemaObjectStore.put(schema)
-    })
 }
 
 export async function storeMlAnnotationRun(indexedDBConfig: IndexedDBConfig, run: MlAnnotationRun): Promise<void> {

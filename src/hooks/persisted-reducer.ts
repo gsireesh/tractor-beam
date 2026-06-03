@@ -1,29 +1,41 @@
-import { useCallback, useEffect } from 'react';
-import {storeStates} from "@/lib/schema-storage.ts";
+import {useCallback} from 'react';
+import {createSnapshot, createUpdate} from "@/lib/schema-storage.ts";
 import {IndexedDBConfig} from "@/app-config.ts";
 import {ImmerReducer, useImmerReducer} from "use-immer";
+import {Schema, SchemaAction} from "@/lib/definitions.ts";
+
+export function usePersistedSchemaReducer(
+    reducer: ImmerReducer<Schema[], SchemaAction>,
+    initialValues: Schema[],
+    indexedDBConfig: IndexedDBConfig,
+){
+    const storeAction = useCallback((action: SchemaAction) => {
+        if (action.actionType == "addSchema") {
+            createSnapshot(indexedDBConfig, action.schema).then().catch(() => {
+                console.log("Failed to store event", action);
+            });
+        } else {
+            createUpdate(indexedDBConfig, action.schemaId, action).then().catch(() => {
+                console.log("Failed to store event", action);
+            });
+        }
+    }, [indexedDBConfig]);
+    return usePersistedReducer(reducer, initialValues, storeAction);
+}
 
 
-export function usePersistedReducer<S extends unknown[], A>(reducer: ImmerReducer<S, A>, initialValues: S, indexedDBConfig: IndexedDBConfig) {
+export function usePersistedReducer<S extends unknown[], A>(
+    reducer: ImmerReducer<S, A>,
+    initialValues: S,
+    storeAction: (action: A) => void,
+    ) {
     const [state, originalDispatch] = useImmerReducer(reducer, initialValues);
 
     const dispatch = useCallback((action: A) => {
         console.log(action);
         originalDispatch(action);
-    }, [originalDispatch]);
-    // const dbPromise = getDB(indexedDBConfig);
-
-    useEffect(() => {
-    const timeoutId = setTimeout(() => {
-        console.log("Storing schemas!", state);
-        storeStates(indexedDBConfig, state)
-            .then()
-            .catch(() => console.error("Schema write failed!"));
-    }, 500); // Adjust debounce time as needed
-
-    return () => clearTimeout(timeoutId);
-  }, [state, indexedDBConfig]);
-
+        storeAction(action);
+    }, [originalDispatch, storeAction]);
 
     return [state, dispatch] as const;
 
