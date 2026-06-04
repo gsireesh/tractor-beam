@@ -19,7 +19,7 @@ import {APP_CONFIG} from '@/app-config';
 import {Instance, Schema, SchemaAction} from '@/lib/definitions';
 import {schemasReducer} from '@/lib/schema-reducer';
 import {usePersistedSchemaReducer} from '@/hooks/persisted-reducer';
-import type {ExtensionMessage} from '@/lib/messaging/message_definitions';
+import type {ExtensionMessage, MlProgressMessage} from '@/lib/messaging/message_definitions';
 import {getClaudeApiKey, getModelConfig, getOllamaBaseUrl} from '@/lib/ml/config';
 import {DrawerContext} from '@/contexts/DrawerContext';
 import cssText from './drawer-styles.css?inline';
@@ -341,7 +341,7 @@ function DrawerContent({ initialSchemas }: { initialSchemas: Schema[] }) {
     initialSchemas,
     APP_CONFIG.indexedDBConfig,
   );
-  const [llmLoaded, setLlmLoaded] = useState({ stage: 'unloaded', progress: '', message: '' });
+  const [llmLoaded, setLlmLoaded] = useState<Omit<MlProgressMessage, 'type'>>({ stage: 'unloaded', progress: 0, message: '' });
 
 
   const pdfUrl = new URLSearchParams(window.location.search).get('file') ?? '';
@@ -376,7 +376,7 @@ function DrawerContent({ initialSchemas }: { initialSchemas: Schema[] }) {
     const listener = (message: ExtensionMessage) => {
       switch (message.type) {
         case 'mlProgress':
-          setLlmLoaded({ stage: message.stage, progress: String(message.progress), message: message.message ?? '' });
+          setLlmLoaded({ stage: message.stage, progress: message.progress, message: message.message });
           break;
         case 'annotationResults':
           if (message.annotations && message.requestId) {
@@ -464,7 +464,7 @@ function DrawerContent({ initialSchemas }: { initialSchemas: Schema[] }) {
           <TabsTrigger value={"navigation"}><SignpostIcon/>Semantic Index</TabsTrigger>
         </TabsList>
         <TabsContent value={"schema"}>
-          <SchemaViewer schema={activeSchema} dispatch={dispatch} llmStatus={llmLoaded} />
+          <SchemaViewer schema={activeSchema} dispatch={dispatch} />
         </TabsContent>
         <TabsContent value={"navigation"}>
           <InstanceNavigator confirmedSignposts={confirmedSignposts} mlSignposts={mlSignposts}/>
@@ -482,6 +482,7 @@ function DrawerContent({ initialSchemas }: { initialSchemas: Schema[] }) {
 
 declare global {
   interface Window {
+    PDFViewerApplication?: { pdfDocument: unknown };
     TractorBeamDrawer: {
       toggle: () => void;
       open: () => void;

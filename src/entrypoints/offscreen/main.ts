@@ -10,6 +10,7 @@
 
 import type {
   ExtensionMessage,
+  MlProgressMessage,
   RunWebLlmTaskMessage,
   RunAnnotationPipelineMessage,
 } from '@/lib/messaging/message_definitions';
@@ -31,7 +32,7 @@ const ollama = new OllamaRunner(broadcastProgress);
 
 const cancelledRequestIds = new Set<string>();
 
-function broadcastProgress(stage: string, progress: number, message?: string, requestId?: string) {
+function broadcastProgress(stage: MlProgressMessage['stage'], progress: number, message = '', requestId?: string) {
   console.log(`[offscreen] progress: ${stage}, ${progress}, ${message}`);
   chrome.runtime.sendMessage({
     type: 'mlProgress',

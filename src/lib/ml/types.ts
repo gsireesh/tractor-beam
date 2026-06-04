@@ -1,6 +1,9 @@
+/** Lifecycle stage of a model loading/inference run. */
+export type MlStage = 'unloaded' | 'downloading' | 'loading' | 'running';
+
 /** Callback for reporting model loading/inference progress */
 export type ProgressCallback = (
-  stage: string,
+  stage: MlStage,
   progress: number,
   message?: string,
   requestId?: string,

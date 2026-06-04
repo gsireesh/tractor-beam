@@ -18,7 +18,7 @@ export async function setModelConfig(config: Partial<ModelConfig>): Promise<void
 
 /** Read the Claude API key from chrome.storage.local. */
 export async function getClaudeApiKey(): Promise<string | null> {
-  const result = await chrome.storage.local.get(API_KEY_STORAGE_KEY);
+  const result: Record<string, string> = await chrome.storage.local.get(API_KEY_STORAGE_KEY);
   return result[API_KEY_STORAGE_KEY] ?? null;
 }
 
@@ -29,7 +29,7 @@ export async function setClaudeApiKey(key: string): Promise<void> {
 
 /** Read the Ollama base URL from chrome.storage.local. */
 export async function getOllamaBaseUrl(): Promise<string | null> {
-  const result = await chrome.storage.local.get(OLLAMA_BASE_URL_KEY);
+  const result: Record<string, string> = await chrome.storage.local.get(OLLAMA_BASE_URL_KEY);
   return result[OLLAMA_BASE_URL_KEY] ?? null;
 }
 

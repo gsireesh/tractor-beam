@@ -1,5 +1,5 @@
-import { Schema, PdfBox, VisualBlock, MlAnnotation } from '@/lib/definitions';
-import type { ModelConfig } from '@/lib/ml/types';
+import { Schema, VisualBlock, MlAnnotation } from '@/lib/definitions';
+import type { ModelConfig, MlStage } from '@/lib/ml/types';
 
 // ─── Viewer ↔ background messages ───
 
@@ -100,9 +100,9 @@ export interface MlTaskErrorMessage {
 export interface MlProgressMessage {
   type: 'mlProgress';
   requestId?: string;
-  stage: 'downloading' | 'loading' | 'running';
+  stage: MlStage;
   progress: number; // 0-1
-  message?: string;
+  message: string;
 }
 
 export interface GetModelStatusMessage {
