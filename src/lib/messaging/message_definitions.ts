@@ -40,6 +40,15 @@ export interface EnsureOffscreenMessage {
   type: 'ensureOffscreen';
 }
 
+// ─── Schema manager ───
+// Content scripts (the drawer) can't call chrome.tabs, so opening the
+// standalone Schema Manager page is delegated to the background.
+
+export interface OpenSchemaManagerMessage {
+  type: 'openSchemaManager';
+  schemaId: string;
+}
+
 // ─── Annotation pipeline messages ───
 // The drawer orchestrates the pipeline: extracts visual blocks locally,
 // then sends the complete message (with blocks) to the offscreen document.
@@ -127,6 +136,7 @@ export type ExtensionMessage =
   | ExtractPdfTextMessage
   | PdfTextExtractedMessage
   | EnsureOffscreenMessage
+  | OpenSchemaManagerMessage
   | RunAnnotationPipelineMessage
   | CancelAnnotationPipelineMessage
   | AnnotationResultsMessage

@@ -1,7 +1,7 @@
 import { SchemaClassViewer } from "@/components/SchemaClassViewer";
 
 import { Button } from "@/components/ui/button";
-import { PiListPlus } from "react-icons/pi";
+import { PiListPlus, PiTable } from "react-icons/pi";
 import {Schema, SchemaAction} from "@/lib/definitions";
 import {createNewClass} from "@/lib/utils.ts";
 
@@ -21,6 +21,12 @@ export function SchemaViewer({ schema, dispatch}: SchemaViewerProps) {
             })}>
               <PiListPlus />
               Add new class
+            </Button>
+            <Button variant="outline" className="h-6 mr-1 ml-1" onClick={() =>
+              browser.runtime.sendMessage({ type: "openSchemaManager", schemaId: schema.id })
+            }>
+              <PiTable />
+              Open Schema Manager
             </Button>
             <ul className="list-none p-0 m-0">
               {schema.classes.map((sc) => (

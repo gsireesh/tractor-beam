@@ -50,6 +50,14 @@ export default defineBackground(() => {
           .catch((err) => sendResponse({ error: (err as Error).message }));
         return true; // async response
 
+      case 'openSchemaManager':
+        browser.tabs.create({
+          url: browser.runtime.getURL(
+            `/schema-manager.html?schemaId=${encodeURIComponent(message.schemaId)}`,
+          ),
+        });
+        break;
+
       case 'pdfViewerReady':
         console.log('[background] PDF viewer ready:', message.pdfUrl);
         break;
