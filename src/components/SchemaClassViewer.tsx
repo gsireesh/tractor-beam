@@ -8,6 +8,7 @@ import {Settings, PencilLine, Trash2} from 'lucide-react';
 import { useEffect, useRef, useState } from "react";
 import {rgbaToHex} from '@/lib/utils.ts';
 import {ConfirmedInstanceViewer} from "@/components/ConfirmedInstanceViewer.tsx";
+import {useDrawerContext} from "@/contexts/DrawerContext.tsx";
 
 function useClickOutside<T extends HTMLElement>(callback: () => void) {
   const ref = useRef<T>(null);
@@ -41,6 +42,8 @@ export function SchemaClassViewer({
   const titleRef = useClickOutside<HTMLHeadingElement>(() => {
     setTitleEditable(false);
   });
+  const {pdfUrl} = useDrawerContext();
+  const currentPDFInstances = useMemo(() => schemaClass.instances.filter(instance => instance.pdfUrl === pdfUrl), [schemaClass, pdfUrl]);
 
   function toggleTitleEditable() {
     if (!titleEditable) {
@@ -126,7 +129,9 @@ export function SchemaClassViewer({
                 <AccordionTrigger>Instances</AccordionTrigger>
                 <AccordionContent>
                     {
-                        schemaClass.instances.length ? (schemaClass.instances.map((instance) => <ConfirmedInstanceViewer key={instance.id} instance={instance} schemaClassId={schemaClass.id} borderColor={borderColor} />)) : <p>Empty.</p>
+                      (currentPDFInstances.length ?
+                          (currentPDFInstances.map((instance) => <ConfirmedInstanceViewer key={instance.id} instance={instance} schemaClassId={schemaClass.id} borderColor={borderColor} />))
+                          : <p>No instances annotated on the current PDF.</p>)
                     }
                 </AccordionContent>
             </AccordionItem>
