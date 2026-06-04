@@ -16,7 +16,7 @@ export function scrollToAnnotation(coords: PdfBox[]) {
     console.warn('[pdf-navigation] Could not find viewerContainer or page element');
     return;
   }
-  
+
   const destinationY = pageEl.offsetTop + (box.top * pageEl.clientHeight) - VERTICAL_OFFSET * viewerContainer.clientHeight;
   viewerContainer.scrollTo({top: destinationY, left: 0, behavior: "smooth"})
 }

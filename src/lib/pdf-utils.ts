@@ -3,11 +3,21 @@
  */
 
 /**
- * Generate the URL for the PDF viewer with the given PDF URL
+ * Generate the URL for the PDF viewer with the given PDF URL.
+ *
+ * Optionally deep-links to a specific schema instance: `schemaId` selects the
+ * active schema in the drawer and `instanceId` triggers scroll-to + flash of
+ * that highlight once its page renders.
  */
-export function getPdfViewerUrl(pdfUrl: string): string {
+export function getPdfViewerUrl(
+  pdfUrl: string,
+  opts?: { schemaId?: string; instanceId?: string },
+): string {
   const viewerPath = browser.runtime.getURL('/pdfjs/web/viewer.html');
-  return `${viewerPath}?file=${encodeURIComponent(pdfUrl)}`;
+  const params = new URLSearchParams({ file: pdfUrl });
+  if (opts?.schemaId) params.set('schema', opts.schemaId);
+  if (opts?.instanceId) params.set('instance', opts.instanceId);
+  return `${viewerPath}?${params.toString()}`;
 }
 
 /**

@@ -22,6 +22,7 @@ import {usePersistedSchemaReducer} from '@/hooks/persisted-reducer';
 import type {ExtensionMessage, MlProgressMessage} from '@/lib/messaging/message_definitions';
 import {getClaudeApiKey, getModelConfig, getOllamaBaseUrl} from '@/lib/ml/config';
 import {DrawerContext} from '@/contexts/DrawerContext';
+import {scrollToAnnotation} from '@/lib/pdf-navigation';
 import cssText from './drawer-styles.css?inline';
 import {
   createNewSchema,
@@ -344,8 +345,11 @@ function DrawerContent({ initialSchemas }: { initialSchemas: Schema[] }) {
   const [llmLoaded, setLlmLoaded] = useState<Omit<MlProgressMessage, 'type'>>({ stage: 'unloaded', progress: 0, message: '' });
 
 
-  const pdfUrl = new URLSearchParams(window.location.search).get('file') ?? '';
-  const [activeSchemaId, setActiveSchemaId] = useState<string>(schemas[0]?.id ?? '');
+  const viewerParams = new URLSearchParams(window.location.search);
+  const pdfUrl = viewerParams.get('file') ?? '';
+  // A deep link (?schema=…&instance=…) preselects the schema so the target
+  // instance's highlight is among confirmedHighlights below.
+  const [activeSchemaId, setActiveSchemaId] = useState<string>(viewerParams.get('schema') ?? schemas[0]?.id ?? '');
   const activeSchema = schemas.find(s => s.id === activeSchemaId) ?? schemas[0];
   const confirmedHighlights = useMemo<Highlight[]>(() => (activeSchema ? getHighlightsFromSchema(activeSchema, pdfUrl) : []), [activeSchema, pdfUrl]);
   const confirmedSignposts = useMemo<Signpost[]>(() => (activeSchema ? getSignpostsFromHighlights(confirmedHighlights, activeSchema) : []), [confirmedHighlights, activeSchema]);
@@ -416,6 +420,21 @@ function DrawerContent({ initialSchemas }: { initialSchemas: Schema[] }) {
     console.log(`[drawer] confirmed highlight sync: ${confirmedHighlights.length} manual, pdfUrl="${pdfUrl}"`);
     window.TractorBeamHighlights.setHighlights('confirmed', confirmedHighlights);
   }, [confirmedHighlights, pdfUrl]);
+
+  // Deep link (?instance=…): scroll to and flash the target highlight once, after
+  // its highlights have been synced above.
+  const deepLinkHandled = useRef(false);
+  useEffect(() => {
+    if (deepLinkHandled.current) return;
+    const instanceId = viewerParams.get('instance');
+    if (!instanceId) return;
+    const target = confirmedHighlights.find((h) => h.id === instanceId);
+    if (!target) return;
+    deepLinkHandled.current = true;
+    // Same "jump to highlight" pair the sidebar's InstanceNavigator uses.
+    scrollToAnnotation(target.coords);
+    window.TractorBeamHighlights?.flashHighlight(target.id);
+  }, [confirmedHighlights]);
 
   return (
     <DrawerContext.Provider value={{ activeSchema, pdfUrl, dispatch, removeMlHighlight }}>

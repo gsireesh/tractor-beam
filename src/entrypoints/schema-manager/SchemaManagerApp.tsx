@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
-import { Search, X } from "lucide-react";
+import { ExternalLink, Search, X } from "lucide-react";
 import { Schema } from "@/lib/definitions";
 import { rebuildState } from "@/lib/schema-storage";
+import { getPdfViewerUrl } from "@/lib/pdf-utils";
 import { APP_CONFIG } from "@/app-config";
 import { rgbaToHex, bodyToBorderColor } from "@/lib/utils";
 import {
@@ -219,12 +220,13 @@ export function SchemaManagerApp() {
             <th className="p-2 font-medium">PDF</th>
             <th className="p-2 font-medium">Content</th>
             <th className="p-2 font-medium">Notes</th>
+            <th className="p-2 font-medium">Open</th>
           </tr>
         </thead>
         <tbody>
           {visibleRows.length === 0 ? (
             <tr>
-              <td colSpan={4} className="p-6 text-center text-gray-500">
+              <td colSpan={5} className="p-6 text-center text-gray-500">
                 No matching instances.
               </td>
             </tr>
@@ -248,6 +250,21 @@ export function SchemaManagerApp() {
                 <td className="p-2 italic">{row.text}</td>
                 <td className="p-2 text-muted-foreground">
                   {row.notes || <span className="text-gray-300">—</span>}
+                </td>
+                <td className="p-2">
+                  <a
+                    href={getPdfViewerUrl(row.pdfUrl, {
+                      schemaId: activeSchemaId ?? undefined,
+                      instanceId: row.instanceId,
+                    })}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1 text-blue-600 hover:underline"
+                    title="Open in PDF viewer and jump to this highlight"
+                  >
+                    <ExternalLink size={14} />
+                    Open
+                  </a>
                 </td>
               </tr>
             ))
