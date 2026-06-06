@@ -2,11 +2,14 @@ import {SchemaAction, SchemaClass} from "@/lib/definitions";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import {
   DropdownMenu,
-  DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuTrigger
+  DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuTrigger,
+  DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent
 } from "@/components/ui/dropdown-menu.tsx";
-import {Settings, PencilLine, Trash2} from 'lucide-react';
-import { useEffect, useRef, useState } from "react";
+import {MoreVertical, Palette, PencilLine, Trash2} from 'lucide-react';
+import { useEffect, useMemo, useRef, useState } from "react";
 import {rgbaToHex} from '@/lib/utils.ts';
+import {HIGHLIGHT_PALETTE} from '@/lib/highlight-palette.ts';
+import {IconButton} from "@/components/IconButton.tsx";
 import {ConfirmedInstanceViewer} from "@/components/ConfirmedInstanceViewer.tsx";
 import {useDrawerContext} from "@/contexts/DrawerContext.tsx";
 
@@ -86,11 +89,34 @@ export function SchemaClassViewer({
       </h1>
       <DropdownMenu>
         <DropdownMenuTrigger>
-          <IconButton title="Class Actions" icon={Settings} size={"icon"} />
+          <IconButton title="Class Actions" icon={MoreVertical} size={"icon"} />
         </DropdownMenuTrigger>
         <DropdownMenuContent >
           <DropdownMenuGroup>
-            {/*<DropdownMenuItem><Palette strokeWidth={1} size={'1em'}/>Change Color</DropdownMenuItem>*/}
+            <DropdownMenuSub>
+              <DropdownMenuSubTrigger><Palette strokeWidth={1} size={'1em'}/>Change Color</DropdownMenuSubTrigger>
+              <DropdownMenuSubContent>
+                <div className="grid grid-cols-4 gap-1.5 p-1">
+                  {HIGHLIGHT_PALETTE.map((color) => (
+                    <button
+                      key={color}
+                      type="button"
+                      title={color}
+                      onClick={() =>
+                        dispatch({
+                          actionType: "updateClass",
+                          schemaId: schemaId,
+                          classId: schemaClass.id,
+                          classInfo: { ...schemaClass, color: color },
+                        })
+                      }
+                      className={`h-6 w-6 rounded-full border border-black/10 transition-transform hover:scale-110 ${schemaClass.color === color ? 'ring-2 ring-offset-1 ring-black/60' : ''}`}
+                      style={{ backgroundColor: rgbaToHex(color, 1.0) }}
+                    />
+                  ))}
+                </div>
+              </DropdownMenuSubContent>
+            </DropdownMenuSub>
             <DropdownMenuItem variant="destructive" onClick={() =>
               dispatch({
                 actionType: "deleteClass",

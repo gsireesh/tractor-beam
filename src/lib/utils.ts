@@ -1,6 +1,7 @@
 import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
 import {Instance, PdfBox, Schema, Highlight, Signpost} from "@/lib/definitions.ts";
+import {randomHighlightColor} from "@/lib/highlight-palette.ts";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -10,12 +11,12 @@ export function generateId(): string {
   return crypto.randomUUID()
 }
 
-export function createNewClass(className: string, description: string, instances: Instance[]) {
+export function createNewClass(className: string, description: string, instances: Instance[], existingColors: string[] = []) {
   return {
     id: generateId(),
     name: className,
     description: description,
-    color: generateRandomRgbColor(),
+    color: randomHighlightColor(existingColors),
     instances: instances
   }
 }
@@ -63,13 +64,6 @@ export function rgbaToHex(rgba: string, overrideAlpha: number | null = null): st
 export function bodyToBorderColor(rgbaColor:string) {
   return rgbaToHex(rgbaColor, 1.0)
 }
-
-export function generateRandomRgbColor(){
-  const r = Math.floor(Math.random() * 256);
-  const g = Math.floor(Math.random() * 256);
-  const b = Math.floor(Math.random() * 256);
-  return `rgba(${r}, ${g}, ${b}, 0.3)`;
-};
 
 export function mergePdfBoxes(boxes: PdfBox[]): PdfBox {
   let minLeft: number | null, minTop: number | null, maxRight: number | null, maxBottom: number | null;

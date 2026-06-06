@@ -107,7 +107,7 @@ export function InstancePopoverContent({
             onSelectedClassChange(classes.find((c) => c.name === name) ?? null);
           }}
           onCreate={(name) => {
-            onSelectedClassChange(createNewClass(name, '', []));
+            onSelectedClassChange(createNewClass(name, '', [], classes.map((c) => c.color)));
           }}
           renderCreateLabel={(label) => `Create new class "${label}"`}
           inputClassName="flex-1 bg-white"

@@ -17,7 +17,7 @@ export function SchemaViewer({ schema, dispatch}: SchemaViewerProps) {
             <Button variant="outline" className="h-6 mr-1 ml-1" onClick={() => dispatch({
               actionType: "addClass",
               schemaId: schema.id,
-              classInfo: createNewClass("New Class", "This text describes what this class is.", [])
+              classInfo: createNewClass("New Class", "This text describes what this class is.", [], schema.classes.map(c => c.color))
             })}>
               <PiListPlus />
               Add new class
