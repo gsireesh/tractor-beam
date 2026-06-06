@@ -97,10 +97,10 @@ The machine highlight process has three phases:
 <details>
 <summary><b>Where is the data?</b></summary>
 
-TractorBeam is aiming at being a primarily local tool. This means that all of the data you create — 
-schemas, classes, and instances — live on your computer, and we aim to make the exportable and 
+TractorBeam is aiming at being a primarily local tool. This means that all the data you create — 
+schemas, classes, and instances — live on your computer, and we aim to make the data exportable and 
 interoperable with a number of formats: [Hypothesis](https://hypothes.is) and [Margin](https://margin.at) 
-for annotations, HuggingFace for NER training, and plain CSV. More  concretely, this data is 
+for annotations, HuggingFace for NER training, and plain CSV. More concretely, this data is 
 stored in your browser's [`IndexedDB`](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API). 
 
 For machine annotations, only choosing to use the Claude annotation backend causes data to ever 
