@@ -1,6 +1,6 @@
 # TractorBeam - Customizable Reading Support for PDFs with Collaborative Machine Annotation
 
-![TractorBeam -- adding a highlight and running machine annotation](assets/tb-gif.gif)
+![TractorBeam -- adding a highlight and running machine annotation](./assets/tb-gif.gif)
 
 TractorBeam is a browser extension that allows users to define, iterate on, and evaluate AI 
 highlighting systems on PDFs. These highlight systems can serve a variety of purposes — reading 
