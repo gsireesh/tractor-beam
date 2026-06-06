@@ -370,10 +370,14 @@ function DrawerContent({ initialSchemas }: { initialSchemas: Schema[] }) {
     };
   }, [dispatch, activeSchema]);
 
-  // Push ML highlights to the viewer whenever they (or the active schema) change.
+  // Push ML highlights to the viewer whenever they or the active schema change.
+  // Keyed on the whole activeSchema object (not just its id) so a recolor re-fires
+  // this — immer returns a new schema object on every edit. This mirrors how the
+  // confirmed-sync effect reacts to activeSchema (via the confirmedHighlights memo),
+  // so both highlight kinds recolor through the same trigger.
   useEffect(() => {
     syncProvisionalHighlights(mlHighlights);
-  }, [mlHighlights, activeSchema?.id]);
+  }, [mlHighlights, activeSchema]);
 
   // Listen for messages from offscreen document (ML results)
   useEffect(() => {

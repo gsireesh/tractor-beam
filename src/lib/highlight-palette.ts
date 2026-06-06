@@ -25,7 +25,7 @@ const HSLUV_L = 70;
  * at a *fixed* lightness and saturation. Holding L and S constant while only the
  * hue varies is what makes the whole palette perceptually uniform: every color is
  * equally light (legible under multiply) and equally soft (harmonious). **/
-function highlightColorForHue(hue: number): string {
+export function highlightColorForHue(hue: number): string {
   conv.hsluv_h = hue;
   conv.hsluv_s = HSLUV_S;
   conv.hsluv_l = HSLUV_L;
@@ -35,7 +35,7 @@ function highlightColorForHue(hue: number): string {
 }
 
 /** Recover the HSLuv hue of an existing `rgba(...)` color, or null if unparseable. */
-function hueOfColor(color: string): number | null {
+export function hueOfColor(color: string): number | null {
   const match = /rgba?\((\d+),\s*(\d+),\s*(\d+)/.exec(color);
   if (!match) return null;
   const [, r, g, b] = match;

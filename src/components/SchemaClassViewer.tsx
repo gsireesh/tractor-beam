@@ -3,12 +3,14 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import {
   DropdownMenu,
   DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuTrigger,
-  DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent
+  DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent,
+  DropdownMenuLabel, DropdownMenuSeparator
 } from "@/components/ui/dropdown-menu.tsx";
 import {MoreVertical, Palette, PencilLine, Trash2} from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from "react";
 import {rgbaToHex} from '@/lib/utils.ts';
 import {HIGHLIGHT_PALETTE} from '@/lib/highlight-palette.ts';
+import {HueColorPicker} from "@/components/HueColorPicker.tsx";
 import {IconButton} from "@/components/IconButton.tsx";
 import {ConfirmedInstanceViewer} from "@/components/ConfirmedInstanceViewer.tsx";
 import {useDrawerContext} from "@/contexts/DrawerContext.tsx";
@@ -115,6 +117,19 @@ export function SchemaClassViewer({
                     />
                   ))}
                 </div>
+                <DropdownMenuSeparator />
+                <DropdownMenuLabel className="text-xs font-normal text-black/60">Custom hue</DropdownMenuLabel>
+                <HueColorPicker
+                  value={schemaClass.color}
+                  onChange={(color) =>
+                    dispatch({
+                      actionType: "updateClass",
+                      schemaId: schemaId,
+                      classId: schemaClass.id,
+                      classInfo: { ...schemaClass, color: color },
+                    })
+                  }
+                />
               </DropdownMenuSubContent>
             </DropdownMenuSub>
             <DropdownMenuItem variant="destructive" onClick={() =>
