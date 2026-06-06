@@ -31,9 +31,7 @@ export function sendMessageWithResponse<T>(
       reject(new Error(`Message response timeout for requestId: ${requestId}`));
     }, timeoutMs);
 
-    function listener(
-      response: { requestId?: string; type?: string; [key: string]: unknown },
-    ) {
+    function listener(response: { requestId?: string; type?: string; [key: string]: unknown }) {
       if (response.requestId !== requestId) return;
 
       chrome.runtime.onMessage.removeListener(listener);

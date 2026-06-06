@@ -4,7 +4,7 @@
  * page), this is a standalone extension page, so we load full Tailwind —
  * including preflight — and map the shadcn theme tokens to :root.
  */
-@import "tailwindcss";
+@import 'tailwindcss';
 
 /* ─── shadcn theme tokens (mirrors drawer-styles.css) ───
    Maps Tailwind color utilities (bg-popover, text-destructive, …) to the

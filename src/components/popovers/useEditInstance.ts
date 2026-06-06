@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import {Instance, Schema, SchemaAction, SchemaClass} from '@/lib/definitions';
+import { Instance, Schema, SchemaAction, SchemaClass } from '@/lib/definitions';
 import { rgbaToHex } from '@/lib/utils';
 import { normalizeNoteText } from '@/components/popovers/utils';
 import { Trash2 } from 'lucide-react';
@@ -62,7 +62,10 @@ export function useEditInstance(
     if (!schema) return updateActions;
 
     // A brand-new class created inline isn't in the schema yet — add it first.
-    if (selectedClassRef.current !== null && !schema.classes.some((sc) => sc.id === selectedClassRef.current!.id)) {
+    if (
+      selectedClassRef.current !== null &&
+      !schema.classes.some((sc) => sc.id === selectedClassRef.current!.id)
+    ) {
       updateActions.push({
         actionType: 'addClass',
         schemaId: schema.id,
@@ -70,8 +73,11 @@ export function useEditInstance(
       });
     }
 
-    const notesChanged = normalizeNoteText(notesRef.current) !== normalizeNoteText(initialValuesRef.current.notes);
-    const classChanged = !!selectedClassRef.current?.id && selectedClassRef.current.id !== initialValuesRef.current.classId;
+    const notesChanged =
+      normalizeNoteText(notesRef.current) !== normalizeNoteText(initialValuesRef.current.notes);
+    const classChanged =
+      !!selectedClassRef.current?.id &&
+      selectedClassRef.current.id !== initialValuesRef.current.classId;
 
     if (notesChanged || classChanged) {
       updateActions.push({

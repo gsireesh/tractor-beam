@@ -28,10 +28,17 @@ export interface FilterState {
 }
 
 export function applyFilters(rows: ManagerRow[], filters: FilterState): ManagerRow[] {
-  return (rows
-      .filter(row => filters.pdfUrl === null || filters.pdfUrl === row.pdfUrl)
-      .filter(row => filters.classIds.length == 0 || filters.classIds.includes(row.classId))
-      .filter(row => filters.contentQuery.length === 0 || row.text.toLowerCase().includes(filters.contentQuery.toLowerCase()))
-      .filter(row => filters.notesQuery.length === 0 || (row.notes?.toLowerCase().includes(filters.notesQuery.toLowerCase()) ?? false))
-  );
+  return rows
+    .filter((row) => filters.pdfUrl === null || filters.pdfUrl === row.pdfUrl)
+    .filter((row) => filters.classIds.length == 0 || filters.classIds.includes(row.classId))
+    .filter(
+      (row) =>
+        filters.contentQuery.length === 0 ||
+        row.text.toLowerCase().includes(filters.contentQuery.toLowerCase()),
+    )
+    .filter(
+      (row) =>
+        filters.notesQuery.length === 0 ||
+        (row.notes?.toLowerCase().includes(filters.notesQuery.toLowerCase()) ?? false),
+    );
 }

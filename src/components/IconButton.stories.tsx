@@ -1,9 +1,9 @@
-import type { Story } from "@ladle/react";
-import { Play, Square, Save, Settings } from "lucide-react";
-import { IconButton } from "./IconButton";
+import type { Story } from '@ladle/react';
+import { Play, Square, Save, Settings } from 'lucide-react';
+import { IconButton } from './IconButton';
 
 export const Default: Story = () => (
-  <IconButton title="Run" icon={Play} onClick={() => console.log("run")} />
+  <IconButton title="Run" icon={Play} onClick={() => console.log('run')} />
 );
 
 export const Colored: Story = () => (

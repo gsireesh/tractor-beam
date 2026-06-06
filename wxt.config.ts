@@ -1,5 +1,5 @@
 import { defineConfig } from 'wxt';
-import tailwindcss from "@tailwindcss/vite";
+import tailwindcss from '@tailwindcss/vite';
 export default defineConfig({
   srcDir: 'src',
   modules: ['@wxt-dev/module-react'],
@@ -7,15 +7,15 @@ export default defineConfig({
   manifest: {
     action: {},
     permissions: ['tabs', 'offscreen', 'storage'],
-    host_permissions: ["<all_urls>"]
+    host_permissions: ['<all_urls>'],
   },
 
-  vite: (() => ({
-    plugins: [tailwindcss()]
-  })),
+  vite: () => ({
+    plugins: [tailwindcss()],
+  }),
   imports: {
     eslintrc: {
-      enabled: 9
-    }
+      enabled: 9,
+    },
   },
 });

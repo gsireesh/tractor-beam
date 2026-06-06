@@ -12,7 +12,7 @@ export interface HighlightOverlayProps {
   source?: 'manual' | 'ml';
   text?: string;
   allCoords?: PdfBox[];
-  positiveExample: boolean,
+  positiveExample: boolean;
   /** When true, briefly flash this highlight (navigated-to from the index). */
-  flashing?: boolean,
+  flashing?: boolean;
 }

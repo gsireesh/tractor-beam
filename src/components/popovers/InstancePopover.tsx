@@ -42,7 +42,11 @@ export function InstancePopover({
   allowCreateClass = true,
 }: InstancePopoverProps) {
   const popoverRef = useRef<HTMLDivElement>(null);
-  const [adjustedPosition, setAdjustedPosition] = useState<{ top: number; left: number; showAbove: boolean } | null>(null);
+  const [adjustedPosition, setAdjustedPosition] = useState<{
+    top: number;
+    left: number;
+    showAbove: boolean;
+  } | null>(null);
   const activeSchema = window.TractorBeamDrawer?.getActiveSchema() ?? null;
   const accentColor = useStableAccentColor(selectedClass);
 

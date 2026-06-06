@@ -1,27 +1,27 @@
-import { useEffect, useMemo, useState } from "react";
-import { ExternalLink, Search, X } from "lucide-react";
-import { Schema } from "@/lib/definitions";
-import { rebuildState } from "@/lib/schema-storage";
-import { getPdfViewerUrl } from "@/lib/pdf-utils";
-import { APP_CONFIG } from "@/app-config";
-import { rgbaToHex, bodyToBorderColor } from "@/lib/utils";
+import { useEffect, useMemo, useState } from 'react';
+import { ExternalLink, Search, X } from 'lucide-react';
+import { Schema } from '@/lib/definitions';
+import { rebuildState } from '@/lib/schema-storage';
+import { getPdfViewerUrl } from '@/lib/pdf-utils';
+import { APP_CONFIG } from '@/app-config';
+import { rgbaToHex, bodyToBorderColor } from '@/lib/utils';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Toggle } from "@/components/ui/toggle";
+} from '@/components/ui/select';
+import { Toggle } from '@/components/ui/toggle';
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupButton,
   InputGroupInput,
-} from "@/components/ui/input-group";
-import { applyFilters, FilterState, ManagerRow } from "./filters";
+} from '@/components/ui/input-group';
+import { applyFilters, FilterState, ManagerRow } from './filters';
 
-const ALL_PDFS = "__all__";
+const ALL_PDFS = '__all__';
 
 function flattenSchema(schema: Schema): ManagerRow[] {
   return schema.classes.flatMap((cls) =>
@@ -42,8 +42,8 @@ function emptyFilters(schema: Schema | undefined): FilterState {
   return {
     classIds: schema ? schema.classes.map((c) => c.id) : [],
     pdfUrl: null,
-    contentQuery: "",
-    notesQuery: "",
+    contentQuery: '',
+    notesQuery: '',
   };
 }
 
@@ -57,7 +57,7 @@ export function SchemaManagerApp() {
   useEffect(() => {
     void rebuildState(APP_CONFIG.indexedDBConfig).then((result) => {
       setSchemas(result);
-      const requested = new URLSearchParams(window.location.search).get("schemaId");
+      const requested = new URLSearchParams(window.location.search).get('schemaId');
       const initial = result.find((s) => s.id === requested) ?? result[0];
       setActiveSchemaId(initial?.id ?? null);
     });
@@ -73,15 +73,9 @@ export function SchemaManagerApp() {
     setFilters(emptyFilters(activeSchema));
   }, [activeSchema]);
 
-  const rows = useMemo(
-    () => (activeSchema ? flattenSchema(activeSchema) : []),
-    [activeSchema],
-  );
+  const rows = useMemo(() => (activeSchema ? flattenSchema(activeSchema) : []), [activeSchema]);
 
-  const pdfUrls = useMemo(
-    () => Array.from(new Set(rows.map((r) => r.pdfUrl))).sort(),
-    [rows],
-  );
+  const pdfUrls = useMemo(() => Array.from(new Set(rows.map((r) => r.pdfUrl))).sort(), [rows]);
 
   const visibleRows = useMemo(() => applyFilters(rows, filters), [rows, filters]);
 
@@ -96,9 +90,7 @@ export function SchemaManagerApp() {
   const toggleClass = (classId: string, pressed: boolean) =>
     setFilters((f) => ({
       ...f,
-      classIds: pressed
-        ? [...f.classIds, classId]
-        : f.classIds.filter((id) => id !== classId),
+      classIds: pressed ? [...f.classIds, classId] : f.classIds.filter((id) => id !== classId),
     }));
 
   return (
@@ -112,7 +104,7 @@ export function SchemaManagerApp() {
           <SelectContent>
             {schemas.map((s) => (
               <SelectItem key={s.id} value={s.id}>
-                {s.name || "Untitled schema"}
+                {s.name || 'Untitled schema'}
               </SelectItem>
             ))}
           </SelectContent>
@@ -139,7 +131,7 @@ export function SchemaManagerApp() {
                 <InputGroupButton
                   size="icon-xs"
                   aria-label="Clear content search"
-                  onClick={() => setFilters((f) => ({ ...f, contentQuery: "" }))}
+                  onClick={() => setFilters((f) => ({ ...f, contentQuery: '' }))}
                 >
                   <X />
                 </InputGroupButton>
@@ -161,7 +153,7 @@ export function SchemaManagerApp() {
                 <InputGroupButton
                   size="icon-xs"
                   aria-label="Clear notes search"
-                  onClick={() => setFilters((f) => ({ ...f, notesQuery: "" }))}
+                  onClick={() => setFilters((f) => ({ ...f, notesQuery: '' }))}
                 >
                   <X />
                 </InputGroupButton>
@@ -171,9 +163,7 @@ export function SchemaManagerApp() {
 
           <Select
             value={filters.pdfUrl ?? ALL_PDFS}
-            onValueChange={(v) =>
-              setFilters((f) => ({ ...f, pdfUrl: v === ALL_PDFS ? null : v }))
-            }
+            onValueChange={(v) => setFilters((f) => ({ ...f, pdfUrl: v === ALL_PDFS ? null : v }))}
           >
             <SelectTrigger size="sm" className="max-w-xs">
               <SelectValue placeholder="Filter by PDF" />

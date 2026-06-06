@@ -10,20 +10,24 @@ interface PageHighlightsProps {
 export function PageHighlights({ pageNumber, highlights, flashingId }: PageHighlightsProps) {
   return (
     <>
-      {highlights.filter((hl) => hl.coords != null).map((hl) => {
-        return <HighlightOverlay
-          key={hl.id}
-          highlightId={hl.id}
-          classId={hl.classId}
-          schemaId={hl.schemaId}
-          allCoords={hl.coords.filter(box => box.pageNumber === pageNumber)}
-          color={hl.color}
-          source={hl.source}
-          text={hl.text}
-          positiveExample={hl.positiveExample}
-          flashing={hl.id === flashingId}
-          />
-      })}
+      {highlights
+        .filter((hl) => hl.coords != null)
+        .map((hl) => {
+          return (
+            <HighlightOverlay
+              key={hl.id}
+              highlightId={hl.id}
+              classId={hl.classId}
+              schemaId={hl.schemaId}
+              allCoords={hl.coords.filter((box) => box.pageNumber === pageNumber)}
+              color={hl.color}
+              source={hl.source}
+              text={hl.text}
+              positiveExample={hl.positiveExample}
+              flashing={hl.id === flashingId}
+            />
+          );
+        })}
     </>
   );
 }

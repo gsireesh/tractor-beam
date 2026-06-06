@@ -1,8 +1,8 @@
-import type { Story } from "@ladle/react";
-import { InstanceNavigator } from "./InstanceNavigator";
-import { placeholderSchemas } from "@/lib/placeholder-schemas";
-import { getHighlightsFromSchema, getSignpostsFromHighlights } from "@/lib/utils.ts";
-import { DrawerContext } from "@/contexts/DrawerContext";
+import type { Story } from '@ladle/react';
+import { InstanceNavigator } from './InstanceNavigator';
+import { placeholderSchemas } from '@/lib/placeholder-schemas';
+import { getHighlightsFromSchema, getSignpostsFromHighlights } from '@/lib/utils.ts';
+import { DrawerContext } from '@/contexts/DrawerContext';
 
 // Use the "STS Reading" schema (index 1, not 0): its classes carry populated
 // `instances` with real PDF coords, so the navigator has something to render.
@@ -21,7 +21,7 @@ const mlSignposts = signposts.slice(0, 2);
 // Each signpost renders an inline editor that reads/writes through DrawerContext.
 // Provide a stub provider so the editors resolve their instances; dispatch is a
 // no-op here (Ladle just renders the form — edits aren't persisted in the story).
-const stubContext = { activeSchema, pdfUrl: "", dispatch: () => {}, removeMlHighlight: () => {} };
+const stubContext = { activeSchema, pdfUrl: '', dispatch: () => {}, removeMlHighlight: () => {} };
 
 const Frame = ({ children }: { children: React.ReactNode }) => (
   <div className="relative w-[480px] min-h-[300px] border border-gray-300 bg-white p-4 overflow-auto shadow-sm">

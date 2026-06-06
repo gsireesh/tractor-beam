@@ -79,13 +79,22 @@ export function InstancePopoverContent({
       </div>
       {(positiveExample !== undefined || pageNumber !== undefined) && (
         <div className="mb-3 flex items-center gap-2">
-          {positiveExample !== undefined && (positiveExample ? (
-            <Badge className="bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-300"><Plus />Positive Example</Badge>
-          ) : (
-            <Badge className="bg-red-50 text-red-700 dark:bg-red-950 dark:text-red-300"><Minus />Negative Example</Badge>
-          ))}
+          {positiveExample !== undefined &&
+            (positiveExample ? (
+              <Badge className="bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-300">
+                <Plus />
+                Positive Example
+              </Badge>
+            ) : (
+              <Badge className="bg-red-50 text-red-700 dark:bg-red-950 dark:text-red-300">
+                <Minus />
+                Negative Example
+              </Badge>
+            ))}
           {pageNumber !== undefined && (
-            <Badge className="bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300">Page {pageNumber}</Badge>
+            <Badge className="bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300">
+              Page {pageNumber}
+            </Badge>
           )}
         </div>
       )}
@@ -107,7 +116,14 @@ export function InstancePopoverContent({
             onSelectedClassChange(classes.find((c) => c.name === name) ?? null);
           }}
           onCreate={(name) => {
-            onSelectedClassChange(createNewClass(name, '', [], classes.map((c) => c.color)));
+            onSelectedClassChange(
+              createNewClass(
+                name,
+                '',
+                [],
+                classes.map((c) => c.color),
+              ),
+            );
           }}
           renderCreateLabel={(label) => `Create new class "${label}"`}
           inputClassName="flex-1 bg-white"

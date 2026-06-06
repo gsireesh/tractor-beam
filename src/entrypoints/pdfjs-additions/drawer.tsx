@@ -6,34 +6,56 @@
  * orchestration (visual block extraction → offscreen ML → highlight rendering).
  */
 
-import {useCallback, useEffect, useMemo, useRef, useState, type Dispatch, type SetStateAction} from 'react';
-import {createRoot, Root} from 'react-dom/client';
-import {ArrowLeftRight, Layers2Icon, PencilLine, Plus, SignpostIcon, Trash2, EllipsisVerticalIcon} from 'lucide-react';
-import {SchemaViewer} from '@/components/SchemaViewer';
 import {
-  getMlAnnotationRuns,
-  rebuildState,
-  storeMlAnnotationRun
-} from '@/lib/schema-storage';
-import {APP_CONFIG} from '@/app-config';
-import {Instance, Schema, SchemaAction} from '@/lib/definitions';
-import {schemasReducer} from '@/lib/schema-reducer';
-import {usePersistedSchemaReducer} from '@/hooks/persisted-reducer';
-import type {ExtensionMessage, MlProgressMessage} from '@/lib/messaging/message_definitions';
-import {getClaudeApiKey, getModelConfig, getOllamaBaseUrl, getUiState, setDrawerOpen, setDocumentUiState, setLastSchemaId, type UiState, type DrawerView} from '@/lib/config-storage';
-import {DrawerContext} from '@/contexts/DrawerContext';
-import {scrollToAnnotation} from '@/lib/pdf-navigation';
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type Dispatch,
+  type SetStateAction,
+} from 'react';
+import { createRoot, Root } from 'react-dom/client';
+import {
+  ArrowLeftRight,
+  Layers2Icon,
+  PencilLine,
+  Plus,
+  SignpostIcon,
+  Trash2,
+  EllipsisVerticalIcon,
+} from 'lucide-react';
+import { SchemaViewer } from '@/components/SchemaViewer';
+import { getMlAnnotationRuns, rebuildState, storeMlAnnotationRun } from '@/lib/schema-storage';
+import { APP_CONFIG } from '@/app-config';
+import { Instance, Schema, SchemaAction } from '@/lib/definitions';
+import { schemasReducer } from '@/lib/schema-reducer';
+import { usePersistedSchemaReducer } from '@/hooks/persisted-reducer';
+import type { ExtensionMessage, MlProgressMessage } from '@/lib/messaging/message_definitions';
+import {
+  getClaudeApiKey,
+  getModelConfig,
+  getOllamaBaseUrl,
+  getUiState,
+  setDrawerOpen,
+  setDocumentUiState,
+  setLastSchemaId,
+  type UiState,
+  type DrawerView,
+} from '@/lib/config-storage';
+import { DrawerContext } from '@/contexts/DrawerContext';
+import { scrollToAnnotation } from '@/lib/pdf-navigation';
 import cssText from './drawer-styles.css?inline';
 import {
   createNewSchema,
   getHighlightsFromSchema,
   getSignpostsFromHighlights,
-  mergePdfBoxes
-} from "@/lib/utils.ts";
-import {VISUAL_BLOCK_CLASS_ID} from '@/components/HighlightOverlay.tsx';
-import type {Highlight, Signpost} from '@/lib/definitions.ts';
-import {ModelControls} from "@/components/ModelControls.tsx";
-import {IconButton} from '@/components/IconButton';
+  mergePdfBoxes,
+} from '@/lib/utils.ts';
+import { VISUAL_BLOCK_CLASS_ID } from '@/components/HighlightOverlay.tsx';
+import type { Highlight, Signpost } from '@/lib/definitions.ts';
+import { ModelControls } from '@/components/ModelControls.tsx';
+import { IconButton } from '@/components/IconButton';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -41,15 +63,15 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Tabs, TabsContent, TabsList, TabsTrigger} from '@/components/ui/tabs';
-import {InstanceNavigator} from "@/components/navigation/InstanceNavigator.tsx";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { InstanceNavigator } from '@/components/navigation/InstanceNavigator.tsx';
 
 const DRAWER_WIDTH = 380;
 
 // ─── Module-level refs for the window API ───
 
 let drawerDispatch: ((action: SchemaAction) => void) | null = null;
-let getActiveSchemaFn: (() => Schema | null) = () => null;
+let getActiveSchemaFn: () => Schema | null = () => null;
 let setOpenFn: ((value: boolean | ((prev: boolean) => boolean)) => void) | null = null;
 
 // Bridge so module-scope pipeline functions (invoked via the window API) can push
@@ -59,7 +81,10 @@ let setMlHighlightsFn: Dispatch<SetStateAction<Highlight[]>> | null = null;
 /** Build a classId → color lookup from a schema (empty if no schema). */
 function colorMapForSchema(schema: Schema | null): Record<string, string> {
   if (!schema) return {};
-  return schema.classes.reduce<Record<string, string>>((acc, cls) => { acc[cls.id] = cls.color; return acc; }, {});
+  return schema.classes.reduce<Record<string, string>>((acc, cls) => {
+    acc[cls.id] = cls.color;
+    return acc;
+  }, {});
 }
 
 async function runSegmentationPipeline() {
@@ -74,18 +99,21 @@ async function runSegmentationPipeline() {
   const blocks = await window.TractorBeamTextExtraction.extractVisualBlocks(PDFViewerApplication);
   console.log(`[drawer] Extracted ${blocks.length} visual blocks`);
 
-  window.TractorBeamHighlights.setHighlights('layout', blocks.map((block) => {
-    const superBlock = mergePdfBoxes(block.items.map((item) => item.box));
-    return {
-      id: block.blockId,
-      classId: VISUAL_BLOCK_CLASS_ID,
-      schemaId: "visual",
-      source: 'ml' as const,
-      color: "visual",
-      coords: [superBlock],
-      positiveExample: true,
-  }}));
-
+  window.TractorBeamHighlights.setHighlights(
+    'layout',
+    blocks.map((block) => {
+      const superBlock = mergePdfBoxes(block.items.map((item) => item.box));
+      return {
+        id: block.blockId,
+        classId: VISUAL_BLOCK_CLASS_ID,
+        schemaId: 'visual',
+        source: 'ml' as const,
+        color: 'visual',
+        coords: [superBlock],
+        positiveExample: true,
+      };
+    }),
+  );
 }
 
 async function loadCachedAnnotations(schemaId: string, pdfUrl: string) {
@@ -96,7 +124,9 @@ async function loadCachedAnnotations(schemaId: string, pdfUrl: string) {
     return;
   }
   const mostRecent = runs.sort((a, b) => b.createdAt - a.createdAt)[0];
-  console.log(`[drawer] Loaded cached run ${mostRecent.id} with ${mostRecent.annotations.length} annotations`);
+  console.log(
+    `[drawer] Loaded cached run ${mostRecent.id} with ${mostRecent.annotations.length} annotations`,
+  );
   const colorsByClass = colorMapForSchema(getActiveSchemaFn());
   const loaded: Highlight[] = mostRecent.annotations.map((a) => ({
     id: a.id,
@@ -124,7 +154,9 @@ function syncProvisionalHighlights(mlHighlights: Highlight[]) {
   const highlights: Highlight[] = mlHighlights
     .filter((h) => h.schemaId === schema.id && colorsByClass[h.classId] !== undefined)
     .map((h) => ({ ...h, color: colorsByClass[h.classId] ?? h.color }));
-  console.log(`[drawer] provisional highlight sync: ${highlights.length} ML for schema ${schema.id}`);
+  console.log(
+    `[drawer] provisional highlight sync: ${highlights.length} ML for schema ${schema.id}`,
+  );
   window.TractorBeamHighlights.setHighlights('provisional', highlights);
 }
 
@@ -150,7 +182,6 @@ async function runAnnotationPipeline(schema: Schema, requestId: string) {
   const blocks = await window.TractorBeamTextExtraction.extractVisualBlocks(PDFViewerApplication);
   console.log(`[drawer] Extracted ${blocks.length} visual blocks`);
 
-
   // 2. Ensure the offscreen document is ready
   await chrome.runtime.sendMessage({ type: 'ensureOffscreen' }).catch(() => {
     console.warn('[drawer] ensureOffscreen failed — offscreen may already exist');
@@ -158,28 +189,36 @@ async function runAnnotationPipeline(schema: Schema, requestId: string) {
 
   // 3. Read model config and send the complete message to the offscreen document
   const modelConfig = await getModelConfig();
-  const claudeApiKey = modelConfig.provider === 'claude' ? await getClaudeApiKey() ?? undefined : undefined;
-  const ollamaBaseUrl = modelConfig.provider === 'ollama' ? await getOllamaBaseUrl() ?? undefined : undefined;
+  const claudeApiKey =
+    modelConfig.provider === 'claude' ? ((await getClaudeApiKey()) ?? undefined) : undefined;
+  const ollamaBaseUrl =
+    modelConfig.provider === 'ollama' ? ((await getOllamaBaseUrl()) ?? undefined) : undefined;
 
-  chrome.runtime.sendMessage({
-    type: 'runAnnotationPipeline',
-    requestId,
-    schema,
-    blocks,
-    modelConfig,
-    claudeApiKey,
-    ollamaBaseUrl,
-  }).catch((err) => {
-    console.error('[drawer] Failed to send runAnnotationPipeline:', err);
-  });
+  chrome.runtime
+    .sendMessage({
+      type: 'runAnnotationPipeline',
+      requestId,
+      schema,
+      blocks,
+      modelConfig,
+      claudeApiKey,
+      ollamaBaseUrl,
+    })
+    .catch((err) => {
+      console.error('[drawer] Failed to send runAnnotationPipeline:', err);
+    });
 }
 
 function cancelAnnotationPipeline(requestId: string) {
   console.log('[drawer] Cancelling annotation pipeline:', requestId);
-  chrome.runtime.sendMessage({
-    type: 'cancelAnnotationPipeline',
-    requestId,
-  }).catch(() => {console.log("Failed to cancel annotation!")});
+  chrome.runtime
+    .sendMessage({
+      type: 'cancelAnnotationPipeline',
+      requestId,
+    })
+    .catch(() => {
+      console.log('Failed to cancel annotation!');
+    });
 }
 
 // ─── React components ───
@@ -198,15 +237,14 @@ function DrawerContainer() {
     // hydration there (the static skeleton is the right output) — this re-runs for
     // real once the page loads in the extension.
     if (typeof window === 'undefined' || !window.indexedDB) return;
-    void Promise.all([
-      rebuildState(APP_CONFIG.indexedDBConfig),
-      getUiState(),
-    ]).then(([schemas, ui]) => {
-      setInitialState(schemas);
-      setInitialUiState(ui);
-      setIsOpen(ui.drawerOpen);
-      hydrated.current = true;
-    }).catch((err: unknown) => console.error('[drawer] state hydration failed', err));
+    void Promise.all([rebuildState(APP_CONFIG.indexedDBConfig), getUiState()])
+      .then(([schemas, ui]) => {
+        setInitialState(schemas);
+        setInitialUiState(ui);
+        setIsOpen(ui.drawerOpen);
+        hydrated.current = true;
+      })
+      .catch((err: unknown) => console.error('[drawer] state hydration failed', err));
   }, []);
 
   // Persist open/closed state (after hydration, so we don't clobber the stored value).
@@ -229,10 +267,12 @@ function DrawerContainer() {
   // Expose setIsOpen for the window API
   useEffect(() => {
     setOpenFn = setIsOpen;
-    return () => { setOpenFn = null; };
+    return () => {
+      setOpenFn = null;
+    };
   }, []);
 
-  const toggle = () => setIsOpen(prev => !prev);
+  const toggle = () => setIsOpen((prev) => !prev);
 
   if (!initialState || !initialUiState) {
     return (
@@ -304,7 +344,9 @@ function SchemaHeader({
       <div
         ref={titleRef}
         className="w-fit"
-        onClick={() => { if (!editing) onEditingChange(true); }}
+        onClick={() => {
+          if (!editing) onEditingChange(true);
+        }}
       >
         {editing ? (
           <input
@@ -313,12 +355,18 @@ function SchemaHeader({
             className="border-2 bg-white text-base px-1 py-0.5 rounded"
             value={activeSchema.name}
             onChange={(e) => onRename(e.target.value)}
-            onKeyDown={(e) => { if (e.key === 'Enter') onEditingChange(false); }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') onEditingChange(false);
+            }}
           />
         ) : (
           <div className="flex items-center gap-1 group cursor-pointer">
             <span className="text-base">{activeSchema.name || 'Untitled schema'}</span>
-            <PencilLine strokeWidth={1} size={16} className="invisible group-hover:visible shrink-0" />
+            <PencilLine
+              strokeWidth={1}
+              size={16}
+              className="invisible group-hover:visible shrink-0"
+            />
           </div>
         )}
       </div>
@@ -343,7 +391,8 @@ function SchemaHeader({
           <DropdownMenuContent align="end">
             <DropdownMenuGroup>
               <DropdownMenuItem variant="destructive" onClick={onDelete}>
-                <Trash2 strokeWidth={1} size="1em" />Delete Schema
+                <Trash2 strokeWidth={1} size="1em" />
+                Delete Schema
               </DropdownMenuItem>
             </DropdownMenuGroup>
           </DropdownMenuContent>
@@ -369,8 +418,7 @@ function resolveInitialSchemaId(
   uiState: UiState,
   pdfUrl: string,
 ): string {
-
-   const exists = (id: string | null | undefined) => (id != null) && schemas.some(s => s.id === id)
+  const exists = (id: string | null | undefined) => id != null && schemas.some((s) => s.id === id);
   if (exists(deepLinkSchemaId)) {
     return deepLinkSchemaId!;
   } else if (uiState.documents[pdfUrl] != null && exists(uiState.documents[pdfUrl].schemaId)) {
@@ -382,35 +430,47 @@ function resolveInitialSchemaId(
   }
 }
 
-function DrawerContent({ initialSchemas, initialUiState }: { initialSchemas: Schema[]; initialUiState: UiState }) {
-  const [schemas, dispatch ] = usePersistedSchemaReducer(
+function DrawerContent({
+  initialSchemas,
+  initialUiState,
+}: {
+  initialSchemas: Schema[];
+  initialUiState: UiState;
+}) {
+  const [schemas, dispatch] = usePersistedSchemaReducer(
     schemasReducer,
     initialSchemas,
     APP_CONFIG.indexedDBConfig,
   );
-  const [llmLoaded, setLlmLoaded] = useState<Omit<MlProgressMessage, 'type'>>({ stage: 'unloaded', progress: 0, message: '' });
-
+  const [llmLoaded, setLlmLoaded] = useState<Omit<MlProgressMessage, 'type'>>({
+    stage: 'unloaded',
+    progress: 0,
+    message: '',
+  });
 
   const viewerParams = new URLSearchParams(window.location.search);
   const pdfUrl = viewerParams.get('file') ?? '';
   // A deep link (?schema=…&instance=…) preselects the schema so the target
   // instance's highlight is among confirmedHighlights below. Otherwise we restore
   // this document's saved schema, falling back to the last-used / first schema.
-  const [activeSchemaId, setActiveSchemaId] = useState<string>(
-    () => resolveInitialSchemaId(viewerParams.get('schema'), schemas, initialUiState, pdfUrl),
+  const [activeSchemaId, setActiveSchemaId] = useState<string>(() =>
+    resolveInitialSchemaId(viewerParams.get('schema'), schemas, initialUiState, pdfUrl),
   );
-  const activeSchema = schemas.find(s => s.id === activeSchemaId) ?? schemas[0];
+  const activeSchema = schemas.find((s) => s.id === activeSchemaId) ?? schemas[0];
 
   // Restore which tab this document was last on (Schema Editor vs. Semantic Index).
   const [view, setView] = useState<DrawerView>(initialUiState.documents[pdfUrl]?.view ?? 'schema');
 
   // Switch the active schema and remember it, both per-document and as the global
   // last-used schema (the fallback for documents we haven't seen yet).
-  const selectSchema = useCallback((id: string) => {
-    setActiveSchemaId(id);
-    void setDocumentUiState(pdfUrl, { schemaId: id });
-    void setLastSchemaId(id);
-  }, [pdfUrl]);
+  const selectSchema = useCallback(
+    (id: string) => {
+      setActiveSchemaId(id);
+      void setDocumentUiState(pdfUrl, { schemaId: id });
+      void setLastSchemaId(id);
+    },
+    [pdfUrl],
+  );
 
   // Pin this document's resolved position on first open, so it persists independently
   // of the global last-used schema (which other documents move). Idempotent for
@@ -422,11 +482,23 @@ function DrawerContent({ initialSchemas, initialUiState }: { initialSchemas: Sch
     void setDocumentUiState(pdfUrl, { schemaId: activeSchemaId, view });
     // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional once-per-document write of the mount-time values
   }, [pdfUrl]);
-  const confirmedHighlights = useMemo<Highlight[]>(() => (activeSchema ? getHighlightsFromSchema(activeSchema, pdfUrl) : []), [activeSchema, pdfUrl]);
-  const confirmedSignposts = useMemo<Signpost[]>(() => (activeSchema ? getSignpostsFromHighlights(confirmedHighlights, activeSchema) : []), [confirmedHighlights, activeSchema]);
+  const confirmedHighlights = useMemo<Highlight[]>(
+    () => (activeSchema ? getHighlightsFromSchema(activeSchema, pdfUrl) : []),
+    [activeSchema, pdfUrl],
+  );
+  const confirmedSignposts = useMemo<Signpost[]>(
+    () => (activeSchema ? getSignpostsFromHighlights(confirmedHighlights, activeSchema) : []),
+    [confirmedHighlights, activeSchema],
+  );
   const [mlHighlights, setMlHighlights] = useState<Highlight[]>([]);
-  const mlSignposts = useMemo<Signpost[]>(() => (activeSchema ? getSignpostsFromHighlights(mlHighlights, activeSchema) : []), [mlHighlights, activeSchema]);
-  const removeMlHighlight = useCallback((highlightId: string) => setMlHighlights((prev) => prev.filter((h) => h.id !== highlightId)), []);
+  const mlSignposts = useMemo<Signpost[]>(
+    () => (activeSchema ? getSignpostsFromHighlights(mlHighlights, activeSchema) : []),
+    [mlHighlights, activeSchema],
+  );
+  const removeMlHighlight = useCallback(
+    (highlightId: string) => setMlHighlights((prev) => prev.filter((h) => h.id !== highlightId)),
+    [],
+  );
   const [titleEditing, setTitleEditing] = useState<boolean>(false);
 
   // Expose refs for the window API
@@ -455,7 +527,11 @@ function DrawerContent({ initialSchemas, initialUiState }: { initialSchemas: Sch
     const listener = (message: ExtensionMessage) => {
       switch (message.type) {
         case 'mlProgress':
-          setLlmLoaded({ stage: message.stage, progress: message.progress, message: message.message });
+          setLlmLoaded({
+            stage: message.stage,
+            progress: message.progress,
+            message: message.message,
+          });
           break;
         case 'annotationResults':
           if (message.annotations && message.requestId) {
@@ -466,7 +542,9 @@ function DrawerContent({ initialSchemas, initialUiState }: { initialSchemas: Sch
               schemaId: activeSchema?.id ?? '',
               annotations: message.annotations,
               createdAt: Date.now(),
-            }).catch((err: unknown) => console.error('[drawer] Failed to store ML annotations:', err));
+            }).catch((err: unknown) =>
+              console.error('[drawer] Failed to store ML annotations:', err),
+            );
 
             // Accumulate and render ML annotations as provisional highlights
             const colorsByClass = colorMapForSchema(activeSchema ?? null);
@@ -492,7 +570,9 @@ function DrawerContent({ initialSchemas, initialUiState }: { initialSchemas: Sch
   // Push confirmed (human) highlights to the in-page highlights module
   useEffect(() => {
     if (!window.TractorBeamHighlights) return;
-    console.log(`[drawer] confirmed highlight sync: ${confirmedHighlights.length} manual, pdfUrl="${pdfUrl}"`);
+    console.log(
+      `[drawer] confirmed highlight sync: ${confirmedHighlights.length} manual, pdfUrl="${pdfUrl}"`,
+    );
     window.TractorBeamHighlights.setHighlights('confirmed', confirmedHighlights);
   }, [confirmedHighlights, pdfUrl]);
 
@@ -552,21 +632,36 @@ function DrawerContent({ initialSchemas, initialUiState }: { initialSchemas: Sch
         }}
       />
       <div className="flex flex-col h-full overflow-scroll">
-      <Tabs value={view} onValueChange={(v) => { setView(v as DrawerView); void setDocumentUiState(pdfUrl, { view: v as DrawerView }); }}>
-        <TabsList className="w-full">
-          <TabsTrigger value={"schema"}><Layers2Icon/> Schema Editor</TabsTrigger>
-          <TabsTrigger value={"navigation"}><SignpostIcon/>Semantic Index</TabsTrigger>
-        </TabsList>
-        <TabsContent value={"schema"}>
-          <SchemaViewer schema={activeSchema} dispatch={dispatch} />
-        </TabsContent>
-        <TabsContent value={"navigation"}>
-          <InstanceNavigator confirmedSignposts={confirmedSignposts} mlSignposts={mlSignposts}/>
-        </TabsContent>
-      </Tabs>
+        <Tabs
+          value={view}
+          onValueChange={(v) => {
+            setView(v as DrawerView);
+            void setDocumentUiState(pdfUrl, { view: v as DrawerView });
+          }}
+        >
+          <TabsList className="w-full">
+            <TabsTrigger value={'schema'}>
+              <Layers2Icon /> Schema Editor
+            </TabsTrigger>
+            <TabsTrigger value={'navigation'}>
+              <SignpostIcon />
+              Semantic Index
+            </TabsTrigger>
+          </TabsList>
+          <TabsContent value={'schema'}>
+            <SchemaViewer schema={activeSchema} dispatch={dispatch} />
+          </TabsContent>
+          <TabsContent value={'navigation'}>
+            <InstanceNavigator confirmedSignposts={confirmedSignposts} mlSignposts={mlSignposts} />
+          </TabsContent>
+        </Tabs>
       </div>
       <div className="shrink-0">
-        <ModelControls status={llmLoaded.stage} progress={llmLoaded.progress} message={llmLoaded.message} />
+        <ModelControls
+          status={llmLoaded.stage}
+          progress={llmLoaded.progress}
+          message={llmLoaded.message}
+        />
       </div>
     </DrawerContext.Provider>
   );

@@ -6,9 +6,8 @@
 import { createRoot, Root } from 'react-dom/client';
 import { createPortal } from 'react-dom';
 import { PageHighlights } from '@/components/PageHighlights';
-import {Highlight} from '@/lib/definitions.ts'
+import { Highlight } from '@/lib/definitions.ts';
 import cssText from './popover-styles.css?inline';
-
 
 export type HighlightType = 'confirmed' | 'provisional' | 'layout';
 
@@ -76,13 +75,15 @@ function HighlightsRoot({
 function render() {
   if (!root) return;
   const mergedHighlights = allHighlights();
-  console.log(`[highlights] render(): ${mergedHighlights.length} highlights, ${pageContainers.size} containers`);
+  console.log(
+    `[highlights] render(): ${mergedHighlights.length} highlights, ${pageContainers.size} containers`,
+  );
   root.render(
     <HighlightsRoot
       highlights={mergedHighlights}
       pageContainers={new Map(pageContainers)}
       flashingId={flashingId}
-    />
+    />,
   );
 }
 
@@ -93,14 +94,10 @@ function ensureContainer(pageNumber: number): HTMLElement | null {
   const cached = pageContainers.get(pageNumber);
   if (cached?.isConnected) return cached;
 
-  const pageEl: HTMLElement = document.querySelector(
-    `.page[data-page-number="${pageNumber}"]`,
-  )!;
+  const pageEl: HTMLElement = document.querySelector(`.page[data-page-number="${pageNumber}"]`)!;
   if (!pageEl) return null;
 
-  let container :HTMLElement = pageEl.querySelector(
-    '.tractor-beam-highlights',
-  )!;
+  let container: HTMLElement = pageEl.querySelector('.tractor-beam-highlights')!;
   if (!container) {
     container = document.createElement('div');
     container.className = 'tractor-beam-highlights';
@@ -153,7 +150,9 @@ function renderPage(pageNumber: number) {
 
 function renderAll() {
   const pages = document.querySelectorAll('.page[data-page-number]');
-  console.log(`[highlights] renderAll: ${pages.length} pages found, ${allHighlights().length} highlights`);
+  console.log(
+    `[highlights] renderAll: ${pages.length} pages found, ${allHighlights().length} highlights`,
+  );
   for (const pageEl of pages) {
     const pageNumber = parseInt(pageEl.getAttribute('data-page-number')!, 10);
     ensureContainer(pageNumber);

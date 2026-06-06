@@ -33,13 +33,13 @@ export class ClaudeRunner {
     const apiKey = this.ensureApiKey();
 
     // Claude API uses a separate system parameter rather than a system message
-    const systemMessage = messages.find(m => m.role === 'system');
-    const nonSystemMessages = messages.filter(m => m.role !== 'system');
+    const systemMessage = messages.find((m) => m.role === 'system');
+    const nonSystemMessages = messages.filter((m) => m.role !== 'system');
 
     const body: Record<string, unknown> = {
       model: this.model,
       max_tokens: maxTokens,
-      messages: nonSystemMessages.map(m => ({ role: m.role, content: m.content })),
+      messages: nonSystemMessages.map((m) => ({ role: m.role, content: m.content })),
     };
     if (systemMessage) {
       body.system = systemMessage.content;
@@ -71,12 +71,14 @@ export class ClaudeRunner {
       // Map Claude response to OpenAI-compatible shape for the pipeline
       const content = data.content?.[0]?.text ?? '';
       return {
-        choices: [{
-          message: { role: 'assistant' as const, content },
-          finish_reason: data.stop_reason ?? 'stop',
-          index: 0,
-          logprobs: null,
-        }],
+        choices: [
+          {
+            message: { role: 'assistant' as const, content },
+            finish_reason: data.stop_reason ?? 'stop',
+            index: 0,
+            logprobs: null,
+          },
+        ],
         usage: {
           prompt_tokens: data.usage?.input_tokens ?? 0,
           completion_tokens: data.usage?.output_tokens ?? 0,

@@ -89,10 +89,7 @@ export function CreatableCombobox({
         }
       }}
     >
-      <ComboboxInput
-        className={inputClassName}
-        onClick={() => onSelect('')}
-      />
+      <ComboboxInput className={inputClassName} onClick={() => onSelect('')} />
       <ComboboxContent
         container={contentContainer}
         positionerClassName={contentPositionerClassName}

@@ -1,4 +1,4 @@
-import { Hsluv } from "hsluv";
+import { Hsluv } from 'hsluv';
 
 // All highlight colors share this alpha so they read as gentle highlights (not
 // solid fills) and stay legible over PDF text under `mix-blend-multiply`.
@@ -31,7 +31,7 @@ export function highlightColorForHue(hue: number): string {
   conv.hsluv_l = HSLUV_L;
   conv.hsluvToRgb();
 
-  return (`rgba(${Math.round(conv.rgb_r * 255)}, ${Math.round(conv.rgb_g * 255)}, ${Math.round(conv.rgb_b * 255)}, ${HIGHLIGHT_ALPHA})`);
+  return `rgba(${Math.round(conv.rgb_r * 255)}, ${Math.round(conv.rgb_g * 255)}, ${Math.round(conv.rgb_b * 255)}, ${HIGHLIGHT_ALPHA})`;
 }
 
 /** Recover the HSLuv hue of an existing `rgba(...)` color, or null if unparseable. */
@@ -58,9 +58,8 @@ function minHueDistance(hue: number, others: number[]): number {
  * The curated set of highlight colors offered in the "Change Color" swatch grid —
  * evenly-spaced hues at the fixed L/S, so they sit together harmoniously.
  */
-export const HIGHLIGHT_PALETTE: string[] = Array.from(
-  { length: PALETTE_SIZE },
-  (_, i) => highlightColorForHue((360 / PALETTE_SIZE) * i),
+export const HIGHLIGHT_PALETTE: string[] = Array.from({ length: PALETTE_SIZE }, (_, i) =>
+  highlightColorForHue((360 / PALETTE_SIZE) * i),
 );
 
 /**
@@ -69,9 +68,7 @@ export const HIGHLIGHT_PALETTE: string[] = Array.from(
  * crowded to clear that gap, returns the most-distinct hue sampled.
  */
 export function randomHighlightColor(existingColors: string[] = []): string {
-  const usedHues = existingColors
-    .map(hueOfColor)
-    .filter((h): h is number => h !== null);
+  const usedHues = existingColors.map(hueOfColor).filter((h): h is number => h !== null);
 
   let bestHue = 360 * Math.random();
   let bestDistance = -1;

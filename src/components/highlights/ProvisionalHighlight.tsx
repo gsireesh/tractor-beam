@@ -18,20 +18,22 @@ export const ProvisionalHighlight = memo(function ProvisionalHighlight({
   // parent height. Parent height is used for consistent appearance of squiggly boxes.
   // eslint-disable-next-line
   const [mounted, setMounted] = useState(false);
-  useLayoutEffect(() => { setMounted(true); }, []);
+  useLayoutEffect(() => {
+    setMounted(true);
+  }, []);
 
   if (allCoords == null || allCoords.length === 0) return <></>;
 
   // Tunable wave parameters (as fraction of rendered highlight height)
-  const waveLengthFrac = 1.8;     // wavelength as fraction of height
-  const waveDepthFrac = 0.07;     // wave depth as fraction of height
+  const waveLengthFrac = 1.8; // wavelength as fraction of height
+  const waveDepthFrac = 0.07; // wave depth as fraction of height
 
   function buildWavyMask(w: number, d: number): string {
     const r = d / 2 + (w * w) / (32 * d);
     const outerOffset = r + d * 0.1;
     const innerOffset = outerOffset - d;
     const halfWave = w / 2;
-    const quarterWave = w / 4;  // offset between top and bottom scallop rows
+    const quarterWave = w / 4; // offset between top and bottom scallop rows
     return `
     radial-gradient(${r}px at 50% ${outerOffset}px,#000 99%,#0000 101%) calc(50% - ${halfWave}px) 0/${w}px 51% repeat-x,
     radial-gradient(${r}px at 50% -${innerOffset}px,#0000 99%,#000 101%) 50% ${d}px/${w}px calc(51% - ${d}px) repeat-x,
@@ -73,10 +75,13 @@ export const ProvisionalHighlight = memo(function ProvisionalHighlight({
         const waveLength = waveLengthFrac * baseHeight;
         const waveDepth = waveDepthFrac * baseHeight;
         const wavyMask = baseHeight > 0 ? buildWavyMask(waveLength, waveDepth) : '';
-        const wavyStyle = baseHeight > 0 ? {
-          WebkitMask: wavyMask,
-          mask: wavyMask,
-        } : {};
+        const wavyStyle =
+          baseHeight > 0
+            ? {
+                WebkitMask: wavyMask,
+                mask: wavyMask,
+              }
+            : {};
 
         return (
           <div

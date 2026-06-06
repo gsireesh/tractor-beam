@@ -8,7 +8,7 @@ export interface PdfBox {
 
 export interface Instance {
   id: string;
-  instanceType: "text" | "box";
+  instanceType: 'text' | 'box';
   text: string;
   positiveExample: boolean;
   coords: PdfBox[] | null;
@@ -35,15 +35,15 @@ export interface Signpost extends Highlight {
 
 export interface VisualBlockItem {
   str: string;
-  box: PdfBox;  // normalized 0-1 coords
+  box: PdfBox; // normalized 0-1 coords
 }
 
 export interface VisualBlock {
-  blockId: string;        // e.g. "p1_b0" (page 1, block 0)
+  blockId: string; // e.g. "p1_b0" (page 1, block 0)
   pageNumber: number;
-  text: string;           // concatenated item strings
+  text: string; // concatenated item strings
   items: VisualBlockItem[];
-  itemOffsets: number[];   // char offset in `text` where each item starts
+  itemOffsets: number[]; // char offset in `text` where each item starts
 }
 
 // ─── ML annotation pipeline results ───
@@ -60,7 +60,7 @@ export interface MlAnnotation {
 }
 
 export interface MlAnnotationRun {
-  id: string;              // requestId
+  id: string; // requestId
   pdfUrl: string;
   schemaId: string;
   annotations: MlAnnotation[];
@@ -81,7 +81,7 @@ export interface Schema {
 }
 
 export interface SchemaSnapshot {
-  snapshotIndex: number,
+  snapshotIndex: number;
   schemaId: string;
   schema: Schema;
   createdAt: number;
@@ -93,60 +93,59 @@ export interface SchemaUpdate {
   schemaId: string;
   action: SchemaAction;
   createdAt: number;
-
 }
 
 interface AddSchema {
-  actionType: "addSchema";
+  actionType: 'addSchema';
   schema: Schema;
 }
 
 interface UpdateSchema {
-  actionType: "updateSchema";
+  actionType: 'updateSchema';
   schemaId: string;
   schemaInfo: Schema;
 }
 
 interface DeleteSchema {
-  actionType: "deleteSchema";
+  actionType: 'deleteSchema';
   schemaId: string;
 }
 
 interface AddClass {
-  actionType: "addClass";
+  actionType: 'addClass';
   schemaId: string;
   classInfo: SchemaClass;
 }
 
 interface UpdateClass {
-  actionType: "updateClass";
+  actionType: 'updateClass';
   schemaId: string;
   classId: string;
   classInfo: SchemaClass;
 }
 
 interface DeleteClass {
-  actionType: "deleteClass";
+  actionType: 'deleteClass';
   schemaId: string;
   classId: string;
 }
 
 interface AddInstance {
-  actionType: "addInstance",
+  actionType: 'addInstance';
   schemaId: string;
   classId: string;
   instance: Instance;
 }
 
 interface DeleteInstance {
-  actionType: "deleteInstance";
+  actionType: 'deleteInstance';
   schemaId: string;
   classId: string;
   instanceId: string;
 }
 
 interface UpdateInstance {
-  actionType: "updateInstance";
+  actionType: 'updateInstance';
   schemaId: string;
   classId: string;
   instanceId: string;
@@ -158,12 +157,12 @@ interface UpdateInstance {
 }
 
 export type SchemaAction =
-    AddSchema
-    | UpdateSchema
-    | DeleteSchema
-    | AddClass
-    | UpdateClass
-    | DeleteClass
-    | AddInstance
-    | DeleteInstance
-    | UpdateInstance;
+  | AddSchema
+  | UpdateSchema
+  | DeleteSchema
+  | AddClass
+  | UpdateClass
+  | DeleteClass
+  | AddInstance
+  | DeleteInstance
+  | UpdateInstance;

@@ -54,10 +54,10 @@ export interface UiState {
 
 /** Full documented shape of chrome.storage.local. */
 export interface PersistedState {
-  modelConfig: ModelConfig;     // key: 'modelConfig'
-  claudeApiKey: string | null;  // key: 'claudeApiKey'
+  modelConfig: ModelConfig; // key: 'modelConfig'
+  claudeApiKey: string | null; // key: 'claudeApiKey'
   ollamaBaseUrl: string | null; // key: 'ollamaBaseUrl'
-  uiState: UiState;             // key: 'uiState'
+  uiState: UiState; // key: 'uiState'
 }
 
 const DEFAULT_UI_STATE: UiState = {

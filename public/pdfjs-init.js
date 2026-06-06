@@ -5,7 +5,7 @@
  * and wires pdf.js events to window.TractorBeam* APIs.
  */
 
-(function() {
+(function () {
   'use strict';
 
   /**
@@ -52,9 +52,9 @@
 
       boxes.push({
         pageNumber,
-        left:   (rect.left - pageRect.left - borderLeft) / contentWidth,
-        top:    (rect.top  - pageRect.top  - borderTop)  / contentHeight,
-        width:  rect.width  / contentWidth,
+        left: (rect.left - pageRect.left - borderLeft) / contentWidth,
+        top: (rect.top - pageRect.top - borderTop) / contentHeight,
+        width: rect.width / contentWidth,
         height: rect.height / contentHeight,
       });
     }
@@ -87,7 +87,7 @@
     .catch((err) => console.error('[pdfjs-init] Failed to load pdfjs-additions.js:', err));
 
   // Wait for the PDF viewer to be loaded
-  document.addEventListener('webviewerloaded', async function() {
+  document.addEventListener('webviewerloaded', async function () {
     const PDFViewerApplication = window.PDFViewerApplication;
 
     if (!PDFViewerApplication) {
@@ -104,39 +104,41 @@
       await chrome.runtime.sendMessage({
         type: 'pdfViewerReady',
         url: window.location.href,
-        pdfUrl: getPdfUrlFromViewer()
+        pdfUrl: getPdfUrlFromViewer(),
       });
     } catch (err) {
       console.log('[pdfjs-init] Could not send pdfViewerReady message:', err.message);
     }
 
     // Re-render highlights when a page finishes rendering
-    PDFViewerApplication.eventBus.on('pagerendered', function(evt) {
+    PDFViewerApplication.eventBus.on('pagerendered', function (evt) {
       if (window.TractorBeamHighlights) {
         window.TractorBeamHighlights.renderPage(evt.pageNumber);
       }
     });
 
     // Clear stale highlight containers on scale change
-    PDFViewerApplication.eventBus.on('scalechanging', function() {
+    PDFViewerApplication.eventBus.on('scalechanging', function () {
       if (window.TractorBeamHighlights) {
         window.TractorBeamHighlights.clearContainers();
       }
     });
 
     // Listen for page changes
-    PDFViewerApplication.eventBus.on('pagechanging', function(evt) {
-      chrome.runtime.sendMessage({
-        type: 'pdfPageChanged',
-        pageNumber: evt.pageNumber,
-        pdfUrl: getPdfUrlFromViewer()
-      }).catch(() => {});
+    PDFViewerApplication.eventBus.on('pagechanging', function (evt) {
+      chrome.runtime
+        .sendMessage({
+          type: 'pdfPageChanged',
+          pageNumber: evt.pageNumber,
+          pdfUrl: getPdfUrlFromViewer(),
+        })
+        .catch(() => {});
 
       hideSelectionPopover();
     });
 
     // Listen for text selection
-    document.addEventListener('mouseup', function(e) {
+    document.addEventListener('mouseup', function (e) {
       const popoverRoot = document.getElementById('tractor-beam-popover-root');
       if (popoverRoot && popoverRoot.contains(e.target)) {
         return;
@@ -167,28 +169,29 @@
     }
 
     // Listen for messages from the extension
-    chrome.runtime.onMessage.addListener(function(message, sender, sendResponse) {
+    chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
       if (message.type === 'getPdfInfo') {
         sendResponse({
           url: getPdfUrlFromViewer(),
           pageNumber: PDFViewerApplication.page,
           numPages: PDFViewerApplication.pagesCount,
-          title: PDFViewerApplication.documentInfo?.Title || ''
+          title: PDFViewerApplication.documentInfo?.Title || '',
         });
         return true;
       }
 
       if (message.type === 'extractPdfText') {
         if (window.TractorBeamTextExtraction) {
-          window.TractorBeamTextExtraction.extractFullText(PDFViewerApplication).then(function(pages) {
-            sendResponse({ type: 'pdfTextExtracted', pages: pages });
-          }).catch(function(err) {
-            sendResponse({ type: 'pdfTextExtracted', pages: [], error: err.message });
-          });
+          window.TractorBeamTextExtraction.extractFullText(PDFViewerApplication)
+            .then(function (pages) {
+              sendResponse({ type: 'pdfTextExtracted', pages: pages });
+            })
+            .catch(function (err) {
+              sendResponse({ type: 'pdfTextExtracted', pages: [], error: err.message });
+            });
           return true;
         }
       }
-
     });
   });
 })();

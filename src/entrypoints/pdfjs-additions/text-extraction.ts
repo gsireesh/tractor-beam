@@ -13,13 +13,17 @@ const HEADER_FOOTER_MAX_CHARS = 30;
 declare global {
   interface Window {
     TractorBeamTextExtraction: {
-      extractFullText: (PDFViewerApplication: any) => Promise<{ pageNumber: number; text: string }[]>;
+      extractFullText: (
+        PDFViewerApplication: any,
+      ) => Promise<{ pageNumber: number; text: string }[]>;
       extractVisualBlocks: (PDFViewerApplication: any) => Promise<VisualBlock[]>;
     };
   }
 }
 
-async function extractFullText(PDFViewerApplication: any): Promise<{ pageNumber: number; text: string }[]> {
+async function extractFullText(
+  PDFViewerApplication: any,
+): Promise<{ pageNumber: number; text: string }[]> {
   const pdfDoc = PDFViewerApplication.pdfDocument;
   if (!pdfDoc) throw new Error('No PDF document loaded');
 
@@ -41,12 +45,16 @@ async function extractFullText(PDFViewerApplication: any): Promise<{ pageNumber:
 
 interface PdfTextItem {
   str: string;
-  transform: number[];  // [scaleX, skewX, skewY, scaleY, translateX, translateY]
+  transform: number[]; // [scaleX, skewX, skewY, scaleY, translateX, translateY]
   width: number;
   height: number;
 }
 
-function itemToNormalizedBox(item: PdfTextItem, viewportHeight: number, viewportWidth: number): PdfBox {
+function itemToNormalizedBox(
+  item: PdfTextItem,
+  viewportHeight: number,
+  viewportWidth: number,
+): PdfBox {
   const [, , , scaleY, tx, ty] = item.transform;
   const itemHeight = Math.abs(scaleY);
   const normalizedHeight = itemHeight / viewportHeight;
@@ -95,22 +103,21 @@ function buildVisualBlock(
 
 function computeMedianHeight(items: VisualBlockItem[]): number {
   if (items.length === 0) return 0;
-  const heights = items.map(it => it.box.height).sort((a, b) => a - b);
+  const heights = items.map((it) => it.box.height).sort((a, b) => a - b);
   const mid = Math.floor(heights.length / 2);
-  return heights.length % 2 === 0
-    ? (heights[mid - 1] + heights[mid]) / 2
-    : heights[mid];
+  return heights.length % 2 === 0 ? (heights[mid - 1] + heights[mid]) / 2 : heights[mid];
 }
 
-interface Gap { position: number; size: number }
+interface Gap {
+  position: number;
+  size: number;
+}
 
 /**
  * Projects items onto one axis using interval merging, then finds the largest
  * whitespace gap between merged intervals.
  */
-function findLargestGap(
-  intervals: { start: number; end: number }[],
-): Gap {
+function findLargestGap(intervals: { start: number; end: number }[]): Gap {
   if (intervals.length < 2) return { position: 0, size: 0 };
   const sorted = [...intervals].sort((a, b) => a.start - b.start);
 
@@ -142,21 +149,35 @@ function xyCut(
   if (items.length <= 1 || depth > MAX_XY_CUT_DEPTH) return [items];
 
   // Try Y-cut (horizontal split)
-  const yGap = findLargestGap(items.map((item) => ({ start: item.box.top, end: item.box.top + item.box.height })));
-  console.log(`[xy-cut] depth=${depth} items=${items.length} yGap=${yGap.size.toFixed(4)} (need ${minYGap.toFixed(4)}) xGap=pending`);
+  const yGap = findLargestGap(
+    items.map((item) => ({ start: item.box.top, end: item.box.top + item.box.height })),
+  );
+  console.log(
+    `[xy-cut] depth=${depth} items=${items.length} yGap=${yGap.size.toFixed(4)} (need ${minYGap.toFixed(4)}) xGap=pending`,
+  );
   if (yGap.size >= minYGap) {
-    const above = items.filter((item) => (item.box.top + item.box.height / 2) < yGap.position);
-    const below = items.filter((item) => (item.box.top + item.box.height / 2) >= yGap.position);
-    return [...xyCut(above, minYGap, minXGap, depth + 1), ...xyCut(below, minYGap, minXGap, depth + 1)];
+    const above = items.filter((item) => item.box.top + item.box.height / 2 < yGap.position);
+    const below = items.filter((item) => item.box.top + item.box.height / 2 >= yGap.position);
+    return [
+      ...xyCut(above, minYGap, minXGap, depth + 1),
+      ...xyCut(below, minYGap, minXGap, depth + 1),
+    ];
   }
 
   // Try X-cut (vertical split)
-  const xGap = findLargestGap(items.map((item) => ({ start: item.box.left, end: item.box.left + item.box.width })));
-  console.log(`[xy-cut] depth=${depth} items=${items.length} xGap=${xGap.size.toFixed(4)} (need ${minXGap.toFixed(4)})`);
+  const xGap = findLargestGap(
+    items.map((item) => ({ start: item.box.left, end: item.box.left + item.box.width })),
+  );
+  console.log(
+    `[xy-cut] depth=${depth} items=${items.length} xGap=${xGap.size.toFixed(4)} (need ${minXGap.toFixed(4)})`,
+  );
   if (xGap.size >= minXGap) {
-    const left = items.filter((item) => (item.box.left + item.box.width / 2) < xGap.position);
-    const right = items.filter((item) => (item.box.left + item.box.width / 2) >= xGap.position);
-    return [...xyCut(left, minYGap, minXGap, depth + 1), ...xyCut(right, minYGap, minXGap, depth + 1)];
+    const left = items.filter((item) => item.box.left + item.box.width / 2 < xGap.position);
+    const right = items.filter((item) => item.box.left + item.box.width / 2 >= xGap.position);
+    return [
+      ...xyCut(left, minYGap, minXGap, depth + 1),
+      ...xyCut(right, minYGap, minXGap, depth + 1),
+    ];
   }
 
   return [items];
@@ -172,10 +193,7 @@ function classifySize(height: number, modalHeight: number): SizeClass {
   return 'normal';
 }
 
-function stratifyByFontSize(
-  items: VisualBlockItem[],
-  medianHeight: number,
-): VisualBlockItem[][] {
+function stratifyByFontSize(items: VisualBlockItem[], medianHeight: number): VisualBlockItem[][] {
   if (items.length === 0) return [];
 
   // Modal height: most common height (rounded to 3 decimals)
@@ -187,7 +205,10 @@ function stratifyByFontSize(
   let modalHeight = items[0].box.height;
   let maxCount = 0;
   for (const [h, count] of freq) {
-    if (count > maxCount) { maxCount = count; modalHeight = h; }
+    if (count > maxCount) {
+      maxCount = count;
+      modalHeight = h;
+    }
   }
 
   const sorted = [...items].sort((a, b) => a.box.top - b.box.top || a.box.left - b.box.left);
@@ -213,10 +234,7 @@ function stratifyByFontSize(
 
 // ─── Line/paragraph grouping (enhanced from original) ───────────────────────
 
-function groupIntoLines(
-  items: VisualBlockItem[],
-  medianHeight: number,
-): VisualBlockItem[][] {
+function groupIntoLines(items: VisualBlockItem[], medianHeight: number): VisualBlockItem[][] {
   if (items.length === 0) return [];
 
   const sorted = [...items].sort((a, b) => a.box.top - b.box.top || a.box.left - b.box.left);
@@ -226,7 +244,8 @@ function groupIntoLines(
     const prev = sorted[i - 1];
     const curr = sorted[i];
     const avgHeight = (prev.box.height + curr.box.height) / 2;
-    const verticallyClose = Math.abs(curr.box.top - prev.box.top) < VERTICAL_PROXIMITY_THRESHOLD * avgHeight;
+    const verticallyClose =
+      Math.abs(curr.box.top - prev.box.top) < VERTICAL_PROXIMITY_THRESHOLD * avgHeight;
 
     if (verticallyClose) {
       groups[groups.length - 1].push(curr);
@@ -239,10 +258,7 @@ function groupIntoLines(
 
 // ─── Orchestration ──────────────────────────────────────────────────────────
 
-function groupItemsIntoBlocks(
-  items: VisualBlockItem[],
-  pageNumber: number,
-): VisualBlock[] {
+function groupItemsIntoBlocks(items: VisualBlockItem[], pageNumber: number): VisualBlock[] {
   if (items.length === 0) return [];
 
   // Phase 0: Strip header/footer items
@@ -250,7 +266,7 @@ function groupItemsIntoBlocks(
   const bodyItems: VisualBlockItem[] = [];
   for (const item of items) {
     const isHeader = item.box.top < HEADER_FOOTER_MARGIN;
-    const isFooter = item.box.top + item.box.height > (1 - HEADER_FOOTER_MARGIN);
+    const isFooter = item.box.top + item.box.height > 1 - HEADER_FOOTER_MARGIN;
     if (isHeader || isFooter) {
       headerFooterItems.push(item);
     } else {
@@ -260,14 +276,15 @@ function groupItemsIntoBlocks(
 
   // Only separate header/footer if they're small (page numbers, running headers)
   const hfTotalChars = headerFooterItems.reduce((sum, it) => sum + it.str.length, 0);
-  const effectiveBody = hfTotalChars < HEADER_FOOTER_MAX_CHARS
-    ? bodyItems
-    : [...bodyItems, ...headerFooterItems];
+  const effectiveBody =
+    hfTotalChars < HEADER_FOOTER_MAX_CHARS ? bodyItems : [...bodyItems, ...headerFooterItems];
   const separateHF = hfTotalChars < HEADER_FOOTER_MAX_CHARS ? headerFooterItems : [];
 
   // Phase 1: XY-Cut
   const medianH = computeMedianHeight(effectiveBody);
-  console.log(`[xy-cut] page ${pageNumber}: ${effectiveBody.length} items, medianH=${medianH.toFixed(4)}, minYGap=${(1.0 * medianH).toFixed(4)}, minXGap=${(1.2 * medianH).toFixed(4)}`);
+  console.log(
+    `[xy-cut] page ${pageNumber}: ${effectiveBody.length} items, medianH=${medianH.toFixed(4)}, minYGap=${(1.0 * medianH).toFixed(4)}, minXGap=${(1.2 * medianH).toFixed(4)}`,
+  );
   const regions = xyCut(effectiveBody, 1.0 * medianH, 1.2 * medianH, 0);
 
   // Phase 2 & 3: Font stratification → line grouping
@@ -313,7 +330,9 @@ async function extractVisualBlocks(PDFViewerApplication: any): Promise<VisualBlo
     allBlocks.push(...pageBlocks);
   }
 
-  console.log(`[text-extraction] Extracted ${allBlocks.length} visual blocks from ${numPages} pages`);
+  console.log(
+    `[text-extraction] Extracted ${allBlocks.length} visual blocks from ${numPages} pages`,
+  );
   return allBlocks;
 }
 

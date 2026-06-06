@@ -1,14 +1,13 @@
-import { useEffect, useState } from "react";
-import { highlightColorForHue, hueOfColor } from "@/lib/highlight-palette.ts";
-import { rgbaToHex } from "@/lib/utils.ts";
+import { useEffect, useState } from 'react';
+import { highlightColorForHue, hueOfColor } from '@/lib/highlight-palette.ts';
+import { rgbaToHex } from '@/lib/utils.ts';
 
 // Hue stops used to paint the slider track. Because L/S are locked in
 // `highlightColorForHue`, this gradient *is* the band of pickable colors — the
 // track previews exactly what the user can land on, not a generic rainbow.
-const TRACK_GRADIENT = `linear-gradient(to right, ${Array.from(
-  { length: 13 },
-  (_, i) => rgbaToHex(highlightColorForHue(i * 30), 1.0),
-).join(", ")})`;
+const TRACK_GRADIENT = `linear-gradient(to right, ${Array.from({ length: 13 }, (_, i) =>
+  rgbaToHex(highlightColorForHue(i * 30), 1.0),
+).join(', ')})`;
 
 /**
  * Continuous hue picker: the user drags across all 360° of hue, but lightness and

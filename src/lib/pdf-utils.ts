@@ -44,13 +44,7 @@ export function isPdfUrl(url: string | undefined): boolean {
   }
 
   // Check for common PDF URL patterns
-  const pdfPatterns = [
-    /\/pdf\//i,
-    /\.pdf$/i,
-    /pdf\.ashx/i,
-    /getpdf/i,
-    /download.*pdf/i
-  ];
+  const pdfPatterns = [/\/pdf\//i, /\.pdf$/i, /pdf\.ashx/i, /getpdf/i, /download.*pdf/i];
 
-  return pdfPatterns.some(pattern => pattern.test(url));
+  return pdfPatterns.some((pattern) => pattern.test(url));
 }

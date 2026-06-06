@@ -2,7 +2,10 @@ import type { VisualBlock, MlAnnotation, PdfBox } from '@/lib/definitions';
 import type { Schema } from '@/lib/definitions';
 import { abbreviateClassName } from '@/lib/ml/prompting';
 
-function extractEntities(content: string, schema: Schema): { text: string; className: string; classId: string }[] {
+function extractEntities(
+  content: string,
+  schema: Schema,
+): { text: string; className: string; classId: string }[] {
   const entities: { text: string; className: string; classId: string }[] = [];
 
   // Build tag-to-class lookup from schema

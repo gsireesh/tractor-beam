@@ -1,6 +1,9 @@
 import { useContext, useEffect, useMemo, useRef } from 'react';
 import { DrawerContext } from '@/contexts/DrawerContext';
-import { InstancePopoverContent, useStableAccentColor } from '@/components/popovers/InstancePopoverContent';
+import {
+  InstancePopoverContent,
+  useStableAccentColor,
+} from '@/components/popovers/InstancePopoverContent';
 import { InstanceDataAdapter, useEditInstance } from '@/components/popovers/useEditInstance';
 
 interface EditInstanceInlineProps {
@@ -22,7 +25,12 @@ const noopAdapter: InstanceDataAdapter = {
  * floating chrome, no arrow). Reads/writes through DrawerContext in-process, and
  * persists eagerly — on notes blur and on class change — since it never closes.
  */
-export function EditInstanceInline({ schemaId, classId, instanceId, adapter }: EditInstanceInlineProps) {
+export function EditInstanceInline({
+  schemaId,
+  classId,
+  instanceId,
+  adapter,
+}: EditInstanceInlineProps) {
   // Read the raw context (null-safe) rather than useDrawerContext(), which throws
   // outside a provider — so the component degrades gracefully in stories.
   const ctx = useContext(DrawerContext);
@@ -31,7 +39,9 @@ export function EditInstanceInline({ schemaId, classId, instanceId, adapter }: E
     return {
       getActiveSchema: () => ctx.activeSchema,
       getInstance: (_s, c, i) =>
-        ctx.activeSchema.classes.find((cls) => cls.id === c)?.instances.find((inst) => inst.id === i) ?? null,
+        ctx.activeSchema.classes
+          .find((cls) => cls.id === c)
+          ?.instances.find((inst) => inst.id === i) ?? null,
       dispatch: ctx.dispatch,
     };
   }, [ctx]);
@@ -55,7 +65,10 @@ export function EditInstanceInline({ schemaId, classId, instanceId, adapter }: E
   if (!editor.instance) return null;
 
   return (
-    <div className="rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700" style={{ backgroundColor: accentColor }}>
+    <div
+      className="rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700"
+      style={{ backgroundColor: accentColor }}
+    >
       <InstancePopoverContent
         text={editor.text}
         positiveExample={editor.instance.positiveExample}

@@ -47,19 +47,21 @@ export class OllamaRunner {
     try {
       const response = await this.client.chat({
         model: this.model,
-        messages: messages.map(m => ({ role: m.role, content: m.content })),
-        think: false
+        messages: messages.map((m) => ({ role: m.role, content: m.content })),
+        think: false,
       });
 
       this.available = true;
       const content = response.message.content ?? '';
       return {
-        choices: [{
-          message: { role: 'assistant' as const, content },
-          finish_reason: response.done_reason ?? 'stop',
-          index: 0,
-          logprobs: null,
-        }],
+        choices: [
+          {
+            message: { role: 'assistant' as const, content },
+            finish_reason: response.done_reason ?? 'stop',
+            index: 0,
+            logprobs: null,
+          },
+        ],
         usage: {
           prompt_tokens: response.prompt_eval_count ?? 0,
           completion_tokens: response.eval_count ?? 0,

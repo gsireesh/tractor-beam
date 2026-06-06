@@ -15,15 +15,14 @@ import type {
   RunAnnotationPipelineMessage,
 } from '@/lib/messaging/message_definitions';
 import type { Schema } from '@/lib/definitions';
-import { constructSchemaNERPrompt } from "@/lib/ml/prompting.ts";
-import { parseSingleBlockNerOutput } from "@/lib/ml/ner-parser.ts";
+import { constructSchemaNERPrompt } from '@/lib/ml/prompting.ts';
+import { parseSingleBlockNerOutput } from '@/lib/ml/ner-parser.ts';
 import { WebLlmRunner, type ChatMessage } from '@/lib/ml/webllm-runner';
 import { TransformersRunner } from '@/lib/ml/transformers-runner';
 import { ClaudeRunner } from '@/lib/ml/claude-runner';
 import { OllamaRunner } from '@/lib/ml/ollama-runner';
 import { DEFAULT_MODEL_CONFIG } from '@/lib/ml/types';
 import { parallelMap } from '@/lib/ml/parallel';
-
 
 const webllm = new WebLlmRunner(broadcastProgress);
 const transformers = new TransformersRunner(broadcastProgress);
@@ -32,22 +31,36 @@ const ollama = new OllamaRunner(broadcastProgress);
 
 const cancelledRequestIds = new Set<string>();
 
-function broadcastProgress(stage: MlProgressMessage['stage'], progress: number, message = '', requestId?: string) {
+function broadcastProgress(
+  stage: MlProgressMessage['stage'],
+  progress: number,
+  message = '',
+  requestId?: string,
+) {
   console.log(`[offscreen] progress: ${stage}, ${progress}, ${message}`);
-  chrome.runtime.sendMessage({
-    type: 'mlProgress',
-    requestId,
-    stage,
-    progress,
-    message,
-  }).catch((err) => {console.log("Progress message failed", err)});
+  chrome.runtime
+    .sendMessage({
+      type: 'mlProgress',
+      requestId,
+      stage,
+      progress,
+      message,
+    })
+    .catch((err) => {
+      console.log('Progress message failed', err);
+    });
 }
 
-function buildNerPrompt(schema: Schema, pdfText: { pageNumber: number; text: string }[]): ChatMessage[] {
+function buildNerPrompt(
+  schema: Schema,
+  pdfText: { pageNumber: number; text: string }[],
+): ChatMessage[] {
   const systemPrompt = constructSchemaNERPrompt(schema);
   return [
-    {role: "system", content: systemPrompt},
-      ...pdfText.map(t => {return {role: 'user', 'content': t.text} as ChatMessage})
+    { role: 'system', content: systemPrompt },
+    ...pdfText.map((t) => {
+      return { role: 'user', content: t.text } as ChatMessage;
+    }),
   ];
 }
 
@@ -67,7 +80,8 @@ async function handleAnnotationPipeline(task: RunAnnotationPipelineMessage) {
 
   // Use model config from the message (offscreen can't access chrome.storage)
   const config = task.modelConfig ?? DEFAULT_MODEL_CONFIG;
-  const runner = config.provider === 'claude' ? claude : config.provider === 'ollama' ? ollama : webllm;
+  const runner =
+    config.provider === 'claude' ? claude : config.provider === 'ollama' ? ollama : webllm;
   if (config.provider === 'claude') {
     claude.setModel(config.claudeModel);
     if (task.claudeApiKey) {
@@ -79,7 +93,9 @@ async function handleAnnotationPipeline(task: RunAnnotationPipelineMessage) {
     ollama.setBaseUrl(task.ollamaBaseUrl ?? 'http://localhost:11434');
     const reachable = await ollama.checkAvailability();
     if (!reachable) {
-      throw new Error(`Ollama server not reachable at ${task.ollamaBaseUrl ?? 'http://localhost:11434'}`);
+      throw new Error(
+        `Ollama server not reachable at ${task.ollamaBaseUrl ?? 'http://localhost:11434'}`,
+      );
     }
     console.log(`[offscreen] Using Ollama: ${config.ollamaModel}`);
   } else {
@@ -88,48 +104,73 @@ async function handleAnnotationPipeline(task: RunAnnotationPipelineMessage) {
   }
 
   const systemPrompt = constructSchemaNERPrompt(task.schema);
-  console.log("System prompt: ", systemPrompt);
+  console.log('System prompt: ', systemPrompt);
   const pdfUrl = '';
 
   // Filter out blocks that are too short
-  const processableBlocks = blocks.filter(b => b.text.length >= 50);
-  console.log(`[offscreen] ${processableBlocks.length} blocks to process (${blocks.length - processableBlocks.length} skipped as too short)`);
+  const processableBlocks = blocks.filter((b) => b.text.length >= 50);
+  console.log(
+    `[offscreen] ${processableBlocks.length} blocks to process (${blocks.length - processableBlocks.length} skipped as too short)`,
+  );
 
   if (config.provider === 'claude' || config.provider === 'ollama') {
     // Parallel execution for remote/local API (benefits from concurrent requests)
     const CONCURRENCY = config.provider === 'claude' ? 5 : 3;
     let completed = 0;
 
-    const processBlock = async (block: typeof processableBlocks[number]) => {
+    const processBlock = async (block: (typeof processableBlocks)[number]) => {
       const messages: ChatMessage[] = [
-        { role: 'system', content: systemPrompt, cache_control: {type: "ephemeral"}},
+        { role: 'system', content: systemPrompt, cache_control: { type: 'ephemeral' } },
         { role: 'user', content: block.text },
       ];
       const result = await runner.run(messages, task.requestId);
       return { block, nerText: result.choices?.[0]?.message?.content ?? '' };
     };
 
-    for await (const { result } of parallelMap(processableBlocks, processBlock, CONCURRENCY, () => cancelledRequestIds.has(task.requestId))) {
+    for await (const { result } of parallelMap(processableBlocks, processBlock, CONCURRENCY, () =>
+      cancelledRequestIds.has(task.requestId),
+    )) {
       completed++;
       console.log(`[offscreen] Block ${result.block.blockId} NER output:`, result.nerText);
-      broadcastProgress('running', completed / processableBlocks.length, `Block ${completed}/${processableBlocks.length}`, task.requestId);
+      broadcastProgress(
+        'running',
+        completed / processableBlocks.length,
+        `Block ${completed}/${processableBlocks.length}`,
+        task.requestId,
+      );
 
-      const annotations = parseSingleBlockNerOutput(result.nerText, result.block, task.schema, pdfUrl);
+      const annotations = parseSingleBlockNerOutput(
+        result.nerText,
+        result.block,
+        task.schema,
+        pdfUrl,
+      );
       if (annotations.length > 0) {
-        console.log(`[offscreen] Block ${result.block.blockId}: ${annotations.length} annotations, broadcasting`);
-        chrome.runtime.sendMessage({
-          type: 'annotationResults',
-          requestId: task.requestId,
-          annotations,
-        }).catch(() => {});
+        console.log(
+          `[offscreen] Block ${result.block.blockId}: ${annotations.length} annotations, broadcasting`,
+        );
+        chrome.runtime
+          .sendMessage({
+            type: 'annotationResults',
+            requestId: task.requestId,
+            annotations,
+          })
+          .catch(() => {});
       }
     }
   } else {
     // Sequential execution for WebLLM (local GPU, one inference at a time)
     for (let i = 0; i < processableBlocks.length; i++) {
       const block = processableBlocks[i];
-      console.log(`[offscreen] Block ${i + 1}/${processableBlocks.length}: ${block.blockId} (${block.text.length} chars)`);
-      broadcastProgress('running', i / processableBlocks.length, `Block ${i + 1}/${processableBlocks.length}`, task.requestId);
+      console.log(
+        `[offscreen] Block ${i + 1}/${processableBlocks.length}: ${block.blockId} (${block.text.length} chars)`,
+      );
+      broadcastProgress(
+        'running',
+        i / processableBlocks.length,
+        `Block ${i + 1}/${processableBlocks.length}`,
+        task.requestId,
+      );
 
       if (cancelledRequestIds.has(task.requestId)) {
         console.log(`[offscreen] Pipeline ${task.requestId} cancelled at block ${i + 1}`);
@@ -150,12 +191,16 @@ async function handleAnnotationPipeline(task: RunAnnotationPipelineMessage) {
 
         const annotations = parseSingleBlockNerOutput(nerText, block, task.schema, pdfUrl);
         if (annotations.length > 0) {
-          console.log(`[offscreen] Block ${block.blockId}: ${annotations.length} annotations, broadcasting`);
-          chrome.runtime.sendMessage({
-            type: 'annotationResults',
-            requestId: task.requestId,
-            annotations,
-          }).catch(() => {});
+          console.log(
+            `[offscreen] Block ${block.blockId}: ${annotations.length} annotations, broadcasting`,
+          );
+          chrome.runtime
+            .sendMessage({
+              type: 'annotationResults',
+              requestId: task.requestId,
+              annotations,
+            })
+            .catch(() => {});
         }
       } catch (err) {
         console.warn(`[offscreen] Block ${block.blockId} failed, skipping:`, err);
@@ -170,11 +215,13 @@ async function handleAnnotationPipeline(task: RunAnnotationPipelineMessage) {
   } else {
     broadcastProgress('running', 1, 'Done', task.requestId);
   }
-  chrome.runtime.sendMessage({
-    type: 'mlTaskResult',
-    requestId: task.requestId,
-    result: `Processed ${processableBlocks.length} blocks via ${config.provider}`,
-  }).catch(() => {});
+  chrome.runtime
+    .sendMessage({
+      type: 'mlTaskResult',
+      requestId: task.requestId,
+      result: `Processed ${processableBlocks.length} blocks via ${config.provider}`,
+    })
+    .catch(() => {});
 }
 
 chrome.runtime.onMessage.addListener((message: ExtensionMessage, _sender, sendResponse) => {
@@ -185,49 +232,59 @@ chrome.runtime.onMessage.addListener((message: ExtensionMessage, _sender, sendRe
       break;
 
     case 'runAnnotationPipeline':
-      handleAnnotationPipeline(message)
-        .catch((err) => {
-          chrome.runtime.sendMessage({
+      handleAnnotationPipeline(message).catch((err) => {
+        chrome.runtime
+          .sendMessage({
             type: 'mlTaskError',
             requestId: message.requestId,
             error: err.message || String(err),
-          }).catch(() => {});
-        });
+          })
+          .catch(() => {});
+      });
       break;
 
     case 'runWebLlmTask':
       handleWebLlmTask(message)
         .then((result) => {
-          chrome.runtime.sendMessage({
-            type: 'mlTaskResult',
-            requestId: message.requestId,
-            result,
-          }).catch(() => {});
+          chrome.runtime
+            .sendMessage({
+              type: 'mlTaskResult',
+              requestId: message.requestId,
+              result,
+            })
+            .catch(() => {});
         })
         .catch((err) => {
-          chrome.runtime.sendMessage({
-            type: 'mlTaskError',
-            requestId: message.requestId,
-            error: err.message || String(err),
-          }).catch(() => {});
+          chrome.runtime
+            .sendMessage({
+              type: 'mlTaskError',
+              requestId: message.requestId,
+              error: err.message || String(err),
+            })
+            .catch(() => {});
         });
       break;
 
     case 'runTransformersTask':
-      transformers.run(message)
+      transformers
+        .run(message)
         .then((result) => {
-          chrome.runtime.sendMessage({
-            type: 'mlTaskResult',
-            requestId: message.requestId,
-            result,
-          }).catch(() => {});
+          chrome.runtime
+            .sendMessage({
+              type: 'mlTaskResult',
+              requestId: message.requestId,
+              result,
+            })
+            .catch(() => {});
         })
         .catch((err) => {
-          chrome.runtime.sendMessage({
-            type: 'mlTaskError',
-            requestId: message.requestId,
-            error: err.message || String(err),
-          }).catch(() => {});
+          chrome.runtime
+            .sendMessage({
+              type: 'mlTaskError',
+              requestId: message.requestId,
+              error: err.message || String(err),
+            })
+            .catch(() => {});
         });
       break;
 

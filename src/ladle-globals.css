@@ -7,7 +7,7 @@
  * full Tailwind v4 import (preflight included) and set the shadcn
  * theme variables on :root.
  */
-@import "tailwindcss";
+@import 'tailwindcss';
 @source "./components/**/*.{ts,tsx}";
 @source "../.ladle/**/*.{ts,tsx}";
 

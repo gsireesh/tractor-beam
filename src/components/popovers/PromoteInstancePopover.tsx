@@ -9,7 +9,11 @@ interface PromoteInstancePopoverProps {
   onClose: () => void;
 }
 
-export function PromoteInstancePopover({ highlight, position, onClose }: PromoteInstancePopoverProps) {
+export function PromoteInstancePopover({
+  highlight,
+  position,
+  onClose,
+}: PromoteInstancePopoverProps) {
   const activeSchema = window.TractorBeamDrawer?.getActiveSchema() ?? null;
   const initialClass = activeSchema?.classes.find((c) => c.id === highlight.classId) ?? null;
   const [selectedClass, setSelectedClass] = useState<SchemaClass | null>(initialClass);

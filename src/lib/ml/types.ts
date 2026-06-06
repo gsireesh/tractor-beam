@@ -23,21 +23,14 @@ export const DEFAULT_WEBLLM_MODEL: WebLlmModelId = 'Qwen2.5-3B-Instruct-q4f16_1-
 export type ModelProvider = 'webllm' | 'claude' | 'ollama';
 
 /** Available Claude models */
-export const CLAUDE_MODELS = [
-  'claude-sonnet-4-20250514',
-  'claude-haiku-4-5-20251001',
-] as const;
+export const CLAUDE_MODELS = ['claude-sonnet-4-20250514', 'claude-haiku-4-5-20251001'] as const;
 
 export type ClaudeModelId = (typeof CLAUDE_MODELS)[number];
 
 export const DEFAULT_CLAUDE_MODEL: ClaudeModelId = 'claude-sonnet-4-20250514';
 
 /** Available Ollama models */
-export const OLLAMA_MODELS = [
-  'llama3.2',
-  'qwen3.5:4b',
-  'qwen3.5:0.8b'
-];
+export const OLLAMA_MODELS = ['llama3.2', 'qwen3.5:4b', 'qwen3.5:0.8b'];
 
 export type OllamaModelId = (typeof OLLAMA_MODELS)[number];
 

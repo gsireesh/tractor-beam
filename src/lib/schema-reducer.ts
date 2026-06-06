@@ -1,34 +1,34 @@
-import type {Instance, Schema, SchemaAction} from "@/lib/definitions.ts";
+import type { Instance, Schema, SchemaAction } from '@/lib/definitions.ts';
 
 export function schemasReducer(draft: Schema[], action: SchemaAction) {
-  console.log("action", action);
+  console.log('action', action);
   switch (action.actionType) {
-    case "addSchema": {
+    case 'addSchema': {
       draft.push(action.schema);
       return;
     }
-    case "updateSchema": {
+    case 'updateSchema': {
       const idx = draft.findIndex((s) => s.id === action.schemaId);
       if (idx !== -1) {
         draft[idx] = action.schemaInfo;
       }
       return;
     }
-    case "deleteSchema": {
+    case 'deleteSchema': {
       const idx = draft.findIndex((s) => s.id === action.schemaId);
       if (idx !== -1) {
         draft.splice(idx, 1);
       }
       return;
     }
-    case "addClass": {
+    case 'addClass': {
       const schema = draft.find((s) => s.id == action.schemaId);
       if (schema) {
         schema.classes.push(action.classInfo);
       }
       return;
     }
-    case "updateClass": {
+    case 'updateClass': {
       const schema = draft.find((s) => s.id == action.schemaId);
       const classIdx = schema?.classes.findIndex((c) => c.id == action.classId);
 
@@ -37,14 +37,14 @@ export function schemasReducer(draft: Schema[], action: SchemaAction) {
       }
       return;
     }
-    case "deleteClass": {
+    case 'deleteClass': {
       const schema = draft.find((s) => s.id == action.schemaId);
       if (schema) {
-        schema.classes = schema.classes.filter(c => c.id !== action.classId);
+        schema.classes = schema.classes.filter((c) => c.id !== action.classId);
       }
       return;
     }
-    case "addInstance": {
+    case 'addInstance': {
       const schema = draft.find((s) => s.id == action.schemaId);
       const classIdx = schema?.classes.findIndex((c) => c.id == action.classId);
 
@@ -53,7 +53,7 @@ export function schemasReducer(draft: Schema[], action: SchemaAction) {
       }
       return;
     }
-    case "deleteInstance": {
+    case 'deleteInstance': {
       for (const schema of draft) {
         const cls = schema.classes.find((c) => c.id === action.classId);
         if (cls) {
@@ -63,7 +63,7 @@ export function schemasReducer(draft: Schema[], action: SchemaAction) {
       }
       return;
     }
-    case "updateInstance": {
+    case 'updateInstance': {
       const schema = draft.find((s) => s.id === action.schemaId);
       if (!schema) return;
       const currentClass = schema.classes.find((c) => c.id === action.classId);
@@ -73,9 +73,11 @@ export function schemasReducer(draft: Schema[], action: SchemaAction) {
 
       const updated: Instance = { ...currentClass.instances[instIdx] };
       if (action.updates.notes !== undefined) updated.notes = action.updates.notes;
-      if (action.updates.positiveExample !== undefined) updated.positiveExample = action.updates.positiveExample;
+      if (action.updates.positiveExample !== undefined)
+        updated.positiveExample = action.updates.positiveExample;
 
-      const moving = action.updates.newClassId !== undefined && action.updates.newClassId !== action.classId;
+      const moving =
+        action.updates.newClassId !== undefined && action.updates.newClassId !== action.classId;
       if (moving) {
         const newClass = schema.classes.find((c) => c.id === action.updates.newClassId);
         if (!newClass) return;
