@@ -20,7 +20,7 @@ import {Instance, Schema, SchemaAction} from '@/lib/definitions';
 import {schemasReducer} from '@/lib/schema-reducer';
 import {usePersistedSchemaReducer} from '@/hooks/persisted-reducer';
 import type {ExtensionMessage, MlProgressMessage} from '@/lib/messaging/message_definitions';
-import {getClaudeApiKey, getModelConfig, getOllamaBaseUrl} from '@/lib/ml/config';
+import {getClaudeApiKey, getModelConfig, getOllamaBaseUrl, getUiState, setDrawerOpen, setDocumentUiState, setLastSchemaId, type UiState, type DrawerView} from '@/lib/config-storage';
 import {DrawerContext} from '@/contexts/DrawerContext';
 import {scrollToAnnotation} from '@/lib/pdf-navigation';
 import cssText from './drawer-styles.css?inline';
@@ -186,17 +186,33 @@ function cancelAnnotationPipeline(requestId: string) {
 
 function DrawerContainer() {
   const [initialState, setInitialState] = useState<Schema[] | null>(null);
-  const [isOpen, setIsOpen] = useState(() => {
-    return localStorage.getItem('tractor-beam-drawer-open') !== 'false';
-  });
-  // Load initial schema state from IndexedDB
+  const [initialUiState, setInitialUiState] = useState<UiState | null>(null);
+  // Open by default during hydration; reconciled from storage once it loads.
+  const [isOpen, setIsOpen] = useState(true);
+  const hydrated = useRef(false);
+
+  // Load schema state (IndexedDB) and UI state (chrome.storage) together so the
+  // drawer's saved position is ready when its content first renders.
   useEffect(() => {
-    void rebuildState(APP_CONFIG.indexedDBConfig).then((result) => setInitialState(result));
+    // IndexedDB and chrome.storage don't exist during WXT's Node pre-render; skip
+    // hydration there (the static skeleton is the right output) — this re-runs for
+    // real once the page loads in the extension.
+    if (typeof window === 'undefined' || !window.indexedDB) return;
+    void Promise.all([
+      rebuildState(APP_CONFIG.indexedDBConfig),
+      getUiState(),
+    ]).then(([schemas, ui]) => {
+      setInitialState(schemas);
+      setInitialUiState(ui);
+      setIsOpen(ui.drawerOpen);
+      hydrated.current = true;
+    }).catch((err: unknown) => console.error('[drawer] state hydration failed', err));
   }, []);
 
-  // Persist open/closed state
+  // Persist open/closed state (after hydration, so we don't clobber the stored value).
   useEffect(() => {
-    localStorage.setItem('tractor-beam-drawer-open', String(isOpen));
+    if (!hydrated.current) return;
+    void setDrawerOpen(isOpen);
   }, [isOpen]);
 
   // Adjust PDF viewer layout when drawer opens/closes.
@@ -218,7 +234,7 @@ function DrawerContainer() {
 
   const toggle = () => setIsOpen(prev => !prev);
 
-  if (!initialState) {
+  if (!initialState || !initialUiState) {
     return (
       <>
         <SidebarVisibilityToggle isOpen={isOpen} onToggle={toggle} />
@@ -233,7 +249,7 @@ function DrawerContainer() {
     <>
       <SidebarVisibilityToggle isOpen={isOpen} onToggle={toggle} />
       <div className={`tractor-beam-drawer ${isOpen ? 'open' : ''}`}>
-        <DrawerContent initialSchemas={initialState} />
+        <DrawerContent initialSchemas={initialState} initialUiState={initialUiState} />
       </div>
     </>
   );
@@ -336,7 +352,37 @@ function SchemaHeader({
     </div>
   );
 }
-function DrawerContent({ initialSchemas }: { initialSchemas: Schema[] }) {
+/**
+ * Decide which schema to show when the drawer first opens for a document.
+ *
+ * Priority order:
+ *   1. explicit deep link (?schema=…), when present and still valid
+ *   2. this document's saved schema (uiState.documents[pdfUrl])
+ *   3. the last schema used anywhere (uiState.lastSchemaId)
+ *   4. the first schema in the list
+ * Only ever return an id that still exists in `schemas` — saved/deep-link ids can
+ * dangle after a schema is deleted. Fall back to '' if there are no schemas at all.
+ */
+function resolveInitialSchemaId(
+  deepLinkSchemaId: string | null,
+  schemas: Schema[],
+  uiState: UiState,
+  pdfUrl: string,
+): string {
+
+   const exists = (id: string | null | undefined) => (id != null) && schemas.some(s => s.id === id)
+  if (exists(deepLinkSchemaId)) {
+    return deepLinkSchemaId!;
+  } else if (uiState.documents[pdfUrl] != null && exists(uiState.documents[pdfUrl].schemaId)) {
+    return uiState.documents[pdfUrl].schemaId;
+  } else if (exists(uiState.lastSchemaId)) {
+    return uiState.lastSchemaId!;
+  } else {
+    return schemas[0]?.id ?? '';
+  }
+}
+
+function DrawerContent({ initialSchemas, initialUiState }: { initialSchemas: Schema[]; initialUiState: UiState }) {
   const [schemas, dispatch ] = usePersistedSchemaReducer(
     schemasReducer,
     initialSchemas,
@@ -348,9 +394,34 @@ function DrawerContent({ initialSchemas }: { initialSchemas: Schema[] }) {
   const viewerParams = new URLSearchParams(window.location.search);
   const pdfUrl = viewerParams.get('file') ?? '';
   // A deep link (?schema=…&instance=…) preselects the schema so the target
-  // instance's highlight is among confirmedHighlights below.
-  const [activeSchemaId, setActiveSchemaId] = useState<string>(viewerParams.get('schema') ?? schemas[0]?.id ?? '');
+  // instance's highlight is among confirmedHighlights below. Otherwise we restore
+  // this document's saved schema, falling back to the last-used / first schema.
+  const [activeSchemaId, setActiveSchemaId] = useState<string>(
+    () => resolveInitialSchemaId(viewerParams.get('schema'), schemas, initialUiState, pdfUrl),
+  );
   const activeSchema = schemas.find(s => s.id === activeSchemaId) ?? schemas[0];
+
+  // Restore which tab this document was last on (Schema Editor vs. Semantic Index).
+  const [view, setView] = useState<DrawerView>(initialUiState.documents[pdfUrl]?.view ?? 'schema');
+
+  // Switch the active schema and remember it, both per-document and as the global
+  // last-used schema (the fallback for documents we haven't seen yet).
+  const selectSchema = useCallback((id: string) => {
+    setActiveSchemaId(id);
+    void setDocumentUiState(pdfUrl, { schemaId: id });
+    void setLastSchemaId(id);
+  }, [pdfUrl]);
+
+  // Pin this document's resolved position on first open, so it persists independently
+  // of the global last-used schema (which other documents move). Idempotent for
+  // documents that already have a record; runs once per document since pdfUrl is
+  // stable for the page's lifetime. Writes the initial resolved schema/tab only —
+  // later changes flow through selectSchema and the Tabs onValueChange.
+  useEffect(() => {
+    if (!pdfUrl || !activeSchemaId) return;
+    void setDocumentUiState(pdfUrl, { schemaId: activeSchemaId, view });
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional once-per-document write of the mount-time values
+  }, [pdfUrl]);
   const confirmedHighlights = useMemo<Highlight[]>(() => (activeSchema ? getHighlightsFromSchema(activeSchema, pdfUrl) : []), [activeSchema, pdfUrl]);
   const confirmedSignposts = useMemo<Signpost[]>(() => (activeSchema ? getSignpostsFromHighlights(confirmedHighlights, activeSchema) : []), [confirmedHighlights, activeSchema]);
   const [mlHighlights, setMlHighlights] = useState<Highlight[]>([]);
@@ -456,13 +527,13 @@ function DrawerContent({ initialSchemas }: { initialSchemas: Schema[] }) {
           });
         }}
         onSwitch={(id) => {
-          setActiveSchemaId(id);
+          selectSchema(id);
           setTitleEditing(false);
         }}
         onNew={() => {
           const newSchema = createNewSchema('');
           dispatch({ actionType: 'addSchema', schema: newSchema });
-          setActiveSchemaId(newSchema.id);
+          selectSchema(newSchema.id);
           setTitleEditing(true);
         }}
         onDelete={() => {
@@ -470,18 +541,18 @@ function DrawerContent({ initialSchemas }: { initialSchemas: Schema[] }) {
           const next = schemas.find((s) => s.id !== activeSchema.id);
           dispatch({ actionType: 'deleteSchema', schemaId: activeSchema.id });
           if (next) {
-            setActiveSchemaId(next.id);
+            selectSchema(next.id);
             setTitleEditing(false);
           } else {
             const fresh = createNewSchema('');
             dispatch({ actionType: 'addSchema', schema: fresh });
-            setActiveSchemaId(fresh.id);
+            selectSchema(fresh.id);
             setTitleEditing(true);
           }
         }}
       />
       <div className="flex flex-col h-full overflow-scroll">
-      <Tabs defaultValue="schema">
+      <Tabs value={view} onValueChange={(v) => { setView(v as DrawerView); void setDocumentUiState(pdfUrl, { view: v as DrawerView }); }}>
         <TabsList className="w-full">
           <TabsTrigger value={"schema"}><Layers2Icon/> Schema Editor</TabsTrigger>
           <TabsTrigger value={"navigation"}><SignpostIcon/>Semantic Index</TabsTrigger>

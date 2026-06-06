@@ -1,0 +1,182 @@
+import { DEFAULT_MODEL_CONFIG, MODEL_CONFIG_KEY, type ModelConfig } from './ml/types';
+
+/**
+ * Single source of truth for everything persisted in chrome.storage.local.
+ *
+ * Every key the extension stores is declared in {@link PersistedState} below and
+ * read/written only through the accessors in this module — no component should
+ * touch chrome.storage.local directly. There are two families of state:
+ *
+ *  - Config: model selection + credentials (`modelConfig`, `claudeApiKey`,
+ *    `ollamaBaseUrl`), each under its own key for backward compatibility.
+ *  - UI: drawer position, consolidated under a single `uiState` key.
+ *
+ * Note: offscreen documents can't reach chrome.storage — config is passed to them
+ * via messages, not read here. The UI accessors below all read-modify-write the
+ * single `uiState` blob, and a single user action can fire several at once (e.g.
+ * switching schema writes both the per-document schemaId and lastSchemaId). To
+ * avoid lost updates from concurrent read-modify-write, every mutation goes through
+ * {@link updateUiState}, which serializes them on one promise chain.
+ */
+
+const API_KEY_STORAGE_KEY = 'claudeApiKey';
+const OLLAMA_BASE_URL_KEY = 'ollamaBaseUrl';
+const UI_STATE_KEY = 'uiState';
+
+/**
+ * The chrome.storage.local area, or null when `chrome` is absent — e.g. WXT's
+ * Node pre-render pass or any non-extension context. Reads fall back to defaults
+ * and writes no-op in that case; the real values load once the page runs live.
+ */
+function localStore(): chrome.storage.LocalStorageArea | null {
+  return typeof chrome !== 'undefined' && chrome.storage?.local ? chrome.storage.local : null;
+}
+
+// ─── UI-state shape ───
+
+/** Which drawer tab is showing. Matches the <Tabs> value strings in drawer.tsx. */
+export type DrawerView = 'schema' | 'navigation';
+
+/** Where the user was in the drawer for one document (keyed by pdfUrl). */
+export interface DocumentUiState {
+  schemaId: string;
+  view: DrawerView;
+}
+
+/** All non-config UI state, stored under the single `uiState` key. */
+export interface UiState {
+  drawerOpen: boolean;
+  /** Last schema the user actively selected, anywhere — fallback for documents with no saved position. */
+  lastSchemaId: string | null;
+  /** Per-document drawer position, keyed by pdfUrl. */
+  documents: Record<string, DocumentUiState>;
+}
+
+/** Full documented shape of chrome.storage.local. */
+export interface PersistedState {
+  modelConfig: ModelConfig;     // key: 'modelConfig'
+  claudeApiKey: string | null;  // key: 'claudeApiKey'
+  ollamaBaseUrl: string | null; // key: 'ollamaBaseUrl'
+  uiState: UiState;             // key: 'uiState'
+}
+
+const DEFAULT_UI_STATE: UiState = {
+  drawerOpen: true,
+  lastSchemaId: null,
+  documents: {},
+};
+
+// ─── Model config + credentials ───
+
+/** Read model config from chrome.storage.local, merged with defaults. */
+export async function getModelConfig(): Promise<ModelConfig> {
+  const store = localStore();
+  if (!store) return { ...DEFAULT_MODEL_CONFIG };
+  const result = await store.get(MODEL_CONFIG_KEY);
+  const stored = result[MODEL_CONFIG_KEY] as Partial<ModelConfig> | undefined;
+  return { ...DEFAULT_MODEL_CONFIG, ...stored };
+}
+
+/** Partial-update model config in chrome.storage.local. */
+export async function setModelConfig(config: Partial<ModelConfig>): Promise<void> {
+  const store = localStore();
+  if (!store) return;
+  const current = await getModelConfig();
+  await store.set({ [MODEL_CONFIG_KEY]: { ...current, ...config } });
+}
+
+/** Read the Claude API key from chrome.storage.local. */
+export async function getClaudeApiKey(): Promise<string | null> {
+  const store = localStore();
+  if (!store) return null;
+  const result: Record<string, string> = await store.get(API_KEY_STORAGE_KEY);
+  return result[API_KEY_STORAGE_KEY] ?? null;
+}
+
+/**
+ * Store the Claude API key in chrome.storage.local.
+ *
+ * Plaintext-at-rest is a deliberate choice, not an oversight. chrome.storage is
+ * isolated per-extension, so other extensions can't read it and have no filesystem
+ * API to grep the profile either. The only threat that sees this value is malware
+ * running as the user — which also already owns ~/.claude, .env, env vars, etc., so
+ * encrypting this one slot buys nothing it couldn't bypass elsewhere. Any client-side
+ * encryption would need its decryption material in the bundle (= obfuscation) or a
+ * per-session passphrase prompt (= friction for ~zero gain against our threat model).
+ * The real blast-radius control lives at the Anthropic console: scoped keys, spend
+ * caps, easy rotation.
+ */
+export async function setClaudeApiKey(key: string): Promise<void> {
+  const store = localStore();
+  if (!store) return;
+  await store.set({ [API_KEY_STORAGE_KEY]: key });
+}
+
+/** Read the Ollama base URL from chrome.storage.local. */
+export async function getOllamaBaseUrl(): Promise<string | null> {
+  const store = localStore();
+  if (!store) return null;
+  const result: Record<string, string> = await store.get(OLLAMA_BASE_URL_KEY);
+  return result[OLLAMA_BASE_URL_KEY] ?? null;
+}
+
+/** Store the Ollama base URL in chrome.storage.local. */
+export async function setOllamaBaseUrl(url: string): Promise<void> {
+  const store = localStore();
+  if (!store) return;
+  await store.set({ [OLLAMA_BASE_URL_KEY]: url });
+}
+
+// ─── UI state ───
+
+/** Read the UI state blob from chrome.storage.local, merged with defaults. */
+export async function getUiState(): Promise<UiState> {
+  const store = localStore();
+  if (!store) return { ...DEFAULT_UI_STATE };
+  const result = await store.get(UI_STATE_KEY);
+  const stored = result[UI_STATE_KEY] as Partial<UiState> | undefined;
+  return { ...DEFAULT_UI_STATE, ...stored, documents: stored?.documents ?? {} };
+}
+
+/**
+ * Serializes read-modify-write of the `uiState` blob. Concurrent writers (a single
+ * user action often fires several) would otherwise each read the same stale blob and
+ * the last set() would clobber the others. Chaining on one promise makes each
+ * mutation read the previous write's committed result.
+ */
+let uiWriteChain: Promise<void> = Promise.resolve();
+
+function updateUiState(mutate: (state: UiState) => UiState): Promise<void> {
+  const result = uiWriteChain.then(async () => {
+    const store = localStore();
+    if (!store) return;
+    const current = await getUiState();
+    await store.set({ [UI_STATE_KEY]: mutate(current) });
+  });
+  // Keep the chain alive if one write fails, but still surface the error to the caller.
+  uiWriteChain = result.catch(() => undefined);
+  return result;
+}
+
+/** Persist whether the drawer is open. */
+export function setDrawerOpen(open: boolean): Promise<void> {
+  return updateUiState((state) => ({ ...state, drawerOpen: open }));
+}
+
+/** Record the schema the user most recently selected (used to seed new documents). */
+export function setLastSchemaId(id: string): Promise<void> {
+  return updateUiState((state) => ({ ...state, lastSchemaId: id }));
+}
+
+/** Merge a partial update into one document's saved drawer position. */
+export function setDocumentUiState(pdfUrl: string, patch: Partial<DocumentUiState>): Promise<void> {
+  return updateUiState((state) => {
+    const existing = state.documents[pdfUrl];
+    const next: DocumentUiState = {
+      schemaId: existing?.schemaId ?? '',
+      view: existing?.view ?? 'schema',
+      ...patch,
+    };
+    return { ...state, documents: { ...state.documents, [pdfUrl]: next } };
+  });
+}

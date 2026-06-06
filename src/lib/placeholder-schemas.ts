@@ -24,7 +24,7 @@ export const placeholderSchemas: Schema[] = [
                 color: 'rgba(255, 218, 185, 0.3)', // peach
                 description:
                     "Materials that are used in the synthesis of the target. For example: Cr2O3, Strontium carbonate, BaTiO3, Li2CO3, Water, Ethanol",
-                instances: [{id: 0, description: "Test Entity", content: "content"}],
+                instances: [],
             },
             {
                 id: "Nonrecipe Material",
@@ -63,7 +63,7 @@ export const placeholderSchemas: Schema[] = [
         ],
     },
     {
-    "id": "0",
+    "id": "1",
     "name": "STS Reading",
     "classes": [
         {

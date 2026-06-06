@@ -139,6 +139,16 @@ export async function rebuildState(indexedDBConfig: IndexedDBConfig): Promise<Sc
             (schemas, update) => produce(schemas, draft => schemasReducer(draft, update.action)),
             allSchemas)
     }
+    // Seeding otherwise lives only in onupgradeneeded, which fires once per DB
+    // lifetime. If the store is empty for any other reason (cleared data, a failed
+    // first-run write), repopulate the placeholders here so the app always has at
+    // least one schema — the drawer assumes a non-empty list.
+    if (allSchemas.length === 0) {
+        for (const schema of placeholderSchemas) {
+            await createSnapshot(indexedDBConfig, schema);
+        }
+        return placeholderSchemas;
+    }
     return allSchemas;
 }
 

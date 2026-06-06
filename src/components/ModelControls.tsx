@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/dropdown-menu.tsx";
 import {WEBLLM_MODELS, CLAUDE_MODELS, OLLAMA_MODELS, type ModelProvider, type ModelConfig} from '@/lib/ml/types';
 import {DEFAULT_OLLAMA_BASE_URL} from '@/lib/ml/types';
-import {getModelConfig, setModelConfig, getClaudeApiKey, setClaudeApiKey, getOllamaBaseUrl, setOllamaBaseUrl} from '@/lib/ml/config';
+import {getModelConfig, setModelConfig, getClaudeApiKey, setClaudeApiKey, getOllamaBaseUrl, setOllamaBaseUrl} from '@/lib/config-storage';
 import { useDrawerContext } from '@/contexts/DrawerContext';
 import {IconButton} from "@/components/IconButton.tsx";
 

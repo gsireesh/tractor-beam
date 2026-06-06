@@ -11,6 +11,9 @@ interface SchemaViewerProps {
 }
 
 export function SchemaViewer({ schema, dispatch}: SchemaViewerProps) {
+  // activeSchema can be undefined for a beat before schemas load (or if the store
+  // is empty); render nothing rather than dereferencing schema.classes.
+  if (!schema) return null;
 
   return (
       <div className="flex-1 overflow-y-auto min-h-0">
