@@ -1,0 +1,14 @@
+# Build output & generated dirs
+.output
+.wxt
+dist
+node_modules
+
+# Lockfile
+pnpm-lock.yaml
+
+# Vendored pdf.js library — do not reformat (keep our own pdfjs-init.js formatted)
+public/pdfjs
+
+# Vendored skill content — maintained upstream, not authored here
+src/learning-opportunities

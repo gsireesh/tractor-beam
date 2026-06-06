@@ -3,6 +3,7 @@ import globals from 'globals'
 import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
 import tseslint from 'typescript-eslint'
+import eslintConfigPrettier from 'eslint-config-prettier'
 
 import autoImports from './.wxt/eslint-auto-imports.mjs'
 
@@ -32,5 +33,5 @@ export default tseslint.config(
       '@typescript-eslint/prefer-interface': ['off'],
       '@typescript-eslint/no-unused-vars': ['warn'],
     },
-  }, autoImports
+  }, autoImports, eslintConfigPrettier
 )
