@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Instance, Schema, SchemaAction, SchemaClass } from '@/lib/definitions';
 import { normalizeNoteText } from '@/components/popovers/utils';
 import { InstanceActionsMenu } from '@/components/popovers/InstanceActionsMenu.tsx';
@@ -54,6 +54,15 @@ export function useEditInstance(
 
   // Set by the delete path so a trailing save() (e.g. on unmount) is skipped.
   const skipSaveRef = useRef(false);
+
+  // Re-sync notes when the live instance changes underneath us — e.g. the same
+  // instance edited from the floating popover while this editor stays mounted in
+  // the drawer. useState only seeds at mount, so without this the textarea shows
+  // a stale snapshot until the component remounts.
+  const persistedNotes = instance?.notes ?? null;
+  useEffect(() => {
+    setNotesValue(persistedNotes);
+  }, [persistedNotes]);
 
   const computeUpdates = (): SchemaAction[] => {
     const updateActions: SchemaAction[] = [];
