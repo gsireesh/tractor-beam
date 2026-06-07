@@ -27,9 +27,9 @@ declare global {
 // ─── Module-level state ───
 
 const highlights: Record<HighlightType, Highlight[]> = {
-  confirmed: [],
-  provisional: [],
   layout: [],
+  provisional: [],
+  confirmed: [],
 };
 let pageContainers = new Map<number, HTMLElement>();
 let root: Root | null = null;
