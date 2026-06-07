@@ -1,8 +1,7 @@
 import { useRef, useState } from 'react';
 import { Instance, Schema, SchemaAction, SchemaClass } from '@/lib/definitions';
-import { rgbaToHex } from '@/lib/utils';
 import { normalizeNoteText } from '@/components/popovers/utils';
-import { Trash2 } from 'lucide-react';
+import { InstanceActionsMenu } from '@/components/popovers/InstanceActionsMenu.tsx';
 import { createElement } from 'react';
 
 /**
@@ -115,18 +114,7 @@ export function useEditInstance(
     onDeleted?.();
   };
 
-  const actionButtons = createElement(
-    'button',
-    {
-      className:
-        'flex-1 px-3 py-2 rounded-md text-sm font-medium cursor-pointer border-none text-white disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90 flex items-center justify-center gap-1',
-      style: { backgroundColor: rgbaToHex('rgba(220, 38, 38, 1)', 1.0) },
-      onClick: handleDelete,
-      title: 'Delete instance',
-    },
-    createElement(Trash2, { size: 14, strokeWidth: 1.5 }),
-    'Delete',
-  );
+  const actionButtons = createElement(InstanceActionsMenu, { onDelete: handleDelete });
 
   return {
     instance,

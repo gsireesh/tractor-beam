@@ -82,9 +82,17 @@ export function InstancePopover({
       if (e.key === 'Escape') onClose();
     };
     const onDocMouseDown = (e: MouseEvent) => {
-      if (popoverRef.current && !popoverRef.current.contains(e.target as Node)) {
-        onClose();
+      const target = e.target as Node;
+      // Clicks inside the popover itself never dismiss it.
+      if (popoverRef.current?.contains(target)) return;
+      // The actions menu portals its content OUTSIDE popoverRef (into
+      // #tractor-beam-popover-root), so a click on a menu item would otherwise
+      // count as "outside" and unmount the popover on mousedown — before the
+      // item's click fires, swallowing the delete.
+      if (target instanceof Element && target.closest('[data-slot="dropdown-menu-content"]')) {
+        return;
       }
+      onClose();
     };
     document.addEventListener('keydown', onKeyDown);
     document.addEventListener('mousedown', onDocMouseDown);
