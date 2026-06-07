@@ -26,25 +26,6 @@ import { IconButton } from '@/components/IconButton.tsx';
 import { ConfirmedInstanceViewer } from '@/components/ConfirmedInstanceViewer.tsx';
 import { useDrawerContext } from '@/contexts/DrawerContext.tsx';
 
-function useClickOutside<T extends HTMLElement>(callback: () => void) {
-  const ref = useRef<T>(null);
-
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (ref.current && !ref.current.contains(event.target as Node)) {
-        callback();
-      }
-    }
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [callback]);
-
-  return ref;
-}
-
 export function SchemaClassViewer({
   schemaId,
   schemaClass,
@@ -55,9 +36,58 @@ export function SchemaClassViewer({
   dispatch: (action: SchemaAction) => void;
 }) {
   const [titleEditable, setTitleEditable] = useState<boolean>(false);
-  const titleRef = useClickOutside<HTMLHeadingElement>(() => {
-    setTitleEditable(false);
-  });
+  // Local drafts so name/description can commit on blur instead of dispatching
+  // every keystroke. A controlled input pinned to the prop with no onChange would
+  // revert each keystroke; the draft is where the in-progress text lives.
+  const [nameDraft, setNameDraft] = useState<string>(schemaClass.name);
+  const [descriptionDraft, setDescriptionDraft] = useState<string>(schemaClass.description);
+
+  // The description textarea is always mounted, so useState would pin it to the
+  // mount-time value — adopt external changes the same way the instance notes do.
+  useEffect(() => {
+    setDescriptionDraft(schemaClass.description);
+  }, [schemaClass.description]);
+
+  const commitName = () => {
+    if (nameDraft !== schemaClass.name) {
+      dispatch({
+        actionType: 'updateClass',
+        schemaId,
+        classId: schemaClass.id,
+        classInfo: { ...schemaClass, name: nameDraft },
+      });
+    }
+  };
+
+  // Close + commit the title editor on an outside click. blur is unreliable here:
+  // the input is transient and relies on autoFocus, and an outside click that
+  // doesn't move focus never fires it. A document mousedown is focus-independent —
+  // same pattern as the SchemaHeader title editor. Only armed while editing.
+  const titleRef = useRef<HTMLHeadingElement>(null);
+  useEffect(() => {
+    if (!titleEditable) return;
+    const handleOutside = (e: MouseEvent) => {
+      if (titleRef.current && !titleRef.current.contains(e.target as Node)) {
+        commitName();
+        setTitleEditable(false);
+      }
+    };
+    document.addEventListener('mousedown', handleOutside);
+    return () => document.removeEventListener('mousedown', handleOutside);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [titleEditable, nameDraft, schemaClass, schemaId, dispatch]);
+
+  const commitDescription = () => {
+    if (descriptionDraft !== schemaClass.description) {
+      dispatch({
+        actionType: 'updateClass',
+        schemaId,
+        classId: schemaClass.id,
+        classInfo: { ...schemaClass, description: descriptionDraft },
+      });
+    }
+  };
+
   const { pdfUrl } = useDrawerContext();
   const currentPDFInstances = useMemo(
     () => schemaClass.instances.filter((instance) => instance.pdfUrl === pdfUrl),
@@ -66,6 +96,8 @@ export function SchemaClassViewer({
 
   function toggleTitleEditable() {
     if (!titleEditable) {
+      // Reseed the draft from the live name for this edit session.
+      setNameDraft(schemaClass.name);
       setTitleEditable(true);
     }
   }
@@ -79,23 +111,17 @@ export function SchemaClassViewer({
       style={{ backgroundColor: bodyColor, borderColor: borderColor }}
     >
       <div className="flex flex-row justify-between align-baseline">
-        <h1 ref={titleRef} className="size-6 mb-4 w-fit text-base" onClick={toggleTitleEditable}>
+        <h1
+          ref={titleRef}
+          className="size-6 mb-4 w-fit text-base"
+          onClick={toggleTitleEditable}
+        >
           {titleEditable ? (
             <input
               autoFocus
-              className="border-2 bg-white"
-              value={schemaClass.name}
-              onChange={(e) =>
-                dispatch({
-                  actionType: 'updateClass',
-                  schemaId: schemaId,
-                  classId: schemaClass.id,
-                  classInfo: {
-                    ...schemaClass,
-                    ...{ name: e.target.value },
-                  },
-                })
-              }
+              className="border-2 bg-white rounded-lg"
+              value={nameDraft}
+              onChange={(e) => setNameDraft(e.target.value)}
             />
           ) : (
             <div className="flex flex-row group">
@@ -176,18 +202,9 @@ export function SchemaClassViewer({
           style={{ borderColor: borderColor }}
           autoFocus={false}
           rows={4}
-          value={schemaClass.description}
-          onChange={(event) => {
-            dispatch({
-              actionType: 'updateClass',
-              schemaId: schemaId,
-              classId: schemaClass.id,
-              classInfo: {
-                ...schemaClass,
-                ...{ description: event.target.value },
-              },
-            });
-          }}
+          value={descriptionDraft}
+          onChange={(e) => setDescriptionDraft(e.target.value)}
+          onBlur={commitDescription}
         />
       </label>
       <Accordion type="single" collapsible>
