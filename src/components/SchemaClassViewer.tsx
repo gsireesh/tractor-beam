@@ -198,9 +198,10 @@ export function SchemaClassViewer({
               currentPDFInstances.map((instance) => (
                 <ConfirmedInstanceViewer
                   key={instance.id}
-                  instance={instance}
-                  schemaClassId={schemaClass.id}
-                  borderColor={borderColor}
+                  schemaId={schemaId}
+                  classId={schemaClass.id}
+                  instanceId={instance.id}
+                  coords={instance.coords}
                 />
               ))
             ) : (

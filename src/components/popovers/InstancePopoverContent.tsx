@@ -72,8 +72,8 @@ export function InstancePopoverContent({
   return (
     <div className="p-3">
       <div
-        className="bg-gray-100 dark:bg-gray-700 rounded px-2.5 py-2 mb-3 text-sm text-gray-700 dark:text-gray-200 max-h-20 overflow-y-auto break-words border-l-3 italic"
-        style={{ borderLeftColor: accentColor }}
+        className="bg-gray-100 dark:bg-gray-700 rounded px-2.5 py-2 mb-3 text-sm text-gray-700 dark:text-gray-200 max-h-20 overflow-y-auto break-words border-1 italic"
+        style={{ borderLeftColor: accentColor, borderColor: accentColor }}
       >
         {text}
       </div>
@@ -92,14 +92,18 @@ export function InstancePopoverContent({
               </Badge>
             ))}
           {pageNumber !== undefined && (
-            <Badge className="bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300">
+            <Badge
+              className="bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300"
+              style={{ borderColor: accentColor }}
+            >
               Page {pageNumber}
             </Badge>
           )}
         </div>
       )}
       <Textarea
-        className="bg-white rounded px-2.5 py-2 mb-3 text-sm"
+        className="bg-white rounded px-2.5 py-2 mb-3 text-sm border-1"
+        style={{ borderColor: accentColor }}
         placeholder="Notes..."
         value={notesValue ?? ''}
         onChange={(e) => onNotesChange(e.target.value)}

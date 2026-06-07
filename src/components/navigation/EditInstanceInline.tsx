@@ -1,10 +1,6 @@
-import { useContext, useEffect, useMemo, useRef } from 'react';
-import { DrawerContext } from '@/contexts/DrawerContext';
-import {
-  InstancePopoverContent,
-  useStableAccentColor,
-} from '@/components/popovers/InstancePopoverContent';
-import { InstanceDataAdapter, useEditInstance } from '@/components/popovers/useEditInstance';
+import { InstancePopoverContent } from '@/components/popovers/InstancePopoverContent';
+import { InstanceDataAdapter } from '@/components/popovers/useEditInstance';
+import { useDrawerInstanceEditor } from '@/components/popovers/useDrawerInstanceEditor';
 
 interface EditInstanceInlineProps {
   schemaId: string;
@@ -14,16 +10,10 @@ interface EditInstanceInlineProps {
   adapter?: InstanceDataAdapter;
 }
 
-const noopAdapter: InstanceDataAdapter = {
-  getActiveSchema: () => null,
-  getInstance: () => null,
-  dispatch: () => {},
-};
-
 /**
  * Inline host: renders the shared instance form directly in the navigator (no
- * floating chrome, no arrow). Reads/writes through DrawerContext in-process, and
- * persists eagerly — on notes blur and on class change — since it never closes.
+ * floating chrome, no arrow) on an accent-colored card. Edit/save semantics live
+ * in useDrawerInstanceEditor; this owns only the navigator's presentation.
  */
 export function EditInstanceInline({
   schemaId,
@@ -31,36 +21,12 @@ export function EditInstanceInline({
   instanceId,
   adapter,
 }: EditInstanceInlineProps) {
-  // Read the raw context (null-safe) rather than useDrawerContext(), which throws
-  // outside a provider — so the component degrades gracefully in stories.
-  const ctx = useContext(DrawerContext);
-  const ctxAdapter = useMemo<InstanceDataAdapter | null>(() => {
-    if (!ctx) return null;
-    return {
-      getActiveSchema: () => ctx.activeSchema,
-      getInstance: (_s, c, i) =>
-        ctx.activeSchema.classes
-          .find((cls) => cls.id === c)
-          ?.instances.find((inst) => inst.id === i) ?? null,
-      dispatch: ctx.dispatch,
-    };
-  }, [ctx]);
-
-  const effectiveAdapter = adapter ?? ctxAdapter ?? noopAdapter;
-  const editor = useEditInstance({ schemaId, classId, instanceId }, effectiveAdapter);
-  const accentColor = useStableAccentColor(editor.selectedClass);
-
-  // Persist when the class changes (the notes path saves on blur). Skip the
-  // initial mount so seeding the form from the live instance isn't a "change".
-  const mountedRef = useRef(false);
-  useEffect(() => {
-    if (!mountedRef.current) {
-      mountedRef.current = true;
-      return;
-    }
-    editor.save();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [editor.selectedClass]);
+  const { editor, accentColor } = useDrawerInstanceEditor({
+    schemaId,
+    classId,
+    instanceId,
+    adapter,
+  });
 
   if (!editor.instance) return null;
 
