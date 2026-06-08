@@ -1,5 +1,6 @@
 import { ReactNode, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { SchemaClass } from '@/lib/definitions';
+import { rgbaToHex } from '@/lib/utils';
 import { InstancePopoverContent, useStableAccentColor } from './InstancePopoverContent';
 
 const POPOVER_MIN_WIDTH_PX = 320;
@@ -115,18 +116,22 @@ export function InstancePopover({
       <div
         className={`absolute left-5 w-0 h-0 border-l-8 border-r-8 border-l-transparent border-r-transparent ${
           adjustedPosition?.showAbove
-            ? 'bottom-[-8px] border-t-8 border-t-card dark:border-t-muted'
+            ? 'bottom-[-8px] border-t-8 border-t-card'
             : 'top-[-8px] border-b-8'
         }`}
-        style={!adjustedPosition?.showAbove ? { borderBottomColor: accentColor } : undefined}
+        style={
+          !adjustedPosition?.showAbove
+            ? { borderBottomColor: rgbaToHex(accentColor, 1.0) }
+            : undefined
+        }
       />
 
-      <div className="bg-card dark:bg-muted rounded-lg">
+      <div className="bg-card rounded-lg">
         <div
           className="bg-[var(--tb-fill)] rounded-lg shadow-xl overflow-hidden border"
           style={{
             ['--tb-fill' as string]: accentColor,
-            borderColor: accentColor,
+            borderColor: rgbaToHex(accentColor, 1.0),
             minWidth: POPOVER_MIN_WIDTH_PX,
             maxWidth: POPOVER_MAX_WIDTH_PX,
           }}
