@@ -24,7 +24,7 @@ const mlSignposts = signposts.slice(0, 2);
 const stubContext = { activeSchema, pdfUrl: '', dispatch: () => {}, removeMlHighlight: () => {} };
 
 const Frame = ({ children }: { children: React.ReactNode }) => (
-  <div className="relative w-[480px] min-h-[300px] border border-gray-300 bg-white p-4 overflow-auto shadow-sm">
+  <div className="relative w-[480px] min-h-[300px] border border-gray-300  p-4 overflow-auto shadow-sm">
     {children}
   </div>
 );

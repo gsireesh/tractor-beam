@@ -107,7 +107,7 @@ export function SchemaClassViewer({
 
   return (
     <div
-      className="border-1 rounded-lg mx-1 my-2 p-2 shadow-sm bg-[var(--tb-fill)] dark:bg-card"
+      className="border-1 rounded-lg mx-1 my-2 p-2 shadow-sm bg-[var(--tb-fill)]"
       style={{ ['--tb-fill' as string]: bodyColor, borderColor: borderColor }}
     >
       <div className="flex flex-row justify-between align-baseline">

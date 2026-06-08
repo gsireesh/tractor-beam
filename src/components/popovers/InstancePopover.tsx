@@ -123,7 +123,7 @@ export function InstancePopover({
 
       <div className="bg-card rounded-lg">
         <div
-          className="bg-[var(--tb-fill)] dark:bg-card rounded-lg shadow-xl overflow-hidden border"
+          className="bg-[var(--tb-fill)] rounded-lg shadow-xl overflow-hidden border"
           style={{
             ['--tb-fill' as string]: accentColor,
             borderColor: accentColor,
