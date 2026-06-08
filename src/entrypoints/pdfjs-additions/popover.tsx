@@ -143,6 +143,7 @@ function init() {
 
   container = document.createElement('div');
   container.id = 'tractor-beam-popover-root';
+  container.className = 'tractor-beam-themed';
   document.body.appendChild(container);
 
   root = createRoot(container);

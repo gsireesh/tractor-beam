@@ -1,0 +1,99 @@
+/*
+ * Single source of truth for the shadcn theme tokens.
+ *
+ * Imported by every surface's CSS (ladle-globals, schema-manager, drawer,
+ * popover). The token VALUES live on the `.tractor-beam-themed` marker class
+ * — never on `:root` — so this file is safe to bundle into the CSS we inject
+ * into the pdf.js viewer page without leaking variables onto the host.
+ *
+ * Each surface adds `tractor-beam-themed` to its root element, and toggles
+ * `.dark` on that same element to switch themes.
+ */
+
+/* Activate `dark:` utilities (used by the shadcn `ui/` components) and our
+   `.tractor-beam-themed.dark` overrides for anything inside a `.dark` ancestor.
+   `:where(...)` pins the variant's specificity to zero so it never fights real
+   selectors. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Map Tailwind color utilities (bg-popover, text-destructive, …) to the raw
+   HSL channels defined on the marker class below. `inline` emits the var
+   reference into each utility, so utilities re-resolve when `.dark` changes the
+   channels. */
+@theme inline {
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+  --radius: 0.5rem;
+}
+
+/* Light theme — the raw HSL channels (hue saturation% lightness%, no hsl(),
+   no commas, so Tailwind's `/opacity` modifier can slot alpha in). */
+.tractor-beam-themed {
+  --background: 0 0% 100%;
+  --foreground: 0 0% 3.9%;
+  --card: 0 0% 100%;
+  --card-foreground: 0 0% 3.9%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 0 0% 3.9%;
+  --primary: 0 0% 9%;
+  --primary-foreground: 0 0% 98%;
+  --secondary: 0 0% 96.1%;
+  --secondary-foreground: 0 0% 9%;
+  --muted: 0 0% 96.1%;
+  --muted-foreground: 0 0% 45.1%;
+  --accent: 0 0% 96.1%;
+  --accent-foreground: 0 0% 9%;
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 0 0% 89.8%;
+  --input: 0 0% 89.8%;
+  --ring: 0 0% 3.9%;
+}
+
+/* Dark theme: re-declare the SAME channels on the marker-class element when it
+   also carries `.dark`. Everything using `bg-card`, `text-foreground`, etc.
+   swaps automatically — no `dark:` prefix needed.
+
+   Worked examples (these mostly invert lightness around the same hue/sat):
+     light --background 100%  -> dark 3.9%   (near-black surface)
+     light --foreground 3.9%  -> dark 98%    (near-white text)
+   `--primary` flips ROLE in dark mode: the bright neutral becomes the accent,
+   so primary text sits on a dark primary-foreground. */
+.tractor-beam-themed.dark {
+  --background: 0 0% 3.9%;
+  --foreground: 0 0% 98%;
+  --card: 0 0% 3.9%;
+  --card-foreground: 0 0% 98%;
+  --popover: 0 0% 3.9%;
+  --popover-foreground: 0 0% 98%;
+  --primary: 0 0% 98%;
+  --primary-foreground: 0 0% 9%;
+  --secondary: 0 0% 14.9%;
+  --secondary-foreground: 0 0% 98%;
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 0 0% 98%;
+  --muted: 215 28% 17%; /*tailwind gray 800*/
+  --muted-foreground: 218 11% 65%; /*tailwind gray 400*/
+  --accent: 215 28% 17%; /*tailwind gray 800*/
+  --accent-foreground: 218 11% 65%; /*tailwind gray 400*/
+  --border: 215 14% 34%; /*tailwind gray 600*/
+  --input: 215 14% 34%;
+  --ring: 220 14% 96%; /*tailwind gray 100*/
+}

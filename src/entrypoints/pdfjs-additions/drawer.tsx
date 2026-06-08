@@ -698,6 +698,7 @@ function init() {
 
   const container = document.createElement('div');
   container.id = 'tractor-beam-drawer-root';
+  container.className = 'tractor-beam-themed';
   document.body.appendChild(container);
 
   root = createRoot(container);
