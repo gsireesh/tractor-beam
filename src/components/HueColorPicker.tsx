@@ -39,10 +39,10 @@ export function HueColorPicker({
     <div className="w-48 p-2">
       <div className="flex items-center gap-2 mb-2">
         <span
-          className="h-5 w-5 shrink-0 rounded-full border border-black/10"
+          className="h-5 w-5 shrink-0 rounded-full border border-border"
           style={{ backgroundColor: preview }}
         />
-        <span className="text-xs text-black/60">{Math.round(hue)}°</span>
+        <span className="text-xs text-muted-foreground">{Math.round(hue)}°</span>
       </div>
       <input
         type="range"

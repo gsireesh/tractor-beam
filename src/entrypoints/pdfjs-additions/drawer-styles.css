@@ -144,8 +144,8 @@
   right: 0;
   width: 380px;
   height: 100vh;
-  background: white;
-  border-left: 1px solid #e5e7eb;
+  background: hsl(var(--card));
+  border-left: 1px solid hsl(var(--border));
   box-shadow: -2px 0 8px rgba(0, 0, 0, 0.1);
   transform: translateX(100%);
   transition: transform 0.25s ease-in-out;

@@ -44,7 +44,7 @@ export function ConfirmedInstanceViewer({
   return (
     <div className="mx-1 my-2 cursor-pointer" onClick={handleClick}>
       <div
-        className="rounded-lg overflow-hidden border bg-white"
+        className="rounded-lg overflow-hidden border bg-card"
         style={{ borderColor: rgbaToHex(accentColor, 1.0) }}
       >
         <InstancePopoverContent

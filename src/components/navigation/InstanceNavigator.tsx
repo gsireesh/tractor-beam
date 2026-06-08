@@ -38,7 +38,7 @@ export function InstanceNavigator({ confirmedSignposts, mlSignposts }: InstanceN
 
   return (
     <>
-      <div className="sticky top-0 z-10 flex flex-col gap-2 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 pb-2 mb-2">
+      <div className="sticky top-0 z-10 flex flex-col gap-2 bg-card border-b border-border pb-2 mb-2">
         <InputGroup>
           <InputGroupAddon align="inline-start">
             <Search />
@@ -82,7 +82,7 @@ export function InstanceNavigator({ confirmedSignposts, mlSignposts }: InstanceN
         </div>
       </div>
       {visible.length === 0 ? (
-        <p className="px-1 py-6 text-center text-sm text-gray-500 dark:text-gray-400">
+        <p className="px-1 py-6 text-center text-sm text-muted-foreground">
           No matching instances.
         </p>
       ) : (

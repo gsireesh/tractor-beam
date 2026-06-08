@@ -37,6 +37,13 @@ function localStore(): chrome.storage.LocalStorageArea | null {
 /** Which drawer tab is showing. Matches the <Tabs> value strings in drawer.tsx. */
 export type DrawerView = 'schema' | 'navigation';
 
+/**
+ * How the UI resolves its color theme. `system` follows the OS via
+ * prefers-color-scheme; `light`/`dark` are explicit user overrides. Applied to
+ * each surface root by {@link file://./theme.ts syncTheme}.
+ */
+export type ThemePreference = 'system' | 'light' | 'dark';
+
 /** Where the user was in the drawer for one document (keyed by pdfUrl). */
 export interface DocumentUiState {
   schemaId: string;
@@ -50,6 +57,8 @@ export interface UiState {
   lastSchemaId: string | null;
   /** Per-document drawer position, keyed by pdfUrl. */
   documents: Record<string, DocumentUiState>;
+  /** Color-theme preference; applied to every surface root by syncTheme. */
+  themePreference: ThemePreference;
 }
 
 /** Full documented shape of chrome.storage.local. */
@@ -64,6 +73,7 @@ const DEFAULT_UI_STATE: UiState = {
   drawerOpen: true,
   lastSchemaId: null,
   documents: {},
+  themePreference: 'system',
 };
 
 // ─── Model config + credentials ───
@@ -179,4 +189,32 @@ export function setDocumentUiState(pdfUrl: string, patch: Partial<DocumentUiStat
     };
     return { ...state, documents: { ...state.documents, [pdfUrl]: next } };
   });
+}
+
+/** Read the user's color-theme preference. */
+export async function getThemePreference(): Promise<ThemePreference> {
+  return (await getUiState()).themePreference;
+}
+
+/** Persist the user's color-theme preference. */
+export function setThemePreference(pref: ThemePreference): Promise<void> {
+  return updateUiState((state) => ({ ...state, themePreference: pref }));
+}
+
+/**
+ * Subscribe to UI-state changes from any extension page. chrome.storage.onChanged
+ * fires in every context sharing this storage area, so this is how one page's
+ * write (e.g. flipping the theme toggle in the drawer) reaches the others. Returns
+ * an unsubscribe fn; no-ops when `chrome` is absent.
+ */
+export function onUiStateChange(listener: (state: UiState) => void): () => void {
+  const store = localStore();
+  if (!store) return () => {};
+  const handler = (changes: Record<string, chrome.storage.StorageChange>, area: string) => {
+    if (area !== 'local' || !changes[UI_STATE_KEY]) return;
+    const next = changes[UI_STATE_KEY].newValue as Partial<UiState> | undefined;
+    listener({ ...DEFAULT_UI_STATE, ...next, documents: next?.documents ?? {} });
+  };
+  chrome.storage.onChanged.addListener(handler);
+  return () => chrome.storage.onChanged.removeListener(handler);
 }

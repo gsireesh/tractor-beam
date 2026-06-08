@@ -32,8 +32,8 @@ export function EditInstanceInline({
 
   return (
     <div
-      className="rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700"
-      style={{ backgroundColor: accentColor }}
+      className="rounded-lg overflow-hidden border border-border bg-[var(--tb-fill)] dark:bg-card"
+      style={{ ['--tb-fill' as string]: accentColor }}
     >
       <InstancePopoverContent
         text={editor.text}

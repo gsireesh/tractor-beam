@@ -45,6 +45,7 @@ import {
 } from '@/lib/config-storage';
 import { DrawerContext } from '@/contexts/DrawerContext';
 import { scrollToAnnotation } from '@/lib/pdf-navigation';
+import { syncTheme } from '@/lib/theme';
 import cssText from './drawer-styles.css?inline';
 import {
   createNewSchema,
@@ -56,6 +57,7 @@ import { VISUAL_BLOCK_CLASS_ID } from '@/components/HighlightOverlay.tsx';
 import type { Highlight, Signpost } from '@/lib/definitions.ts';
 import { ModelControls } from '@/components/ModelControls.tsx';
 import { IconButton } from '@/components/IconButton';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -279,7 +281,7 @@ function DrawerContainer() {
       <>
         <SidebarVisibilityToggle isOpen={isOpen} onToggle={toggle} />
         <div className={`tractor-beam-drawer ${isOpen ? 'open' : ''}`}>
-          <div className="p-4 text-sm text-gray-500">Loading...</div>
+          <div className="p-4 text-sm text-muted-foreground">Loading...</div>
         </div>
       </>
     );
@@ -340,7 +342,7 @@ function SchemaHeader({
   if (!activeSchema) return null;
 
   return (
-    <div className="flex items-center gap-1 px-3 py-1.5 border-b border-gray-200">
+    <div className="flex items-center gap-1 px-3 py-1.5 border-b border-border">
       <div
         ref={titleRef}
         className="w-fit"
@@ -352,7 +354,7 @@ function SchemaHeader({
           <input
             autoFocus
             placeholder="Schema name"
-            className="border-2 bg-white text-base px-1 py-0.5 rounded"
+            className="border-2 bg-card text-base px-1 py-0.5 rounded"
             value={activeSchema.name}
             onChange={(e) => onRename(e.target.value)}
             onKeyDown={(e) => {
@@ -371,6 +373,7 @@ function SchemaHeader({
         )}
       </div>
       <div className="ml-auto flex items-center gap-1">
+        <ThemeToggle />
         <DropdownMenu>
           <DropdownMenuTrigger>
             <IconButton title="Switch schema" icon={ArrowLeftRight} size="icon-sm" />
@@ -700,6 +703,7 @@ function init() {
   container.id = 'tractor-beam-drawer-root';
   container.className = 'tractor-beam-themed';
   document.body.appendChild(container);
+  syncTheme(container);
 
   root = createRoot(container);
   root.render(<DrawerContainer />);
