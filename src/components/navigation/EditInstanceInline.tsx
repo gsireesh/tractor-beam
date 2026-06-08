@@ -33,7 +33,7 @@ export function EditInstanceInline({
 
   return (
     <div
-      className="rounded-lg overflow-hidden border bg-[var(--tb-fill)] dark:bg-card"
+      className="rounded-lg overflow-hidden border bg-[var(--tb-fill)]"
       style={{ ['--tb-fill' as string]: accentColor, borderColor: rgbaToHex(accentColor, 1.0) }}
     >
       <InstancePopoverContent
