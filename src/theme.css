@@ -46,6 +46,14 @@
 /* Light theme — the raw HSL channels (hue saturation% lightness%, no hsl(),
    no commas, so Tailwind's `/opacity` modifier can slot alpha in). */
 .tractor-beam-themed {
+  /* Pin themed text color on every surface root. Without this, the drawer and
+     popover (whose scoped preflight sets `color: inherit`) fall back to the host
+     pdf.js page's text color — which looks right in dark by luck but renders
+     white-on-white in light. `--foreground` is redefined by `.dark` below, so
+     this single declaration follows the theme. Mirrors the Ladle wrapper's
+     `text-foreground`. */
+  color: hsl(var(--foreground));
+
   --background: 0 0% 100%;
   --foreground: 0 0% 3.9%;
   --card: 0 0% 100%;
