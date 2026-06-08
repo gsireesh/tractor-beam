@@ -1,6 +1,7 @@
 import { InstancePopoverContent } from '@/components/popovers/InstancePopoverContent';
 import { InstanceDataAdapter } from '@/components/popovers/useEditInstance';
 import { useDrawerInstanceEditor } from '@/components/popovers/useDrawerInstanceEditor';
+import { rgbaToHex } from '@/lib/utils';
 
 interface EditInstanceInlineProps {
   schemaId: string;
@@ -32,8 +33,8 @@ export function EditInstanceInline({
 
   return (
     <div
-      className="rounded-lg overflow-hidden border border-border bg-[var(--tb-fill)] dark:bg-card"
-      style={{ ['--tb-fill' as string]: accentColor }}
+      className="rounded-lg overflow-hidden border bg-[var(--tb-fill)] dark:bg-card"
+      style={{ ['--tb-fill' as string]: accentColor, borderColor: rgbaToHex(accentColor, 1.0) }}
     >
       <InstancePopoverContent
         text={editor.text}
