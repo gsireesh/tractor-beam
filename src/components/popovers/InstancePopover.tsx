@@ -115,13 +115,13 @@ export function InstancePopover({
       <div
         className={`absolute left-5 w-0 h-0 border-l-8 border-r-8 border-l-transparent border-r-transparent ${
           adjustedPosition?.showAbove
-            ? 'bottom-[-8px] border-t-8 border-t-card'
+            ? 'bottom-[-8px] border-t-8 border-t-card dark:border-t-muted'
             : 'top-[-8px] border-b-8'
         }`}
         style={!adjustedPosition?.showAbove ? { borderBottomColor: accentColor } : undefined}
       />
 
-      <div className="bg-card rounded-lg">
+      <div className="bg-card dark:bg-muted rounded-lg">
         <div
           className="bg-[var(--tb-fill)] rounded-lg shadow-xl overflow-hidden border"
           style={{
