@@ -33,8 +33,12 @@
   --radius: 0.5rem;
 }
 
-/* ─── shadcn HSL values scoped to the drawer ─── */
-.tractor-beam-drawer {
+/* ─── shadcn HSL values ───
+   Defined on the drawer ROOT (not the .tractor-beam-drawer panel) so that
+   content portaled out of the panel — e.g. the export Dialog, which mounts
+   into #tractor-beam-drawer-root, a sibling of the panel — still inherits the
+   theme tokens. The panel is a descendant of the root, so it inherits them too. */
+#tractor-beam-drawer-root {
   --background: 0 0% 100%;
   --foreground: 0 0% 3.9%;
   --card: 0 0% 100%;
@@ -57,10 +61,12 @@
 }
 
 /* ─── Scoped preflight for the drawer ───
-   Replicates Tailwind's preflight resets but confined to .tractor-beam-drawer
-   descendants via CSS @scope (supported in all Chromium browsers). */
+   Replicates Tailwind's preflight resets but confined to #tractor-beam-drawer-root
+   descendants via CSS @scope (supported in all Chromium browsers). Scoped to the
+   root (not .tractor-beam-drawer) so content portaled out of the transformed
+   drawer panel — e.g. the export Dialog — still receives the resets. */
 @layer base {
-  @scope (.tractor-beam-drawer) {
+  @scope (#tractor-beam-drawer-root) {
     *,
     ::after,
     ::before,

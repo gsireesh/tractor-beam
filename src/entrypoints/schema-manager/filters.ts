@@ -1,20 +1,14 @@
 /**
- * Row projection + filtering for the Schema Manager table.
+ * Filtering for the Schema Manager table.
  *
- * A ManagerRow is one confirmed instance, flattened out of the schema tree
- * (schema → class → instance) so it can live in a flat, filterable table.
+ * The row projection (`ManagerRow`, `flattenSchema`) lives in `@/lib/manager-row`
+ * so the export lib can share it; `ManagerRow` is re-exported here for the
+ * manager's existing importers.
  */
 
-export interface ManagerRow {
-  instanceId: string;
-  classId: string;
-  className: string;
-  classColor: string; // rgba(...) string from SchemaClass.color
-  pdfUrl: string;
-  text: string;
-  notes: string | null;
-  positiveExample: boolean;
-}
+import { ManagerRow } from '@/lib/manager-row';
+
+export type { ManagerRow };
 
 export interface FilterState {
   /** Class ids the user wants to see. */
