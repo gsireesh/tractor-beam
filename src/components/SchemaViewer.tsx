@@ -1,9 +1,15 @@
-import { SchemaClassViewer } from '@/components/SchemaClassViewer';
+import { useState } from 'react';
 
-import { Button } from '@/components/ui/button';
-import { PiListPlus, PiTable } from 'react-icons/pi';
+import { SchemaClassViewer } from '@/components/SchemaClassViewer';
+import { ExpandableIconButtonBar } from '@/components/ExpandableIconButtonBar';
+import { ExportModal } from '@/components/ExportModal';
+
+import { PiListPlus, PiTable, PiDownloadSimple } from 'react-icons/pi';
 import { Schema, SchemaAction } from '@/lib/definitions';
 import { createNewClass } from '@/lib/utils.ts';
+import { createSnapshot } from '@/lib/schema-storage';
+import { exportSchema, ExportOptions } from '@/lib/export';
+import { APP_CONFIG } from '@/app-config';
 
 interface SchemaViewerProps {
   schema: Schema;
@@ -11,41 +17,63 @@ interface SchemaViewerProps {
 }
 
 export function SchemaViewer({ schema, dispatch }: SchemaViewerProps) {
+  const [exportOpen, setExportOpen] = useState(false);
+
   // activeSchema can be undefined for a beat before schemas load (or if the store
   // is empty); render nothing rather than dereferencing schema.classes.
   if (!schema) return null;
 
+  // Bookmark the complete schema, then download the (possibly filtered) view.
+  const handleExport = (opts: ExportOptions) => {
+    createSnapshot(APP_CONFIG.indexedDBConfig, schema).catch((e) =>
+      console.error('[export] snapshot failed', e),
+    );
+    exportSchema(schema, opts);
+  };
+
   return (
     <div className="flex-1 overflow-y-auto min-h-0">
-      <Button
-        variant="outline"
-        className="h-6 mr-1 ml-1"
-        onClick={() =>
-          dispatch({
-            actionType: 'addClass',
-            schemaId: schema.id,
-            classInfo: createNewClass(
-              'New Class',
-              'This text describes what this class is.',
-              [],
-              schema.classes.map((c) => c.color),
-            ),
-          })
-        }
-      >
-        <PiListPlus />
-        Add new class
-      </Button>
-      <Button
-        variant="outline"
-        className="h-6 mr-1 ml-1"
-        onClick={() =>
-          browser.runtime.sendMessage({ type: 'openSchemaManager', schemaId: schema.id })
-        }
-      >
-        <PiTable />
-        Open Schema Manager
-      </Button>
+      <ExpandableIconButtonBar
+        className="mb-1"
+        items={[
+          {
+            key: 'add-class',
+            label: 'Add new class',
+            icon: PiListPlus,
+            onClick: () =>
+              dispatch({
+                actionType: 'addClass',
+                schemaId: schema.id,
+                classInfo: createNewClass(
+                  'New Class',
+                  'This text describes what this class is.',
+                  [],
+                  schema.classes.map((c) => c.color),
+                ),
+              }),
+          },
+          {
+            key: 'open-manager',
+            label: 'Open Schema Manager',
+            icon: PiTable,
+            onClick: () =>
+              browser.runtime.sendMessage({ type: 'openSchemaManager', schemaId: schema.id }),
+          },
+          {
+            key: 'export',
+            label: 'Export data',
+            icon: PiDownloadSimple,
+            onClick: () => setExportOpen(true),
+          },
+        ]}
+      />
+      <ExportModal
+        open={exportOpen}
+        schema={schema}
+        container={document.getElementById('tractor-beam-drawer-root')}
+        onClose={() => setExportOpen(false)}
+        onExport={handleExport}
+      />
       <ul className="list-none p-0 m-0">
         {schema.classes.map((sc) => (
           <SchemaClassViewer

@@ -26,13 +26,16 @@ const stubContext = {
 const Frame = ({ children }: { children: React.ReactNode }) => (
   <div
     className="relative w-[420px] rounded-lg border p-2 shadow-sm"
-    style={{ backgroundColor: rgbaToHex(schemaClass.color), borderColor: rgbaToHex(schemaClass.color, 1.0) }}
+    style={{
+      backgroundColor: rgbaToHex(schemaClass.color),
+      borderColor: rgbaToHex(schemaClass.color, 1.0),
+    }}
   >
     {children}
   </div>
 );
 
-export const Default: Story = () => (
+export const ConfirmedInstances: Story = () => (
   <DrawerContext.Provider value={stubContext}>
     <Frame>
       {instances.map((instance) => (

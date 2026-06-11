@@ -1,10 +1,14 @@
 import { useEffect, useMemo, useState } from 'react';
-import { ExternalLink, Search, X } from 'lucide-react';
+import { Download, ExternalLink, Search, X } from 'lucide-react';
 import { Schema } from '@/lib/definitions';
-import { rebuildState } from '@/lib/schema-storage';
+import { rebuildState, createSnapshot } from '@/lib/schema-storage';
 import { getPdfViewerUrl } from '@/lib/pdf-utils';
 import { APP_CONFIG } from '@/app-config';
 import { rgbaToHex, bodyToBorderColor } from '@/lib/utils';
+import { exportSchema, ExportOptions } from '@/lib/export';
+import { flattenSchema } from '@/lib/manager-row';
+import { Button } from '@/components/ui/button';
+import { ExportModal } from '@/components/ExportModal';
 import {
   Select,
   SelectContent,
@@ -19,24 +23,9 @@ import {
   InputGroupButton,
   InputGroupInput,
 } from '@/components/ui/input-group';
-import { applyFilters, FilterState, ManagerRow } from './filters';
+import { applyFilters, FilterState } from './filters';
 
 const ALL_PDFS = '__all__';
-
-function flattenSchema(schema: Schema): ManagerRow[] {
-  return schema.classes.flatMap((cls) =>
-    cls.instances.map((inst) => ({
-      instanceId: inst.id,
-      classId: cls.id,
-      className: cls.name,
-      classColor: cls.color,
-      pdfUrl: inst.pdfUrl,
-      text: inst.text,
-      notes: inst.notes ?? null,
-      positiveExample: inst.positiveExample,
-    })),
-  );
-}
 
 function emptyFilters(schema: Schema | undefined): FilterState {
   return {
@@ -51,6 +40,7 @@ export function SchemaManagerApp() {
   const [schemas, setSchemas] = useState<Schema[] | null>(null);
   const [activeSchemaId, setActiveSchemaId] = useState<string | null>(null);
   const [filters, setFilters] = useState<FilterState>(emptyFilters(undefined));
+  const [exportOpen, setExportOpen] = useState(false);
 
   // Load all schemas once; pick the initial schema from ?schemaId= (set by the
   // "Open Schema Manager" button), falling back to the first schema.
@@ -93,6 +83,17 @@ export function SchemaManagerApp() {
       classIds: pressed ? [...f.classIds, classId] : f.classIds.filter((id) => id !== classId),
     }));
 
+  // Bookmark the complete schema and download the (possibly filtered) view.
+  // The manager's on-screen filters are intentionally ignored — only the
+  // modal's controls drive the export, so both entry points behave identically.
+  const handleExport = (opts: ExportOptions) => {
+    if (!activeSchema) return;
+    createSnapshot(APP_CONFIG.indexedDBConfig, activeSchema).catch((e) =>
+      console.error('[export] snapshot failed', e),
+    );
+    exportSchema(activeSchema, opts);
+  };
+
   return (
     <div className="mx-auto max-w-6xl p-6">
       <header className="mb-4 flex flex-wrap items-center gap-3">
@@ -109,10 +110,26 @@ export function SchemaManagerApp() {
             ))}
           </SelectContent>
         </Select>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setExportOpen(true)}
+          disabled={!activeSchema}
+        >
+          <Download />
+          Export
+        </Button>
         <span className="ml-auto text-sm text-muted-foreground">
           Showing {visibleRows.length} of {rows.length} instances
         </span>
       </header>
+
+      <ExportModal
+        open={exportOpen}
+        schema={activeSchema ?? null}
+        onClose={() => setExportOpen(false)}
+        onExport={handleExport}
+      />
 
       {/* ─── Filter bar ─── */}
       <div className="mb-4 flex flex-col gap-3 rounded-lg border border-border p-3">

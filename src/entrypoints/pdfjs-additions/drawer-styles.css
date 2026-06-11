@@ -11,10 +11,12 @@
 @import '../../theme.css';
 
 /* ─── Scoped preflight for the drawer ───
-   Replicates Tailwind's preflight resets but confined to .tractor-beam-drawer
-   descendants via CSS @scope (supported in all Chromium browsers). */
+   Replicates Tailwind's preflight resets but confined to #tractor-beam-drawer-root
+   descendants via CSS @scope (supported in all Chromium browsers). Scoped to the
+   root (not .tractor-beam-drawer) so content portaled out of the transformed
+   drawer panel — e.g. the export Dialog — still receives the resets. */
 @layer base {
-  @scope (.tractor-beam-drawer) {
+  @scope (#tractor-beam-drawer-root) {
     *,
     ::after,
     ::before,
