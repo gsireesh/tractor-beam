@@ -1,6 +1,7 @@
 import { placeholderSchemas } from '@/lib/placeholder-schemas.ts';
 import { IndexedDBConfig } from '@/app-config.ts';
 import type {
+  Instance,
   MlAnnotationRun,
   Schema,
   SchemaAction,
@@ -185,6 +186,27 @@ export async function createUpdate(
   });
 }
 
+/**
+ * Backfill fields that instances created by older versions of the app may be
+ * missing. Schemas are reconstructed from snapshots + an append-only update
+ * log, so we can't safely rewrite history to add `positiveExample` to legacy
+ * instances. Instead, we normalize once, here at the load boundary — after this
+ * runs, the rest of the app can trust the `Instance` type exactly as declared.
+ */
+function normalizeInstance(instance: Instance): Instance {
+  return instance.positiveExample == null ? { ...instance, positiveExample: true } : instance;
+}
+
+function normalizeSchemas(schemas: Schema[]): Schema[] {
+  return schemas.map((schema) => ({
+    ...schema,
+    classes: schema.classes.map((cls) => ({
+      ...cls,
+      instances: cls.instances.map(normalizeInstance),
+    })),
+  }));
+}
+
 export async function rebuildState(indexedDBConfig: IndexedDBConfig): Promise<Schema[]> {
   const snapshotsById = await getLatestSnapshotBySchema(indexedDBConfig);
   let allSchemas = Object.values(snapshotsById).map((s) => s.schema);
@@ -205,7 +227,7 @@ export async function rebuildState(indexedDBConfig: IndexedDBConfig): Promise<Sc
     }
     return placeholderSchemas;
   }
-  return allSchemas;
+  return normalizeSchemas(allSchemas);
 }
 
 export async function storeMlAnnotationRun(
@@ -217,12 +239,13 @@ export async function storeMlAnnotationRun(
     .transaction(indexedDBConfig.mlAnnotationsObjectStore, 'readwrite')
     .objectStore(indexedDBConfig.mlAnnotationsObjectStore);
   const getRequest = store.get(run.id);
+  let runToStore = run;
   getRequest.onsuccess = () => {
     const existing = getRequest.result as MlAnnotationRun | undefined;
     if (existing) {
-      run = { ...run, annotations: [...existing.annotations, ...run.annotations] };
+      runToStore = { ...run, annotations: [...existing.annotations, ...run.annotations] };
     }
-    store.put(run);
+    store.put(runToStore);
   };
 }
 
