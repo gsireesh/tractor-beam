@@ -47,10 +47,17 @@ function SelectContent({
   children,
   position = 'item-aligned',
   align = 'center',
+  container,
   ...props
-}: React.ComponentProps<typeof SelectPrimitive.Content>) {
+}: React.ComponentProps<typeof SelectPrimitive.Content> & {
+  // Forwarded to the Portal so callers can land the content inside a themed
+  // root (e.g. #root / #tractor-beam-drawer-root). Without it Radix portals to
+  // document.body, outside the .tractor-beam-themed scope, so --popover is
+  // undefined and the content renders transparent.
+  container?: React.ComponentProps<typeof SelectPrimitive.Portal>['container'];
+}) {
   return (
-    <SelectPrimitive.Portal>
+    <SelectPrimitive.Portal container={container}>
       <SelectPrimitive.Content
         data-slot="select-content"
         className={cn(

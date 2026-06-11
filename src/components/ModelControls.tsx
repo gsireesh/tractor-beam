@@ -128,7 +128,11 @@ export function ModelControls({ status, progress, message }: ModelControlsProps)
             <DropdownMenuLabel>Model</DropdownMenuLabel>
             <DropdownMenuSub>
               <DropdownMenuSubTrigger>{currentModel ?? 'Select model...'}</DropdownMenuSubTrigger>
-              <DropdownMenuPortal>
+              {/* Portal into the themed drawer root: without a container Radix
+                  portals to document.body, outside #tractor-beam-drawer-root's
+                  .tractor-beam-themed scope, so --popover is undefined and the
+                  submenu renders transparent. */}
+              <DropdownMenuPortal container={document.getElementById('tractor-beam-drawer-root')}>
                 <DropdownMenuSubContent className="z-[10002]">
                   {config.provider === 'claude' ? (
                     <DropdownMenuRadioGroup

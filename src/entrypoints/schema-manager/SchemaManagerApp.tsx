@@ -102,7 +102,7 @@ export function SchemaManagerApp() {
           <SelectTrigger size="sm" className="min-w-48">
             <SelectValue placeholder="Select schema" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent container={document.getElementById('root')}>
             {schemas.map((s) => (
               <SelectItem key={s.id} value={s.id}>
                 {s.name || 'Untitled schema'}
@@ -127,6 +127,7 @@ export function SchemaManagerApp() {
       <ExportModal
         open={exportOpen}
         schema={activeSchema ?? null}
+        container={document.getElementById('root')}
         onClose={() => setExportOpen(false)}
         onExport={handleExport}
       />
@@ -185,7 +186,7 @@ export function SchemaManagerApp() {
             <SelectTrigger size="sm" className="max-w-xs">
               <SelectValue placeholder="Filter by PDF" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent container={document.getElementById('root')}>
               <SelectItem value={ALL_PDFS}>All PDFs</SelectItem>
               {pdfUrls.map((url) => (
                 <SelectItem key={url} value={url}>

@@ -13,9 +13,11 @@ interface ExportModalProps {
   open: boolean;
   schema: Schema | null;
   /**
-   * Portal target. The drawer passes its untransformed root so the overlay
-   * covers the viewport rather than being trapped by the drawer's transform.
-   * Omit (defaults to document.body) on normal pages like the Schema Manager.
+   * Portal target, which must be inside a `.tractor-beam-themed` root or the
+   * dialog's `bg-background`/`bg-popover` tokens resolve to nothing and it
+   * renders transparent. The drawer passes its untransformed root (also escaping
+   * the drawer's transform); standalone pages like the Schema Manager pass their
+   * themed `#root`. Defaults to document.body, which is themed on no surface.
    */
   container?: HTMLElement | null;
   onClose: () => void;
