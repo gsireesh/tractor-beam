@@ -7,3 +7,16 @@
  */
 @import 'tailwindcss';
 @import '../../theme.css';
+
+/*
+ * Paint the page surface from the theme. `.tractor-beam-themed` (on #root) only
+ * sets `color`; `background-color` doesn't inherit, so without this the page
+ * background stays browser-default white and dark mode renders light-on-white.
+ * #root carries `.tractor-beam-themed`, so the token resolves here; min-height
+ * fills the viewport so the whole page — not just the content column — follows
+ * the theme.
+ */
+#root {
+  min-height: 100vh;
+  background-color: hsl(var(--background));
+}
