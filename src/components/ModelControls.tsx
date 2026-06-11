@@ -220,18 +220,20 @@ export function ModelControls({ status, progress, message }: ModelControlsProps)
           : {status}
         </span>
         <span
-          className={'inline-block w-2 h-2 rounded-full ' + (STATUS_MAP[status] || 'bg-gray-400')}
+          className={
+            'inline-block w-2 h-2 rounded-full ' + (STATUS_MAP[status] || 'bg-muted-foreground')
+          }
         />
       </div>
       {status === 'loading' && (
         <div className="mt-1">
-          <div className="text-xs text-gray-500">Loading model...</div>
+          <div className="text-xs text-muted-foreground">Loading model...</div>
           <Progress value={progress * 100} className="h-2" />
         </div>
       )}
       {isRunning && (
         <div className="mt-1">
-          <div className="text-xs text-gray-500">{message || 'Annotating...'}</div>
+          <div className="text-xs text-muted-foreground">{message || 'Annotating...'}</div>
           <Progress value={progress * 100} className="h-2 [&>div]:bg-green-500" />
         </div>
       )}

@@ -72,7 +72,7 @@ export function InstancePopoverContent({
   return (
     <div className="p-3">
       <div
-        className="bg-gray-100 dark:bg-gray-700 rounded px-2.5 py-2 mb-3 text-sm text-gray-700 dark:text-gray-200 max-h-20 overflow-y-auto break-words border-1 italic"
+        className="bg-muted rounded px-2.5 py-2 mb-3 text-sm text-foreground max-h-20 overflow-y-auto break-words border-1 italic"
         style={{ borderLeftColor: accentColor, borderColor: accentColor }}
       >
         {text}
@@ -92,17 +92,14 @@ export function InstancePopoverContent({
               </Badge>
             ))}
           {pageNumber !== undefined && (
-            <Badge
-              className="bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300"
-              style={{ borderColor: accentColor }}
-            >
+            <Badge className="bg-muted text-muted-foreground" style={{ borderColor: accentColor }}>
               Page {pageNumber}
             </Badge>
           )}
         </div>
       )}
       <Textarea
-        className="bg-white rounded px-2.5 py-2 mb-3 text-sm border-1"
+        className="bg-card rounded px-2.5 py-2 mb-3 text-sm border-1"
         style={{ borderColor: accentColor }}
         placeholder="Notes..."
         value={notesValue ?? ''}
@@ -130,7 +127,7 @@ export function InstancePopoverContent({
             );
           }}
           renderCreateLabel={(label) => `Create new class "${label}"`}
-          inputClassName="flex-1 bg-white"
+          inputClassName="flex-1 bg-card"
           contentContainer={comboboxContainer}
           contentPositionerClassName={comboboxPositionerClassName}
           closeOnScroll={closeComboboxOnScroll}

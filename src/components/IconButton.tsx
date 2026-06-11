@@ -15,7 +15,7 @@ export function IconButton(props: IconButtonProps) {
   const { onClick, title, icon: Icon, color, size } = props;
   return (
     <Button variant="ghost" size={size} title={title} onClick={onClick}>
-      <Icon strokeWidth={1} color={color ?? 'black'} />
+      <Icon strokeWidth={1} color={color ?? 'currentColor'} />
     </Button>
   );
 }

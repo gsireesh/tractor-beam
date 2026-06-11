@@ -8,6 +8,7 @@ import { CreateInstancePopover } from '@/components/popovers/CreateInstancePopov
 import { PromoteInstancePopover } from '@/components/popovers/PromoteInstancePopover';
 import { EditInstancePopover } from '@/components/popovers/EditInstancePopover';
 import { Highlight, PdfBox } from '@/lib/definitions';
+import { syncTheme } from '@/lib/theme';
 import cssText from './popover-styles.css?inline';
 
 let root: Root | null = null;
@@ -143,7 +144,9 @@ function init() {
 
   container = document.createElement('div');
   container.id = 'tractor-beam-popover-root';
+  container.className = 'tractor-beam-themed';
   document.body.appendChild(container);
+  syncTheme(container);
 
   root = createRoot(container);
 

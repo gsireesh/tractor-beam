@@ -103,8 +103,8 @@ export function ProvisionalHighlightSignpost({ id, classId, coords, text }: Sign
   return (
     <div className="mx-1 my-2 cursor-pointer" onClick={handleCardClick}>
       <div
-        className="rounded-lg overflow-hidden border border-dashed border-gray-300 dark:border-gray-600"
-        style={{ backgroundColor: accentColor }}
+        className="rounded-lg overflow-hidden border border-dashed bg-[var(--tb-fill)]"
+        style={{ ['--tb-fill' as string]: accentColor, borderColor: rgbaToHex(accentColor, 1.0) }}
       >
         <InstancePopoverContent
           text={text ?? ''}

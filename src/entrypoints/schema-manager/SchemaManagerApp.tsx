@@ -70,11 +70,11 @@ export function SchemaManagerApp() {
   const visibleRows = useMemo(() => applyFilters(rows, filters), [rows, filters]);
 
   if (!schemas) {
-    return <div className="p-6 text-sm text-gray-500">Loading…</div>;
+    return <div className="p-6 text-sm text-muted-foreground">Loading…</div>;
   }
 
   if (schemas.length === 0) {
-    return <div className="p-6 text-sm text-gray-500">No schemas found.</div>;
+    return <div className="p-6 text-sm text-muted-foreground">No schemas found.</div>;
   }
 
   const toggleClass = (classId: string, pressed: boolean) =>
@@ -233,7 +233,7 @@ export function SchemaManagerApp() {
         <tbody>
           {visibleRows.length === 0 ? (
             <tr>
-              <td colSpan={5} className="p-6 text-center text-gray-500">
+              <td colSpan={5} className="p-6 text-center text-muted-foreground">
                 No matching instances.
               </td>
             </tr>
@@ -256,7 +256,7 @@ export function SchemaManagerApp() {
                 </td>
                 <td className="p-2 italic">{row.text}</td>
                 <td className="p-2 text-muted-foreground">
-                  {row.notes || <span className="text-gray-300">—</span>}
+                  {row.notes || <span className="text-muted-foreground">—</span>}
                 </td>
                 <td className="p-2">
                   <a
@@ -266,7 +266,7 @@ export function SchemaManagerApp() {
                     })}
                     target="_blank"
                     rel="noreferrer"
-                    className="inline-flex items-center gap-1 text-blue-600 hover:underline"
+                    className="inline-flex items-center gap-1 text-blue-600 dark:text-blue-400 hover:underline"
                     title="Open in PDF viewer and jump to this highlight"
                   >
                     <ExternalLink size={14} />

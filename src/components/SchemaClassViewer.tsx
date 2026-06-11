@@ -107,19 +107,15 @@ export function SchemaClassViewer({
 
   return (
     <div
-      className="border-1 rounded-lg mx-1 my-2 p-2 shadow-sm"
-      style={{ backgroundColor: bodyColor, borderColor: borderColor }}
+      className="border-1 rounded-lg mx-1 my-2 p-2 shadow-sm bg-[var(--tb-fill)]"
+      style={{ ['--tb-fill' as string]: bodyColor, borderColor: borderColor }}
     >
       <div className="flex flex-row justify-between align-baseline">
-        <h1
-          ref={titleRef}
-          className="size-6 mb-4 w-fit text-base"
-          onClick={toggleTitleEditable}
-        >
+        <h1 ref={titleRef} className="size-6 mb-4 w-fit text-base" onClick={toggleTitleEditable}>
           {titleEditable ? (
             <input
               autoFocus
-              className="border-2 bg-white rounded-lg"
+              className="border-2 bg-card rounded-lg"
               value={nameDraft}
               onChange={(e) => setNameDraft(e.target.value)}
             />
@@ -156,13 +152,13 @@ export function SchemaClassViewer({
                             classInfo: { ...schemaClass, color: color },
                           })
                         }
-                        className={`h-6 w-6 rounded-full border border-black/10 transition-transform hover:scale-110 ${schemaClass.color === color ? 'ring-2 ring-offset-1 ring-black/60' : ''}`}
+                        className={`h-6 w-6 rounded-full border border-border transition-transform hover:scale-110 ${schemaClass.color === color ? 'ring-2 ring-offset-1 ring-ring' : ''}`}
                         style={{ backgroundColor: rgbaToHex(color, 1.0) }}
                       />
                     ))}
                   </div>
                   <DropdownMenuSeparator />
-                  <DropdownMenuLabel className="text-xs font-normal text-black/60">
+                  <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">
                     Custom hue
                   </DropdownMenuLabel>
                   <HueColorPicker
@@ -198,7 +194,7 @@ export function SchemaClassViewer({
       <label className="block text-sm">
         Class Description:
         <textarea
-          className="block p-0.5 w-4/5 border-1 rounded-lg bg-white"
+          className="block p-0.5 w-4/5 border-1 rounded-lg bg-card"
           style={{ borderColor: borderColor }}
           autoFocus={false}
           rows={4}
