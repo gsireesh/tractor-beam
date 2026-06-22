@@ -8,7 +8,7 @@ import { rgbaToHex, bodyToBorderColor } from '@/lib/utils';
 import { exportSchema, ExportOptions } from '@/lib/export';
 import { flattenSchema } from '@/lib/manager-row';
 import { Button } from '@/components/ui/button';
-import { ExportModal } from '@/components/ExportModal';
+import { ExportModal } from '@/components/export/ExportModal.tsx';
 import {
   Select,
   SelectContent,

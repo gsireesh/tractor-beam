@@ -1,13 +1,13 @@
-import { Schema } from '@/lib/definitions';
-import { ExportOptions } from '@/lib/export';
+import { Schema } from '@/lib/definitions.ts';
+import { ExportOptions } from '@/lib/export.ts';
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
-import { ExportPanel } from '@/components/ExportPanel';
+} from '@/components/ui/dialog.tsx';
+import { ExportPanel } from '@/components/export/ExportPanel.tsx';
 
 interface ExportModalProps {
   open: boolean;

@@ -2,7 +2,7 @@ import { useState } from 'react';
 
 import { SchemaClassViewer } from '@/components/sidebar/SchemaClassViewer.tsx';
 import { ExpandableIconButtonBar } from '@/components/sidebar/ExpandableIconButtonBar.tsx';
-import { ExportModal } from '@/components/ExportModal.tsx';
+import { ExportModal } from '@/components/export/ExportModal.tsx';
 
 import { PiListPlus, PiTable, PiDownloadSimple } from 'react-icons/pi';
 import { Schema, SchemaAction } from '@/lib/definitions.ts';

@@ -1,10 +1,10 @@
 import { useMemo, useState } from 'react';
 
-import { Schema } from '@/lib/definitions';
-import { ExportFormat, ExportOptions } from '@/lib/export';
-import { Button } from '@/components/ui/button';
-import { Toggle } from '@/components/ui/toggle';
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { Schema } from '@/lib/definitions.ts';
+import { ExportFormat, ExportOptions } from '@/lib/export.ts';
+import { Button } from '@/components/ui/button.tsx';
+import { Toggle } from '@/components/ui/toggle.tsx';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group.tsx';
 
 interface ExportPanelProps {
   schema: Schema;
