@@ -1,15 +1,15 @@
 import { useState } from 'react';
 
-import { SchemaClassViewer } from '@/components/SchemaClassViewer';
-import { ExpandableIconButtonBar } from '@/components/ExpandableIconButtonBar';
-import { ExportModal } from '@/components/ExportModal';
+import { SchemaClassViewer } from '@/components/sidebar/SchemaClassViewer.tsx';
+import { ExpandableIconButtonBar } from '@/components/sidebar/ExpandableIconButtonBar.tsx';
+import { ExportModal } from '@/components/ExportModal.tsx';
 
 import { PiListPlus, PiTable, PiDownloadSimple } from 'react-icons/pi';
-import { Schema, SchemaAction } from '@/lib/definitions';
+import { Schema, SchemaAction } from '@/lib/definitions.ts';
 import { createNewClass } from '@/lib/utils.ts';
-import { createSnapshot } from '@/lib/schema-storage';
-import { exportSchema, ExportOptions } from '@/lib/export';
-import { APP_CONFIG } from '@/app-config';
+import { createSnapshot } from '@/lib/schema-storage.ts';
+import { exportSchema, ExportOptions } from '@/lib/export.ts';
+import { APP_CONFIG } from '@/app-config.ts';
 
 interface SchemaViewerProps {
   schema: Schema;

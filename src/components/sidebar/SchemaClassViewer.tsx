@@ -1,10 +1,10 @@
-import { SchemaAction, SchemaClass } from '@/lib/definitions';
+import { SchemaAction, SchemaClass } from '@/lib/definitions.ts';
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from '@/components/ui/accordion';
+} from '@/components/ui/accordion.tsx';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,9 +21,9 @@ import { MoreVertical, Palette, PencilLine, Trash2 } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { rgbaToHex } from '@/lib/utils.ts';
 import { HIGHLIGHT_PALETTE } from '@/lib/highlight-palette.ts';
-import { HueColorPicker } from '@/components/HueColorPicker.tsx';
+import { HueColorPicker } from '@/components/sidebar/HueColorPicker.tsx';
 import { IconButton } from '@/components/IconButton.tsx';
-import { ConfirmedInstanceViewer } from '@/components/ConfirmedInstanceViewer.tsx';
+import { ConfirmedInstanceViewer } from '@/components/sidebar/ConfirmedInstanceViewer.tsx';
 import { useDrawerContext } from '@/contexts/DrawerContext.tsx';
 
 export function SchemaClassViewer({

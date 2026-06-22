@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
 import { Monitor, Moon, Sun } from 'lucide-react';
-import { IconButton } from '@/components/IconButton';
+import { IconButton } from '@/components/IconButton.tsx';
 import {
   type ThemePreference,
   getThemePreference,
   onUiStateChange,
   setThemePreference,
-} from '@/lib/config-storage';
+} from '@/lib/config-storage.ts';
 
 /**
  * Cycles the color-theme preference system → light → dark. It only *writes* the

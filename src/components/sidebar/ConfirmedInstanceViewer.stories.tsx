@@ -1,8 +1,8 @@
 import type { Story } from '@ladle/react';
-import { ConfirmedInstanceViewer } from './ConfirmedInstanceViewer';
-import { placeholderSchemas } from '@/lib/placeholder-schemas';
-import { rgbaToHex } from '@/lib/utils';
-import { DrawerContext } from '@/contexts/DrawerContext';
+import { ConfirmedInstanceViewer } from './ConfirmedInstanceViewer.tsx';
+import { placeholderSchemas } from '@/lib/placeholder-schemas.ts';
+import { rgbaToHex } from '@/lib/utils.ts';
+import { DrawerContext } from '@/contexts/DrawerContext.tsx';
 
 // The "STS Reading" schema (index 1) carries classes with populated `instances`
 // that have real PDF coords — so the viewer has something to resolve and render.

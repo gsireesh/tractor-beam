@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { MlProgressMessage } from '@/lib/messaging/message_definitions.ts';
 
-import { Progress } from '@/components/ui/progress';
+import { Progress } from '@/components/ui/progress.tsx';
 import { LayoutPanelLeft, Play, Settings, Square, Save, History } from 'lucide-react';
 import {
   DropdownMenu,
@@ -22,8 +22,8 @@ import {
   OLLAMA_MODELS,
   type ModelProvider,
   type ModelConfig,
-} from '@/lib/ml/types';
-import { DEFAULT_OLLAMA_BASE_URL } from '@/lib/ml/types';
+} from '@/lib/ml/types.ts';
+import { DEFAULT_OLLAMA_BASE_URL } from '@/lib/ml/types.ts';
 import {
   getModelConfig,
   setModelConfig,
@@ -31,8 +31,8 @@ import {
   setClaudeApiKey,
   getOllamaBaseUrl,
   setOllamaBaseUrl,
-} from '@/lib/config-storage';
-import { useDrawerContext } from '@/contexts/DrawerContext';
+} from '@/lib/config-storage.ts';
+import { useDrawerContext } from '@/contexts/DrawerContext.tsx';
 import { IconButton } from '@/components/IconButton.tsx';
 
 export interface ModelControlsProps {

@@ -25,7 +25,7 @@ import {
   Trash2,
   EllipsisVerticalIcon,
 } from 'lucide-react';
-import { SchemaViewer } from '@/components/SchemaViewer';
+import { SchemaViewer } from '@/components/sidebar/SchemaViewer.tsx';
 import { getMlAnnotationRuns, rebuildState, storeMlAnnotationRun } from '@/lib/schema-storage';
 import { APP_CONFIG } from '@/app-config';
 import { Instance, Schema, SchemaAction } from '@/lib/definitions';
@@ -55,9 +55,9 @@ import {
 } from '@/lib/utils.ts';
 import { VISUAL_BLOCK_CLASS_ID } from '@/components/HighlightOverlay.tsx';
 import type { Highlight, Signpost } from '@/lib/definitions.ts';
-import { ModelControls } from '@/components/ModelControls.tsx';
+import { ModelControls } from '@/components/sidebar/ModelControls.tsx';
 import { IconButton } from '@/components/IconButton';
-import { ThemeToggle } from '@/components/ThemeToggle';
+import { ThemeToggle } from '@/components/sidebar/ThemeToggle.tsx';
 import {
   DropdownMenu,
   DropdownMenuContent,
