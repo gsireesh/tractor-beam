@@ -1,6 +1,6 @@
 import type { Story } from '@ladle/react';
 import { Play, Square, Save, Settings } from 'lucide-react';
-import { IconButton } from './IconButton';
+import { IconButton } from './IconButton.tsx';
 
 export const Default: Story = () => (
   <IconButton title="Run" icon={Play} onClick={() => console.log('run')} />

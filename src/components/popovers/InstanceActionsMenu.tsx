@@ -7,7 +7,7 @@ import {
   DropdownMenuPortal,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu.tsx';
-import { IconButton } from '@/components/IconButton.tsx';
+import { IconButton } from '@/components/ui/IconButton.tsx';
 
 /**
  * Kebab → dropdown → destructive "Delete" for an instance, mirroring the class

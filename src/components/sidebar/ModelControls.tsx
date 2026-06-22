@@ -33,7 +33,7 @@ import {
   setOllamaBaseUrl,
 } from '@/lib/config-storage.ts';
 import { useDrawerContext } from '@/contexts/DrawerContext.tsx';
-import { IconButton } from '@/components/IconButton.tsx';
+import { IconButton } from '@/components/ui/IconButton.tsx';
 
 export interface ModelControlsProps {
   status: MlProgressMessage['stage'];

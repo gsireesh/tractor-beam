@@ -22,7 +22,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { rgbaToHex } from '@/lib/utils.ts';
 import { HIGHLIGHT_PALETTE } from '@/lib/highlight-palette.ts';
 import { HueColorPicker } from '@/components/sidebar/HueColorPicker.tsx';
-import { IconButton } from '@/components/IconButton.tsx';
+import { IconButton } from '@/components/ui/IconButton.tsx';
 import { ConfirmedInstanceViewer } from '@/components/sidebar/ConfirmedInstanceViewer.tsx';
 import { useDrawerContext } from '@/contexts/DrawerContext.tsx';
 

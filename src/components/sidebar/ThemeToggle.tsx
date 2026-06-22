@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Monitor, Moon, Sun } from 'lucide-react';
-import { IconButton } from '@/components/IconButton.tsx';
+import { IconButton } from '@/components/ui/IconButton.tsx';
 import {
   type ThemePreference,
   getThemePreference,

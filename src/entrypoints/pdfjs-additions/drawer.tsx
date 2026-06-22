@@ -56,7 +56,7 @@ import {
 import { VISUAL_BLOCK_CLASS_ID } from '@/components/HighlightOverlay.tsx';
 import type { Highlight, Signpost } from '@/lib/definitions.ts';
 import { ModelControls } from '@/components/sidebar/ModelControls.tsx';
-import { IconButton } from '@/components/IconButton';
+import { IconButton } from '@/components/ui/IconButton.tsx';
 import { ThemeToggle } from '@/components/sidebar/ThemeToggle.tsx';
 import {
   DropdownMenu,
