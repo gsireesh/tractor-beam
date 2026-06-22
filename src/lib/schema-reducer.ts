@@ -32,7 +32,7 @@ export function schemasReducer(draft: Schema[], action: SchemaAction) {
       const schema = draft.find((s) => s.id == action.schemaId);
       const classIdx = schema?.classes.findIndex((c) => c.id == action.classId);
 
-      if (schema && classIdx !== undefined) {
+      if (schema && classIdx != null && classIdx !== -1) {
         schema.classes[classIdx] = action.classInfo;
       }
       return;
@@ -48,18 +48,17 @@ export function schemasReducer(draft: Schema[], action: SchemaAction) {
       const schema = draft.find((s) => s.id == action.schemaId);
       const classIdx = schema?.classes.findIndex((c) => c.id == action.classId);
 
-      if (schema && classIdx !== undefined) {
+      if (schema && classIdx != null && classIdx !== -1) {
         schema.classes[classIdx].instances.push(action.instance);
       }
       return;
     }
     case 'deleteInstance': {
-      for (const schema of draft) {
-        const cls = schema.classes.find((c) => c.id === action.classId);
-        if (cls) {
-          cls.instances = cls.instances.filter((i) => i.id !== action.instanceId);
-          return;
-        }
+      const schema = draft.find((s) => s.id == action.schemaId);
+      const schemaClass = schema?.classes.find((c) => c.id === action.classId);
+      const instanceIdx = schemaClass?.instances.findIndex((i) => i.id === action.instanceId);
+      if (schemaClass && instanceIdx != null && instanceIdx !== -1) {
+        schemaClass.instances.splice(instanceIdx, 1);
       }
       return;
     }
