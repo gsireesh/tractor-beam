@@ -5,7 +5,7 @@
 
 import { createRoot, Root } from 'react-dom/client';
 import { createPortal } from 'react-dom';
-import { PageHighlights } from '@/components/PageHighlights';
+import { PageHighlights } from '@/components/highlights/PageHighlights.tsx';
 import { Highlight } from '@/lib/definitions.ts';
 import cssText from './popover-styles.css?inline';
 

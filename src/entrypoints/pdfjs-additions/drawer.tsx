@@ -53,7 +53,7 @@ import {
   getSignpostsFromHighlights,
   mergePdfBoxes,
 } from '@/lib/utils.ts';
-import { VISUAL_BLOCK_CLASS_ID } from '@/components/HighlightOverlay.tsx';
+import { VISUAL_BLOCK_CLASS_ID } from '@/components/highlights/HighlightOverlay.tsx';
 import type { Highlight, Signpost } from '@/lib/definitions.ts';
 import { ModelControls } from '@/components/sidebar/ModelControls.tsx';
 import { IconButton } from '@/components/ui/IconButton.tsx';

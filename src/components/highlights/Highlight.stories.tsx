@@ -1,6 +1,6 @@
 import type { Story } from '@ladle/react';
-import { HighlightOverlay, VISUAL_BLOCK_CLASS_ID } from './HighlightOverlay';
-import type { HighlightOverlayProps } from './highlights/types';
+import { HighlightOverlay, VISUAL_BLOCK_CLASS_ID } from './HighlightOverlay.tsx';
+import type { HighlightOverlayProps } from './types.ts';
 
 // Frame is 480x620 with p-8 (32px padding) and text-[13px] leading-relaxed,
 // so each text line is ~21px tall and the first line starts at y≈32. The

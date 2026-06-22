@@ -1,9 +1,9 @@
 import { memo } from 'react';
-import { VISUAL_BLOCK_CLASS_ID } from './highlights/types';
-import { VisualBlockRect } from './highlights/VisualBlockRect';
-import { ConfirmedTextHighlight } from './highlights/ConfirmedTextHighlight.tsx';
-import { ProvisionalHighlight } from './highlights/ProvisionalHighlight.tsx';
-import type { HighlightOverlayProps } from './highlights/types';
+import { VISUAL_BLOCK_CLASS_ID } from './types.ts';
+import { VisualBlockRect } from './VisualBlockRect.tsx';
+import { ConfirmedTextHighlight } from './ConfirmedTextHighlight.tsx';
+import { ProvisionalHighlight } from './ProvisionalHighlight.tsx';
+import type { HighlightOverlayProps } from './types.ts';
 
 export { VISUAL_BLOCK_CLASS_ID };
 

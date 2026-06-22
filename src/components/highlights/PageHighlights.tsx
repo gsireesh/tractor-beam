@@ -1,5 +1,5 @@
 import { HighlightOverlay } from './HighlightOverlay.tsx';
-import { Highlight } from '@/lib/definitions';
+import { Highlight } from '@/lib/definitions.ts';
 
 interface PageHighlightsProps {
   pageNumber: number;
