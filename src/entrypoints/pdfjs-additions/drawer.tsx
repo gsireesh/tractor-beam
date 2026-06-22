@@ -7,24 +7,16 @@
  */
 
 import {
+  type Dispatch,
+  type SetStateAction,
   useCallback,
   useEffect,
   useMemo,
   useRef,
   useState,
-  type Dispatch,
-  type SetStateAction,
 } from 'react';
 import { createRoot, Root } from 'react-dom/client';
-import {
-  ArrowLeftRight,
-  Layers2Icon,
-  PencilLine,
-  Plus,
-  SignpostIcon,
-  Trash2,
-  EllipsisVerticalIcon,
-} from 'lucide-react';
+import { Layers2Icon, SignpostIcon } from 'lucide-react';
 import { SchemaViewer } from '@/components/sidebar/SchemaViewer.tsx';
 import { getMlAnnotationRuns, rebuildState, storeMlAnnotationRun } from '@/lib/schema-storage';
 import { APP_CONFIG } from '@/app-config';
@@ -33,15 +25,15 @@ import { schemasReducer } from '@/lib/schema-reducer';
 import { usePersistedSchemaReducer } from '@/hooks/persisted-reducer';
 import type { ExtensionMessage, MlProgressMessage } from '@/lib/messaging/message_definitions';
 import {
+  type DrawerView,
   getClaudeApiKey,
   getModelConfig,
   getOllamaBaseUrl,
   getUiState,
-  setDrawerOpen,
   setDocumentUiState,
+  setDrawerOpen,
   setLastSchemaId,
   type UiState,
-  type DrawerView,
 } from '@/lib/config-storage';
 import { DrawerContext } from '@/contexts/DrawerContext';
 import { scrollToAnnotation } from '@/lib/pdf-navigation';
@@ -56,17 +48,10 @@ import {
 import { VISUAL_BLOCK_CLASS_ID } from '@/components/highlights/HighlightOverlay.tsx';
 import type { Highlight, Signpost } from '@/lib/definitions.ts';
 import { ModelControls } from '@/components/sidebar/ModelControls.tsx';
-import { IconButton } from '@/components/ui/IconButton.tsx';
-import { ThemeToggle } from '@/components/sidebar/ThemeToggle.tsx';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { InstanceNavigator } from '@/components/navigation/InstanceNavigator.tsx';
+import { SchemaHeader } from '@/components/sidebar/SchemaHeader.tsx';
+import { DrawerVisibilityToggle } from '@/components/sidebar/DrawerVisibilityToggle.tsx';
 
 const DRAWER_WIDTH = 380;
 
@@ -279,7 +264,7 @@ function DrawerContainer() {
   if (!initialState || !initialUiState) {
     return (
       <>
-        <SidebarVisibilityToggle isOpen={isOpen} onToggle={toggle} />
+        <DrawerVisibilityToggle isOpen={isOpen} onToggle={toggle} />
         <div className={`tractor-beam-drawer ${isOpen ? 'open' : ''}`}>
           <div className="p-4 text-sm text-muted-foreground">Loading...</div>
         </div>
@@ -289,7 +274,7 @@ function DrawerContainer() {
 
   return (
     <>
-      <SidebarVisibilityToggle isOpen={isOpen} onToggle={toggle} />
+      <DrawerVisibilityToggle isOpen={isOpen} onToggle={toggle} />
       <div className={`tractor-beam-drawer ${isOpen ? 'open' : ''}`}>
         <DrawerContent initialSchemas={initialState} initialUiState={initialUiState} />
       </div>
@@ -297,113 +282,6 @@ function DrawerContainer() {
   );
 }
 
-function SidebarVisibilityToggle({ isOpen, onToggle }: { isOpen: boolean; onToggle: () => void }) {
-  return (
-    <div className={`tractor-beam-toggle-tab ${isOpen ? 'drawer-open' : ''}`}>
-      <button onClick={onToggle} title={isOpen ? 'Collapse panel' : 'Open panel'}>
-        <span className="chevron">&#x276E;</span>
-      </button>
-    </div>
-  );
-}
-
-function SchemaHeader({
-  activeSchema,
-  schemas,
-  editing,
-  onEditingChange,
-  onRename,
-  onSwitch,
-  onNew,
-  onDelete,
-}: {
-  activeSchema: Schema | null;
-  schemas: Schema[];
-  editing: boolean;
-  onEditingChange: (editing: boolean) => void;
-  onRename: (name: string) => void;
-  onSwitch: (id: string) => void;
-  onNew: () => void;
-  onDelete: () => void;
-}) {
-  const titleRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!editing) return;
-    const handler = (e: MouseEvent) => {
-      if (titleRef.current && !titleRef.current.contains(e.target as Node)) {
-        onEditingChange(false);
-      }
-    };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, [editing, onEditingChange]);
-
-  if (!activeSchema) return null;
-
-  return (
-    <div className="flex items-center gap-1 px-3 py-1.5 border-b border-border">
-      <div
-        ref={titleRef}
-        className="w-fit"
-        onClick={() => {
-          if (!editing) onEditingChange(true);
-        }}
-      >
-        {editing ? (
-          <input
-            autoFocus
-            placeholder="Schema name"
-            className="border-2 bg-card text-base px-1 py-0.5 rounded"
-            value={activeSchema.name}
-            onChange={(e) => onRename(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') onEditingChange(false);
-            }}
-          />
-        ) : (
-          <div className="flex items-center gap-1 group cursor-pointer">
-            <span className="text-base">{activeSchema.name || 'Untitled schema'}</span>
-            <PencilLine
-              strokeWidth={1}
-              size={16}
-              className="invisible group-hover:visible shrink-0"
-            />
-          </div>
-        )}
-      </div>
-      <div className="ml-auto flex items-center gap-1">
-        <ThemeToggle />
-        <DropdownMenu>
-          <DropdownMenuTrigger>
-            <IconButton title="Switch schema" icon={ArrowLeftRight} size="icon-sm" />
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            {schemas.map((s) => (
-              <DropdownMenuItem key={s.id} onClick={() => onSwitch(s.id)}>
-                {s.name || 'Untitled schema'}
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
-        <IconButton title="New schema" icon={Plus} size="icon-sm" onClick={onNew} />
-        <DropdownMenu>
-          <DropdownMenuTrigger>
-            <IconButton title="Schema actions" icon={EllipsisVerticalIcon} size="icon-sm" />
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuGroup>
-              <DropdownMenuItem variant="destructive" onClick={onDelete}>
-                <Trash2 strokeWidth={1} size="1em" />
-                Delete Schema
-              </DropdownMenuItem>
-            </DropdownMenuGroup>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-    </div>
-  );
-}
 /**
  * Decide which schema to show when the drawer first opens for a document.
  *
