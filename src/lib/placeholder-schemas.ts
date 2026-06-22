@@ -1,18 +1,5 @@
 import { Schema } from '@/lib/definitions.ts';
 
-const COLORS = [
-  'rgba(255, 182, 193, 0.3)', // pink
-  'rgba(255, 218, 185, 0.3)', // peach
-  'rgba(255, 255, 186, 0.3)', // yellow
-  'rgba(186, 255, 201, 0.3)', // mint
-  'rgba(186, 225, 255, 0.3)', // sky blue
-  'rgba(216, 191, 255, 0.3)', // lavender
-  'rgba(255, 200, 221, 0.3)', // rose
-  'rgba(200, 255, 240, 0.3)', // aqua
-  'rgba(255, 228, 196, 0.3)', // bisque
-  'rgba(230, 230, 250, 0.3)', // periwinkle
-];
-
 export const placeholderSchemas: Schema[] = [
   {
     id: '0',

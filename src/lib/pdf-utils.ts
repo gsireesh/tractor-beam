@@ -1,3 +1,5 @@
+import { browser, type Browser } from 'wxt/browser';
+
 /**
  * PDF utility functions for the extension
  */
@@ -23,7 +25,7 @@ export function getPdfViewerUrl(
 /**
  * Open a PDF in a new tab using the extension's PDF viewer
  */
-export function openPdfInTab(pdfUrl: string): Promise<browser.Tabs.Tab> {
+export function openPdfInTab(pdfUrl: string): Promise<Browser.tabs.Tab> {
   return browser.tabs.create({ url: getPdfViewerUrl(pdfUrl) });
 }
 
