@@ -35,8 +35,10 @@ export function openPdfInTab(pdfUrl: string): Promise<Browser.tabs.Tab> {
 export function isPdfUrl(url: string | undefined): boolean {
   if (!url) return false;
 
+  const path = url.split(/[?#]/)[0];
+
   // Check file extension
-  if (url.toLowerCase().endsWith('.pdf')) {
+  if (path.toLowerCase().endsWith('.pdf')) {
     return true;
   }
 
