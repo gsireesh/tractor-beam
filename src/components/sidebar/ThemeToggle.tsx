@@ -27,9 +27,9 @@ const ICON: Record<ThemePreference, typeof Monitor> = {
 };
 
 const LABEL: Record<ThemePreference, string> = {
-  system: 'Theme: follow system',
-  light: 'Theme: light',
-  dark: 'Theme: dark',
+  system: 'System Theme',
+  light: 'Light Mode',
+  dark: 'Dark Mode',
 };
 
 export function ThemeToggle({
@@ -40,20 +40,20 @@ export function ThemeToggle({
   const [pref, setPref] = useState<ThemePreference>('system');
 
   useEffect(() => {
-    getThemePreference().then(setPref);
+    void getThemePreference().then(setPref);
     return onUiStateChange((state) => setPref(state.themePreference));
   }, []);
 
   return (
-    <IconButton
-      title={`${LABEL[pref]} (click to change)`}
-      icon={ICON[pref]}
-      size={size}
+    <div
       onClick={() => {
         const next = NEXT[pref];
         setPref(next); // optimistic; onUiStateChange reconciles
-        setThemePreference(next);
+        void setThemePreference(next);
       }}
-    />
+    >
+      <IconButton title={`${LABEL[pref]} (click to change)`} icon={ICON[pref]} size={size} />
+      {LABEL[pref]}
+    </div>
   );
 }

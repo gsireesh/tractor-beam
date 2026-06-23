@@ -7,6 +7,7 @@ import {
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuSub,
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
@@ -80,13 +81,13 @@ export function SchemaHeader({
         )}
       </div>
       <div className="ml-auto flex items-center gap-1">
-        <ThemeToggle />
         <DropdownMenu>
           <DropdownMenuTrigger>
             <IconButton title="Schema actions" icon={EllipsisVerticalIcon} size="icon-sm" />
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuGroup>
+              <DropdownMenuLabel>Schema Actions</DropdownMenuLabel>
               <DropdownMenuItem onClick={onNew}>
                 <Plus strokeWidth={1} size="1em" />
                 New Schema
@@ -107,6 +108,12 @@ export function SchemaHeader({
               <DropdownMenuItem variant="destructive" onClick={onDelete}>
                 <Trash2 strokeWidth={1} size="1em" />
                 Delete Schema
+              </DropdownMenuItem>
+            </DropdownMenuGroup>
+            <DropdownMenuGroup>
+              <DropdownMenuLabel>Theme</DropdownMenuLabel>
+              <DropdownMenuItem>
+                <ThemeToggle />
               </DropdownMenuItem>
             </DropdownMenuGroup>
           </DropdownMenuContent>
