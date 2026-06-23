@@ -18,6 +18,7 @@ interface InstanceNavigatorProps {
 }
 
 const defaultSourceState = ['confirmed', 'suggested'];
+export const SEARCH_PLACEHOLDER_TEXT = 'Filter by text…';
 
 export function InstanceNavigator({ confirmedSignposts, mlSignposts }: InstanceNavigatorProps) {
   const [sourceEnabled, setSourceEnabled] = useState<string[]>(defaultSourceState);
@@ -44,7 +45,7 @@ export function InstanceNavigator({ confirmedSignposts, mlSignposts }: InstanceN
             <Search />
           </InputGroupAddon>
           <InputGroupInput
-            placeholder="Filter by text…"
+            placeholder={SEARCH_PLACEHOLDER_TEXT}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />

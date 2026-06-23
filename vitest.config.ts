@@ -1,7 +1,11 @@
 import { defineConfig } from 'vitest/config';
+import react from '@vitejs/plugin-react';
 import { fileURLToPath, URL } from 'node:url';
 
 export default defineConfig({
+  // The React plugin gives component tests the same JSX/Fast-Refresh-free
+  // transform the app uses, so what we render matches production.
+  plugins: [react()],
   resolve: {
     // Mirror the '@/...' -> 'src/...' alias the app uses, so test files can
     // import modules the same way the source does.
@@ -10,10 +14,13 @@ export default defineConfig({
     },
   },
   test: {
-    // Tier 1 (pure logic) needs no browser/DOM, so the fast 'node' environment
-    // is enough. We'll switch to 'jsdom' when we reach the component tier.
+    // Default to the fast 'node' environment so tier-1 pure-logic tests stay
+    // cheap. Component tests opt into jsdom per-file with a top-of-file pragma:
+    //   // @vitest-environment jsdom
     environment: 'node',
-    // Only pick up files we explicitly name as tests.
-    include: ['src/**/*.test.ts'],
+    // Pick up both .test.ts (logic) and .test.tsx (components).
+    include: ['src/**/*.test.{ts,tsx}'],
+    // Registers jest-dom matchers and auto-cleanup after each test.
+    setupFiles: ['./vitest.setup.ts'],
   },
 });
