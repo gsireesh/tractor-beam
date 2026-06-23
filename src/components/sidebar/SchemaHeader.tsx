@@ -7,6 +7,9 @@ import {
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu.tsx';
 import { IconButton } from '@/components/ui/IconButton.tsx';
@@ -80,23 +83,27 @@ export function SchemaHeader({
         <ThemeToggle />
         <DropdownMenu>
           <DropdownMenuTrigger>
-            <IconButton title="Switch schema" icon={ArrowLeftRight} size="icon-sm" />
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            {schemas.map((s) => (
-              <DropdownMenuItem key={s.id} onClick={() => onSwitch(s.id)}>
-                {s.name || 'Untitled schema'}
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
-        <IconButton title="New schema" icon={Plus} size="icon-sm" onClick={onNew} />
-        <DropdownMenu>
-          <DropdownMenuTrigger>
             <IconButton title="Schema actions" icon={EllipsisVerticalIcon} size="icon-sm" />
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuGroup>
+              <DropdownMenuItem onClick={onNew}>
+                <Plus strokeWidth={1} size="1em" />
+                New Schema
+              </DropdownMenuItem>
+              <DropdownMenuSub>
+                <DropdownMenuSubTrigger>
+                  <ArrowLeftRight strokeWidth={1} size="1em" />
+                  Switch Schema
+                </DropdownMenuSubTrigger>
+                <DropdownMenuSubContent>
+                  {schemas.map((s) => (
+                    <DropdownMenuItem key={s.id} onClick={() => onSwitch(s.id)}>
+                      {s.name || 'Untitled schema'}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuSubContent>
+              </DropdownMenuSub>
               <DropdownMenuItem variant="destructive" onClick={onDelete}>
                 <Trash2 strokeWidth={1} size="1em" />
                 Delete Schema
