@@ -1,0 +1,227 @@
+/**
+ * Drawer host — the imperative bridge between the React drawer tree and the
+ * vanilla-JS callers that reach it through `window.TractorBeamDrawer` (the
+ * separate popover root, pdf.js chrome, etc.).
+ *
+ * Owns the module-level refs that the drawer components publish into (via
+ * registerDrawerContent), the annotation/segmentation pipeline functions, and
+ * the assembly of the window API. Kept JSX-free so it can be reasoned about and
+ * tested without mounting React. Mirrors how highlights.tsx / text-extraction.ts
+ * each own a single window.TractorBeam* API.
+ */
+
+import { getMlAnnotationRuns } from '@/lib/schema-storage';
+import { APP_CONFIG } from '@/app-config';
+import type { Highlight, Instance, Schema, SchemaAction } from '@/lib/definitions';
+import { getClaudeApiKey, getModelConfig, getOllamaBaseUrl } from '@/lib/config-storage';
+import { colorMapForSchema, mergePdfBoxes } from '@/lib/utils.ts';
+import { VISUAL_BLOCK_CLASS_ID } from '@/components/highlights/HighlightOverlay.tsx';
+
+// ─── Module-level refs for the window API ───
+// Populated by DrawerContent via registerDrawerContent() while it is mounted,
+// and read lazily by the window API closures below. Null/no-op until then.
+
+let drawerDispatch: ((action: SchemaAction) => void) | null = null;
+let getActiveSchemaFn: () => Schema | null = () => null;
+
+// Bridge so the pipeline functions (invoked via the window API) can push ML
+// highlights into the component's reactive state. Null until the drawer mounts.
+let setMlHighlightsFn: ((highlights: Highlight[]) => void) | null = null;
+
+// ─── Registration contract ───
+// DrawerContent registers/clears the handle on mount/unmount. The window API
+// reads these refs lazily, so they may legitimately be empty between install
+// and the first mount (the closures null-guard for it).
+
+export interface DrawerHandle {
+  dispatch: (action: SchemaAction) => void;
+  getActiveSchema: () => Schema | null;
+  setMlHighlights: (highlights: Highlight[]) => void;
+}
+
+export function registerDrawerContent(handle: DrawerHandle): void {
+  drawerDispatch = handle.dispatch;
+  getActiveSchemaFn = handle.getActiveSchema;
+  setMlHighlightsFn = handle.setMlHighlights;
+}
+
+export function clearDrawerContent(): void {
+  drawerDispatch = null;
+  // Reset to the non-null default, not null — getActiveSchemaFn is never null,
+  // so callers (getInstance, syncProvisionalHighlights) needn't guard it.
+  getActiveSchemaFn = () => null;
+  setMlHighlightsFn = null;
+}
+
+async function runSegmentationPipeline() {
+  console.log('[drawer] Drawing segmentation boxes');
+  if (!window.TractorBeamTextExtraction) {
+    console.error('[drawer] TractorBeamTextExtraction not available');
+    return;
+  }
+
+  console.log('[drawer] Extracting visual blocks...');
+  const PDFViewerApplication = window.PDFViewerApplication;
+  const blocks = await window.TractorBeamTextExtraction.extractVisualBlocks(PDFViewerApplication);
+  console.log(`[drawer] Extracted ${blocks.length} visual blocks`);
+
+  window.TractorBeamHighlights.setHighlights(
+    'layout',
+    blocks.map((block) => {
+      const superBlock = mergePdfBoxes(block.items.map((item) => item.box));
+      return {
+        id: block.blockId,
+        classId: VISUAL_BLOCK_CLASS_ID,
+        schemaId: 'visual',
+        source: 'ml' as const,
+        color: 'visual',
+        coords: [superBlock],
+        positiveExample: true,
+      };
+    }),
+  );
+}
+
+async function loadCachedAnnotations(schemaId: string, pdfUrl: string) {
+  console.log('[drawer] Loading cached annotations from IndexedDB');
+  const runs = await getMlAnnotationRuns(APP_CONFIG.indexedDBConfig, schemaId, pdfUrl);
+  if (runs.length === 0) {
+    console.log('[drawer] No cached annotation runs found');
+    return;
+  }
+  const mostRecent = runs.sort((a, b) => b.createdAt - a.createdAt)[0];
+  console.log(
+    `[drawer] Loaded cached run ${mostRecent.id} with ${mostRecent.annotations.length} annotations`,
+  );
+  const colorsByClass = colorMapForSchema(getActiveSchemaFn());
+  const loaded: Highlight[] = mostRecent.annotations.map((a) => ({
+    id: a.id,
+    classId: a.classId,
+    schemaId,
+    coords: a.coords,
+    source: 'ml' as const,
+    text: a.text,
+    color: colorsByClass[a.classId] ?? '',
+    positiveExample: true,
+  }));
+  // State change drives the viewer sync via the [mlHighlights] effect.
+  setMlHighlightsFn?.(loaded);
+}
+
+/** Map raw ML highlights to colored Highlight objects and push to the highlights module. */
+export function syncProvisionalHighlights(mlHighlights: Highlight[]) {
+  if (!window.TractorBeamHighlights) return;
+  const schema = getActiveSchemaFn();
+  if (!schema) {
+    window.TractorBeamHighlights.setHighlights('provisional', []);
+    return;
+  }
+  const colorsByClass = colorMapForSchema(schema);
+  const highlights: Highlight[] = mlHighlights
+    .filter((h) => h.schemaId === schema.id && colorsByClass[h.classId] !== undefined)
+    .map((h) => ({ ...h, color: colorsByClass[h.classId] ?? h.color }));
+  console.log(
+    `[drawer] provisional highlight sync: ${highlights.length} ML for schema ${schema.id}`,
+  );
+  window.TractorBeamHighlights.setHighlights('provisional', highlights);
+}
+
+// ─── Pipeline orchestration (called via window API) ───
+async function runAnnotationPipeline(schema: Schema, requestId: string) {
+  console.log('[drawer] Starting annotation pipeline:', requestId);
+
+  // Reset ML highlights for the new run (state change re-syncs the viewer).
+  setMlHighlightsFn?.([]);
+
+  // 1. Extract visual blocks directly from the in-page API
+  if (!window.TractorBeamTextExtraction) {
+    console.error('[drawer] TractorBeamTextExtraction not available');
+    return;
+  }
+  const PDFViewerApplication = window.PDFViewerApplication;
+  if (!PDFViewerApplication) {
+    console.error('[drawer] PDFViewerApplication not available');
+    return;
+  }
+
+  console.log('[drawer] Extracting visual blocks...');
+  const blocks = await window.TractorBeamTextExtraction.extractVisualBlocks(PDFViewerApplication);
+  console.log(`[drawer] Extracted ${blocks.length} visual blocks`);
+
+  // 2. Ensure the offscreen document is ready
+  await chrome.runtime.sendMessage({ type: 'ensureOffscreen' }).catch(() => {
+    console.warn('[drawer] ensureOffscreen failed — offscreen may already exist');
+  });
+
+  // 3. Read model config and send the complete message to the offscreen document
+  const modelConfig = await getModelConfig();
+  const claudeApiKey =
+    modelConfig.provider === 'claude' ? ((await getClaudeApiKey()) ?? undefined) : undefined;
+  const ollamaBaseUrl =
+    modelConfig.provider === 'ollama' ? ((await getOllamaBaseUrl()) ?? undefined) : undefined;
+
+  chrome.runtime
+    .sendMessage({
+      type: 'runAnnotationPipeline',
+      requestId,
+      schema,
+      blocks,
+      modelConfig,
+      claudeApiKey,
+      ollamaBaseUrl,
+    })
+    .catch((err) => {
+      console.error('[drawer] Failed to send runAnnotationPipeline:', err);
+    });
+}
+
+function cancelAnnotationPipeline(requestId: string) {
+  console.log('[drawer] Cancelling annotation pipeline:', requestId);
+  chrome.runtime
+    .sendMessage({
+      type: 'cancelAnnotationPipeline',
+      requestId,
+    })
+    .catch(() => {
+      console.log('Failed to cancel annotation!');
+    });
+}
+
+// ─── Window API ───
+
+declare global {
+  interface Window {
+    PDFViewerApplication?: { pdfDocument: unknown };
+    TractorBeamDrawer: {
+      dispatch: (action: SchemaAction) => void;
+      getActiveSchema: () => Schema | null;
+      getInstance: (schemaId: string, classId: string, instanceId: string) => Instance | null;
+      runAnnotationPipeline: (schema: Schema, requestId: string) => Promise<void>;
+      runSegmentationPipeline: () => Promise<void>;
+      loadCachedAnnotations: (schemaId: string, pdfUrl: string) => Promise<void>;
+      cancelAnnotationPipeline: (requestId: string) => void;
+    };
+  }
+}
+
+/** Assemble and install window.TractorBeamDrawer. Called once from init(). */
+export function installDrawerApi(): void {
+  window.TractorBeamDrawer = {
+    dispatch: (action: SchemaAction) => {
+      if (drawerDispatch) drawerDispatch(action);
+      else console.warn('[drawer] dispatch called before drawer is ready');
+    },
+    getActiveSchema: () => getActiveSchemaFn(),
+    getInstance: (schemaId: string, classId: string, instanceId: string) => {
+      const schema = getActiveSchemaFn();
+      if (!schema || schema.id !== schemaId) return null;
+      const cls = schema.classes.find((c) => c.id === classId);
+      if (!cls) return null;
+      return cls.instances.find((i) => i.id === instanceId) ?? null;
+    },
+    runAnnotationPipeline,
+    runSegmentationPipeline,
+    loadCachedAnnotations,
+    cancelAnnotationPipeline,
+  };
+}

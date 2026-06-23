@@ -45,6 +45,15 @@ export function getHighlightsFromSchema(schema: Schema, onPdfUrl?: string) {
   );
 }
 
+/** Build a classId → color lookup from a schema (empty if no schema). */
+export function colorMapForSchema(schema: Schema | null): Record<string, string> {
+  if (!schema) return {};
+  return schema.classes.reduce<Record<string, string>>((acc, cls) => {
+    acc[cls.id] = cls.color;
+    return acc;
+  }, {});
+}
+
 export function getSignpostsFromHighlights(highlights: Highlight[], schema: Schema): Signpost[] {
   const nameByClass = schema.classes.reduce<Record<string, string>>((acc, cls) => {
     acc[cls.id] = cls.name;
