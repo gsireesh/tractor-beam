@@ -340,8 +340,9 @@ function DrawerContent({
           }
         }}
       />
-      <div className="flex flex-col h-full overflow-scroll">
+      <div className="flex flex-col h-full min-h-0">
         <Tabs
+          className="flex-col flex-1 min-h-0"
           value={view}
           onValueChange={(v) => {
             setView(v as DrawerView);
@@ -357,10 +358,10 @@ function DrawerContent({
               Semantic Index
             </TabsTrigger>
           </TabsList>
-          <TabsContent value={'schema'}>
+          <TabsContent value={'schema'} className="overflow-scroll flex-1 min-h-0">
             <SchemaViewer schema={activeSchema} dispatch={dispatch} />
           </TabsContent>
-          <TabsContent value={'navigation'}>
+          <TabsContent value={'navigation'} className="overflow-scroll flex-1 min-h-0">
             <InstanceNavigator confirmedSignposts={confirmedSignposts} mlSignposts={mlSignposts} />
           </TabsContent>
         </Tabs>

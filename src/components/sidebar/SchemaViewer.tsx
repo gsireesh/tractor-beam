@@ -32,9 +32,9 @@ export function SchemaViewer({ schema, dispatch }: SchemaViewerProps) {
   };
 
   return (
-    <div className="flex-1 overflow-y-auto min-h-0">
+    <div>
       <ExpandableIconButtonBar
-        className="mb-1"
+        className="mb-1 sticky top-0 z-10"
         items={[
           {
             key: 'add-class',
