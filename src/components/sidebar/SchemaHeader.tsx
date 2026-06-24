@@ -1,19 +1,27 @@
 import { Schema } from '@/lib/definitions.ts';
 import { useEffect, useRef } from 'react';
-import { ArrowLeftRight, EllipsisVerticalIcon, PencilLine, Plus, Trash2 } from 'lucide-react';
+import {
+  ArrowLeftRight,
+  Download,
+  EllipsisVerticalIcon,
+  PencilLine,
+  Plus,
+  Table2,
+  Trash2,
+} from 'lucide-react';
 import { ThemeToggle } from '@/components/sidebar/ThemeToggle.tsx';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSub,
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu.tsx';
 import { IconButton } from '@/components/ui/IconButton.tsx';
+import { DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 
 export function SchemaHeader({
   activeSchema,
@@ -24,6 +32,8 @@ export function SchemaHeader({
   onSwitch,
   onNew,
   onDelete,
+  onOpenManager,
+  onExport,
 }: {
   activeSchema: Schema | null;
   schemas: Schema[];
@@ -33,6 +43,8 @@ export function SchemaHeader({
   onSwitch: (id: string) => void;
   onNew: () => void;
   onDelete: () => void;
+  onOpenManager: () => void;
+  onExport: () => void;
 }) {
   const titleRef = useRef<HTMLDivElement>(null);
 
@@ -87,7 +99,6 @@ export function SchemaHeader({
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuGroup>
-              <DropdownMenuLabel>Schema Actions</DropdownMenuLabel>
               <DropdownMenuItem onClick={onNew}>
                 <Plus strokeWidth={1} size="1em" />
                 New Schema
@@ -110,8 +121,19 @@ export function SchemaHeader({
                 Delete Schema
               </DropdownMenuItem>
             </DropdownMenuGroup>
+            <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuLabel>Theme</DropdownMenuLabel>
+              <DropdownMenuItem onClick={onOpenManager}>
+                <Table2 strokeWidth={1} size={'1em'} />
+                Open Schema Manager
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={onExport}>
+                <Download strokeWidth={1} size="1em" />
+                Export Data
+              </DropdownMenuItem>
+            </DropdownMenuGroup>
+            <DropdownMenuSeparator />
+            <DropdownMenuGroup>
               <DropdownMenuItem>
                 <ThemeToggle />
               </DropdownMenuItem>

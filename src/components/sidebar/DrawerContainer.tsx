@@ -12,7 +12,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Layers2Icon, SignpostIcon } from 'lucide-react';
 import { SchemaViewer } from '@/components/sidebar/SchemaViewer.tsx';
-import { rebuildState, storeMlAnnotationRun } from '@/lib/schema-storage';
+import { createSnapshot, rebuildState, storeMlAnnotationRun } from '@/lib/schema-storage';
 import { APP_CONFIG } from '@/app-config';
 import { Schema } from '@/lib/definitions';
 import { schemasReducer } from '@/lib/schema-reducer';
@@ -45,6 +45,8 @@ import {
   registerDrawerContent,
   syncProvisionalHighlights,
 } from '@/entrypoints/pdfjs-additions/drawer-host';
+import { ExportOptions, exportSchema } from '@/lib/export.ts';
+import { ExportModal } from '@/components/export/ExportModal.tsx';
 
 const DRAWER_WIDTH = 380;
 
@@ -159,10 +161,19 @@ function DrawerContent({
     message: '',
   });
 
+  const [exportOpen, setExportOpen] = useState(false);
+  // Bookmark the complete schema, then download the (possibly filtered) view.
+  const handleExport = (opts: ExportOptions) => {
+    createSnapshot(APP_CONFIG.indexedDBConfig, activeSchema).catch((e) =>
+      console.error('[export] snapshot failed', e),
+    );
+    exportSchema(activeSchema, opts);
+  };
+
   const viewerParams = new URLSearchParams(window.location.search);
   const pdfUrl = viewerParams.get('file') ?? '';
   // A deep link (?schema=…&instance=…) preselects the schema so the target
-  // instance's highlight is among confirmedHighlights below. Otherwise we restore
+  // instance's highlight is among confirmedHighlights below. Otherwise, we restore
   // this document's saved schema, falling back to the last-used / first schema.
   const [activeSchemaId, setActiveSchemaId] = useState<string>(() =>
     resolveInitialSchemaId(viewerParams.get('schema'), schemas, initialUiState, pdfUrl),
@@ -339,6 +350,22 @@ function DrawerContent({
             setTitleEditing(true);
           }
         }}
+        onOpenManager={() => {
+          void browser.runtime.sendMessage({
+            type: 'openSchemaManager',
+            schemaId: activeSchema.id,
+          });
+        }}
+        onExport={() => {
+          setExportOpen(true);
+        }}
+      />
+      <ExportModal
+        open={exportOpen}
+        schema={activeSchema}
+        container={document.getElementById('tractor-beam-drawer-root')}
+        onClose={() => setExportOpen(false)}
+        onExport={handleExport}
       />
       <div className="flex flex-col h-full min-h-0">
         <Tabs

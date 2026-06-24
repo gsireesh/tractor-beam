@@ -9,13 +9,14 @@ interface IconButtonProps {
   disabled?: boolean;
   color?: string | null;
   size?: 'icon' | 'icon-xs' | 'icon-sm' | 'icon-lg';
+  strokeWidth?: number;
 }
 
 export function IconButton(props: IconButtonProps) {
-  const { onClick, title, icon: Icon, color, size } = props;
+  const { onClick, title, icon: Icon, color, size, strokeWidth } = props;
   return (
     <Button variant="ghost" size={size} title={title} onClick={onClick}>
-      <Icon strokeWidth={1} color={color ?? 'currentColor'} />
+      <Icon strokeWidth={strokeWidth ?? 1} color={color ?? 'currentColor'} />
     </Button>
   );
 }
