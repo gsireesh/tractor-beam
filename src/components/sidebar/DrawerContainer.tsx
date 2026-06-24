@@ -47,6 +47,7 @@ import {
 } from '@/entrypoints/pdfjs-additions/drawer-host';
 import { ExportOptions, exportSchema } from '@/lib/export.ts';
 import { ExportModal } from '@/components/export/ExportModal.tsx';
+import { ModelConfigurationModal } from '@/components/model-configuration/ModelConfigurationModal.tsx';
 
 const DRAWER_WIDTH = 380;
 

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { MlProgressMessage } from '@/lib/messaging/message_definitions.ts';
 
 import { Progress } from '@/components/ui/progress.tsx';
@@ -34,6 +34,7 @@ import {
 } from '@/lib/config-storage.ts';
 import { useDrawerContext } from '@/contexts/DrawerContext.tsx';
 import { IconButton } from '@/components/ui/IconButton.tsx';
+import { ModelConfigurationModal } from '@/components/model-configuration/ModelConfigurationModal.tsx';
 
 export interface ModelControlsProps {
   status: MlProgressMessage['stage'];
@@ -50,12 +51,15 @@ const STATUS_MAP: Record<string, string> = {
 
 export function ModelControls({ status, progress, message }: ModelControlsProps) {
   const { activeSchema, pdfUrl } = useDrawerContext();
+  const [modelConfigOpen, setModelConfigOpen] = useState(false);
   const [currentRequestId, setCurrentRequestId] = useState<string | null>(null);
   const [config, setLocalConfig] = useState<Partial<ModelConfig>>({});
   const [apiKey, setApiKey] = useState('');
   const [apiKeySaved, setApiKeySaved] = useState(false);
   const [ollamaUrl, setOllamaUrl] = useState(DEFAULT_OLLAMA_BASE_URL);
   const [ollamaUrlSaved, setOllamaUrlSaved] = useState(false);
+  const drawerRoot = useMemo(() => document.getElementById('tractor-beam-drawer-root'), []);
+
   const isRunning = status === 'running' && progress < 1;
 
   useEffect(() => {
@@ -110,73 +114,74 @@ export function ModelControls({ status, progress, message }: ModelControlsProps)
     <div className="border-t-2 border-blue-500 p-2 m-0 shadow-[0px_-4px_6px_-1px_rgba(0,0,0,0.1)]">
       <div className="flex items-center justify-between">
         <h1 className="font-semibold">Model Control Panel</h1>
-        <DropdownMenu>
-          <DropdownMenuTrigger>
-            <IconButton icon={Settings} title="Model Settings" />
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-64 z-[10001]">
-            <DropdownMenuLabel>Provider</DropdownMenuLabel>
-            <DropdownMenuRadioGroup
-              value={config.provider ?? 'webllm'}
-              onValueChange={(v) => updateConfig({ provider: v as ModelProvider })}
-            >
-              <DropdownMenuRadioItem value="webllm">WebLLM (local)</DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="claude">Claude API</DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="ollama">Ollama (local)</DropdownMenuRadioItem>
-            </DropdownMenuRadioGroup>
-            <DropdownMenuSeparator />
-            <DropdownMenuLabel>Model</DropdownMenuLabel>
-            <DropdownMenuSub>
-              <DropdownMenuSubTrigger>{currentModel ?? 'Select model...'}</DropdownMenuSubTrigger>
-              {/* Portal into the themed drawer root: without a container Radix
-                  portals to document.body, outside #tractor-beam-drawer-root's
-                  .tractor-beam-themed scope, so --popover is undefined and the
-                  submenu renders transparent. */}
-              <DropdownMenuPortal container={document.getElementById('tractor-beam-drawer-root')}>
-                <DropdownMenuSubContent className="z-[10002]">
-                  {config.provider === 'claude' ? (
-                    <DropdownMenuRadioGroup
-                      value={config.claudeModel ?? ''}
-                      onValueChange={(v) =>
-                        updateConfig({ claudeModel: v as (typeof CLAUDE_MODELS)[number] })
-                      }
-                    >
-                      {CLAUDE_MODELS.map((m) => (
-                        <DropdownMenuRadioItem key={m} value={m}>
-                          {m}
-                        </DropdownMenuRadioItem>
-                      ))}
-                    </DropdownMenuRadioGroup>
-                  ) : config.provider === 'ollama' ? (
-                    <DropdownMenuRadioGroup
-                      value={config.ollamaModel ?? ''}
-                      onValueChange={(v) => updateConfig({ ollamaModel: v })}
-                    >
-                      {OLLAMA_MODELS.map((m) => (
-                        <DropdownMenuRadioItem key={m} value={m}>
-                          {m}
-                        </DropdownMenuRadioItem>
-                      ))}
-                    </DropdownMenuRadioGroup>
-                  ) : (
-                    <DropdownMenuRadioGroup
-                      value={config.webllmModel ?? ''}
-                      onValueChange={(v) =>
-                        updateConfig({ webllmModel: v as (typeof WEBLLM_MODELS)[number] })
-                      }
-                    >
-                      {WEBLLM_MODELS.map((m) => (
-                        <DropdownMenuRadioItem key={m} value={m}>
-                          {m}
-                        </DropdownMenuRadioItem>
-                      ))}
-                    </DropdownMenuRadioGroup>
-                  )}
-                </DropdownMenuSubContent>
-              </DropdownMenuPortal>
-            </DropdownMenuSub>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <ModelConfigurationModal container={drawerRoot} />
+        {/*<DropdownMenu>*/}
+        {/*  <DropdownMenuTrigger>*/}
+        {/*    <IconButton icon={Settings} title="Model Settings" />*/}
+        {/*  </DropdownMenuTrigger>*/}
+        {/*  <DropdownMenuContent align="end" className="w-64 z-[10001]">*/}
+        {/*    <DropdownMenuLabel>Provider</DropdownMenuLabel>*/}
+        {/*    <DropdownMenuRadioGroup*/}
+        {/*      value={config.provider ?? 'webllm'}*/}
+        {/*      onValueChange={(v) => updateConfig({ provider: v as ModelProvider })}*/}
+        {/*    >*/}
+        {/*      <DropdownMenuRadioItem value="webllm">WebLLM (local)</DropdownMenuRadioItem>*/}
+        {/*      <DropdownMenuRadioItem value="claude">Claude API</DropdownMenuRadioItem>*/}
+        {/*      <DropdownMenuRadioItem value="ollama">Ollama (local)</DropdownMenuRadioItem>*/}
+        {/*    </DropdownMenuRadioGroup>*/}
+        {/*    <DropdownMenuSeparator />*/}
+        {/*    <DropdownMenuLabel>Model</DropdownMenuLabel>*/}
+        {/*    <DropdownMenuSub>*/}
+        {/*      <DropdownMenuSubTrigger>{currentModel ?? 'Select model...'}</DropdownMenuSubTrigger>*/}
+        {/*      /!* Portal into the themed drawer root: without a container Radix*/}
+        {/*          portals to document.body, outside #tractor-beam-drawer-root's*/}
+        {/*          .tractor-beam-themed scope, so --popover is undefined and the*/}
+        {/*          submenu renders transparent. *!/*/}
+        {/*      <DropdownMenuPortal container={document.getElementById('tractor-beam-drawer-root')}>*/}
+        {/*        <DropdownMenuSubContent className="z-[10002]">*/}
+        {/*          {config.provider === 'claude' ? (*/}
+        {/*            <DropdownMenuRadioGroup*/}
+        {/*              value={config.claudeModel ?? ''}*/}
+        {/*              onValueChange={(v) =>*/}
+        {/*                updateConfig({ claudeModel: v as (typeof CLAUDE_MODELS)[number] })*/}
+        {/*              }*/}
+        {/*            >*/}
+        {/*              {CLAUDE_MODELS.map((m) => (*/}
+        {/*                <DropdownMenuRadioItem key={m} value={m}>*/}
+        {/*                  {m}*/}
+        {/*                </DropdownMenuRadioItem>*/}
+        {/*              ))}*/}
+        {/*            </DropdownMenuRadioGroup>*/}
+        {/*          ) : config.provider === 'ollama' ? (*/}
+        {/*            <DropdownMenuRadioGroup*/}
+        {/*              value={config.ollamaModel ?? ''}*/}
+        {/*              onValueChange={(v) => updateConfig({ ollamaModel: v })}*/}
+        {/*            >*/}
+        {/*              {OLLAMA_MODELS.map((m) => (*/}
+        {/*                <DropdownMenuRadioItem key={m} value={m}>*/}
+        {/*                  {m}*/}
+        {/*                </DropdownMenuRadioItem>*/}
+        {/*              ))}*/}
+        {/*            </DropdownMenuRadioGroup>*/}
+        {/*          ) : (*/}
+        {/*            <DropdownMenuRadioGroup*/}
+        {/*              value={config.webllmModel ?? ''}*/}
+        {/*              onValueChange={(v) =>*/}
+        {/*                updateConfig({ webllmModel: v as (typeof WEBLLM_MODELS)[number] })*/}
+        {/*              }*/}
+        {/*            >*/}
+        {/*              {WEBLLM_MODELS.map((m) => (*/}
+        {/*                <DropdownMenuRadioItem key={m} value={m}>*/}
+        {/*                  {m}*/}
+        {/*                </DropdownMenuRadioItem>*/}
+        {/*              ))}*/}
+        {/*            </DropdownMenuRadioGroup>*/}
+        {/*          )}*/}
+        {/*        </DropdownMenuSubContent>*/}
+        {/*      </DropdownMenuPortal>*/}
+        {/*    </DropdownMenuSub>*/}
+        {/*  </DropdownMenuContent>*/}
+        {/*</DropdownMenu>*/}
       </div>
       {config.provider === 'claude' && (
         <div className="flex items-center gap-1 mt-1">
