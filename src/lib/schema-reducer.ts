@@ -24,7 +24,7 @@ export function schemasReducer(draft: Schema[], action: SchemaAction) {
     case 'addClass': {
       const schema = draft.find((s) => s.id == action.schemaId);
       if (schema) {
-        schema.classes.push(action.classInfo);
+        schema.classes.unshift(action.classInfo);
       }
       return;
     }
