@@ -27,7 +27,9 @@ export const Default: Story = () => {
       }}
     >
       <Frame>
-        <SchemaViewer schema={schema} dispatch={dispatch} />
+        <div className="overflow-scroll">
+          <SchemaViewer schema={schema} dispatch={dispatch} />
+        </div>
       </Frame>
     </DrawerContext.Provider>
   );
