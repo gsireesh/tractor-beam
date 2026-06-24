@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Monitor, Moon, Sun } from 'lucide-react';
-import { IconButton } from '@/components/ui/IconButton.tsx';
+import { DropdownMenuItem } from '@/components/ui/dropdown-menu.tsx';
 import {
   type ThemePreference,
   getThemePreference,
@@ -9,10 +9,10 @@ import {
 } from '@/lib/config-storage.ts';
 
 /**
- * Cycles the color-theme preference system → light → dark. It only *writes* the
- * preference; applying the `.dark` class to surface roots is syncTheme's job (it
- * reacts to the same storage write), so this control works identically wherever
- * it's mounted. Stays in sync if the preference is changed on another page.
+ * A schema-actions menu row that cycles the color-theme preference
+ * system → light → dark. It only *writes* the preference; applying the `.dark`
+ * class to surface roots is syncTheme's job (it reacts to the same storage
+ * write). Stays in sync if the preference is changed on another page.
  */
 const NEXT: Record<ThemePreference, ThemePreference> = {
   system: 'light',
@@ -32,11 +32,7 @@ const LABEL: Record<ThemePreference, string> = {
   dark: 'Dark Mode',
 };
 
-export function ThemeToggle({
-  size = 'icon-sm',
-}: {
-  size?: 'icon' | 'icon-xs' | 'icon-sm' | 'icon-lg';
-}) {
+export function ThemeToggle() {
   const [pref, setPref] = useState<ThemePreference>('system');
 
   useEffect(() => {
@@ -44,16 +40,19 @@ export function ThemeToggle({
     return onUiStateChange((state) => setPref(state.themePreference));
   }, []);
 
+  const Icon = ICON[pref];
+
   return (
-    <div
-      onClick={() => {
-        const next = NEXT[pref];
-        setPref(next); // optimistic; onUiStateChange reconciles
-        void setThemePreference(next);
+    <DropdownMenuItem
+      onSelect={(event) => {
+        const nextTheme = NEXT[pref];
+        setPref(nextTheme);
+        void setThemePreference(nextTheme);
+        event.preventDefault();
       }}
     >
-      <IconButton title={`${LABEL[pref]} (click to change)`} icon={ICON[pref]} size={size} />
+      <Icon strokeWidth={1} size="1em" />
       {LABEL[pref]}
-    </div>
+    </DropdownMenuItem>
   );
 }

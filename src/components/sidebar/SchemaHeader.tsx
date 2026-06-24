@@ -134,9 +134,7 @@ export function SchemaHeader({
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <ThemeToggle />
-              </DropdownMenuItem>
+              <ThemeToggle />
             </DropdownMenuGroup>
           </DropdownMenuContent>
         </DropdownMenu>

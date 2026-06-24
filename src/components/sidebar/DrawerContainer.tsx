@@ -162,13 +162,8 @@ function DrawerContent({
   });
 
   const [exportOpen, setExportOpen] = useState(false);
-  // Bookmark the complete schema, then download the (possibly filtered) view.
-  const handleExport = (opts: ExportOptions) => {
-    createSnapshot(APP_CONFIG.indexedDBConfig, activeSchema).catch((e) =>
-      console.error('[export] snapshot failed', e),
-    );
-    exportSchema(activeSchema, opts);
-  };
+  // The drawer root is a stable singleton; resolve it once rather than on every render.
+  const drawerRoot = useMemo(() => document.getElementById('tractor-beam-drawer-root'), []);
 
   const viewerParams = new URLSearchParams(window.location.search);
   const pdfUrl = viewerParams.get('file') ?? '';
@@ -179,6 +174,18 @@ function DrawerContent({
     resolveInitialSchemaId(viewerParams.get('schema'), schemas, initialUiState, pdfUrl),
   );
   const activeSchema = schemas.find((s) => s.id === activeSchemaId) ?? schemas[0];
+
+  // Bookmark the complete schema, then download the (possibly filtered) view.
+  const handleExport = useCallback(
+    (opts: ExportOptions) => {
+      if (!activeSchema) return;
+      createSnapshot(APP_CONFIG.indexedDBConfig, activeSchema).catch((e) =>
+        console.error('[export] snapshot failed', e),
+      );
+      exportSchema(activeSchema, opts);
+    },
+    [activeSchema],
+  );
 
   // Restore which tab this document was last on (Schema Editor vs. Semantic Index).
   const [view, setView] = useState<DrawerView>(initialUiState.documents[pdfUrl]?.view ?? 'schema');
@@ -351,19 +358,21 @@ function DrawerContent({
           }
         }}
         onOpenManager={() => {
+          if (!activeSchema) return;
           void browser.runtime.sendMessage({
             type: 'openSchemaManager',
             schemaId: activeSchema.id,
           });
         }}
         onExport={() => {
+          if (!activeSchema) return;
           setExportOpen(true);
         }}
       />
       <ExportModal
         open={exportOpen}
-        schema={activeSchema}
-        container={document.getElementById('tractor-beam-drawer-root')}
+        schema={activeSchema ?? null}
+        container={drawerRoot}
         onClose={() => setExportOpen(false)}
         onExport={handleExport}
       />
