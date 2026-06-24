@@ -18,7 +18,7 @@ export function SchemaViewer({ schema, dispatch }: SchemaViewerProps) {
 
   return (
     <div>
-      <div>
+      <div className="flex justify-end">
         <IconButton
           title="Add Class"
           icon={ListPlus}
