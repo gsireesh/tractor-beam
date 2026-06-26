@@ -1,6 +1,41 @@
 import type { ChatMessage } from './webllm-runner';
 import type { ProgressCallback } from './types';
-import { DEFAULT_CLAUDE_MODEL } from './types';
+import { CLAUDE_MODELS, DEFAULT_CLAUDE_MODEL } from './types';
+
+/** Reasoning-effort levels accepted by current Claude models. */
+export type EffortLevel = 'low' | 'medium' | 'high' | 'xhigh' | 'max';
+
+/**
+ * Tunable parameters for Anthropic models. Current Claude models reject
+ * temperature/top_p (HTTP 400), so the knobs here are reasoning effort and the
+ * max output-token cap — not the OpenAI-style sampling params.
+ */
+export interface AnthropicParams {
+  effort?: EffortLevel;
+  maxTokens?: number;
+}
+
+/** Anthropic provider configuration block (composed into ModelConfig). */
+export interface AnthropicConfig {
+  apiKey: string | null;
+  baseUrl: string;
+  model: string;
+  params: AnthropicParams;
+}
+
+/**
+ * Selectable Anthropic models — fallback list for when the live /v1/models
+ * fetch is unavailable. Aliased from the legacy CLAUDE_MODELS during the
+ * refactor; will be defined here outright once ModelControls is ported off it.
+ */
+export const ANTHROPIC_MODELS = CLAUDE_MODELS;
+
+export const DEFAULT_ANTHROPIC_CONFIG: AnthropicConfig = {
+  apiKey: null,
+  baseUrl: 'https://api.anthropic.com',
+  model: DEFAULT_CLAUDE_MODEL,
+  params: { maxTokens: 1024 },
+};
 
 export class ClaudeRunner {
   private apiKey: string | null = null;

@@ -120,7 +120,9 @@ async function handleAnnotationPipeline(task: RunAnnotationPipelineMessage) {
 
     const processBlock = async (block: (typeof processableBlocks)[number]) => {
       const messages: ChatMessage[] = [
-        { role: 'system', content: systemPrompt, cache_control: { type: 'ephemeral' } },
+        // Prompt-cache breakpoints are applied inside claude-runner when it
+        // builds the Anthropic request — not set here on the neutral message.
+        { role: 'system', content: systemPrompt },
         { role: 'user', content: block.text },
       ];
       const result = await runner.run(messages, task.requestId);

@@ -16,6 +16,7 @@
     "postinstall": "wxt prepare"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.106.0",
     "@base-ui/react": "^1.4.1",
     "@huggingface/transformers": "^3.8.1",
     "@mlc-ai/web-llm": "^0.2.82",
@@ -29,6 +30,7 @@
     "immer": "^10.1.1",
     "lucide-react": "^1.7.0",
     "ollama": "^0.6.3",
+    "openai": "^6.45.0",
     "radix-ui": "^1.4.3",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",

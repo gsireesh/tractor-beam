@@ -1,11 +1,31 @@
 import { CreateMLCEngine, type MLCEngine } from '@mlc-ai/web-llm';
-import { DEFAULT_WEBLLM_MODEL, type ProgressCallback, type WebLlmModelId } from './types';
+import {
+  type ChatMessage,
+  DEFAULT_WEBLLM_MODEL,
+  type ProgressCallback,
+  type WebLlmModelId,
+} from './types';
 
-export interface ChatMessage {
-  role: 'system' | 'user' | 'assistant';
-  content: string;
-  cache_control?: { type: string };
+// ChatMessage now lives in ./types (shared primitive). Re-exported here so the
+// existing `from './webllm-runner'` importers keep working during the refactor.
+export type { ChatMessage };
+
+/** Tunable generation parameters for the in-browser WebLLM runner. */
+export interface WebLlmParams {
+  temperature?: number;
+  maxTokens?: number;
 }
+
+/** WebLLM provider configuration block (composed into ModelConfig). */
+export interface WebLlmConfig {
+  model: WebLlmModelId;
+  params: WebLlmParams;
+}
+
+export const DEFAULT_WEBLLM_CONFIG: WebLlmConfig = {
+  model: DEFAULT_WEBLLM_MODEL,
+  params: { maxTokens: 1024 },
+};
 
 export class WebLlmRunner {
   private engine: MLCEngine | null = null;
