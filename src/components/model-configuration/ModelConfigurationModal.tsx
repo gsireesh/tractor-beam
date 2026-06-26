@@ -8,7 +8,7 @@ interface ModelConfigProps {
   container?: HTMLElement | null;
 }
 
-export function ModelConfigurationModal({ open, container, onClose }: ModelConfigProps) {
+export function ModelConfigurationModal({ container }: ModelConfigProps) {
   return (
     <Dialog>
       <DialogTrigger asChild>

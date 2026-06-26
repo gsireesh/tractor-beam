@@ -51,7 +51,6 @@ const STATUS_MAP: Record<string, string> = {
 
 export function ModelControls({ status, progress, message }: ModelControlsProps) {
   const { activeSchema, pdfUrl } = useDrawerContext();
-  const [modelConfigOpen, setModelConfigOpen] = useState(false);
   const [currentRequestId, setCurrentRequestId] = useState<string | null>(null);
   const [config, setLocalConfig] = useState<Partial<ModelConfig>>({});
   const [apiKey, setApiKey] = useState('');
