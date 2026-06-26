@@ -19,7 +19,6 @@ export interface AnthropicParams {
 export interface AnthropicConfig {
   apiKey: string | null;
   baseUrl: string;
-  model: string;
   params: AnthropicParams;
 }
 
@@ -30,10 +29,12 @@ export interface AnthropicConfig {
  */
 export const ANTHROPIC_MODELS = CLAUDE_MODELS;
 
+/** Default model used to seed a fresh Anthropic selection. */
+export const DEFAULT_ANTHROPIC_MODEL = DEFAULT_CLAUDE_MODEL;
+
 export const DEFAULT_ANTHROPIC_CONFIG: AnthropicConfig = {
   apiKey: null,
   baseUrl: 'https://api.anthropic.com',
-  model: DEFAULT_CLAUDE_MODEL,
   params: { maxTokens: 1024 },
 };
 

@@ -1,9 +1,10 @@
 import {
   DEFAULT_MODEL_CONFIG as DEFAULT_LEGACY_MODEL_CONFIG,
+  DEFAULT_WEBLLM_MODEL,
   type ModelConfig as LegacyModelConfig,
 } from './ml/types';
-import { DEFAULT_MODEL_CONFIG, type ModelConfig } from './ml/model-config';
-import { DEFAULT_ANTHROPIC_CONFIG } from '@/lib/ml/claude-runner.ts';
+import { DEFAULT_MODEL_CONFIG, type ModelConfig, type ModelSelection } from './ml/model-config';
+import { DEFAULT_ANTHROPIC_CONFIG, DEFAULT_ANTHROPIC_MODEL } from '@/lib/ml/claude-runner.ts';
 import { DEFAULT_WEBLLM_CONFIG } from '@/lib/ml/webllm-runner.ts';
 import { DEFAULT_OPENAI_CONFIG } from '@/lib/ml/openai-runner.ts';
 
@@ -117,7 +118,7 @@ export async function setModelConfig(config: Partial<LegacyModelConfig>): Promis
 /** Fill any missing block or field of a (possibly partial) new-shape config from defaults. */
 function withDefaults(stored: Partial<ModelConfig>): ModelConfig {
   return {
-    provider: stored.provider ?? DEFAULT_MODEL_CONFIG.provider,
+    selected: { ...DEFAULT_MODEL_CONFIG.selected, ...stored.selected },
     anthropic: {
       ...DEFAULT_MODEL_CONFIG.anthropic,
       ...stored.anthropic,
@@ -161,19 +162,17 @@ function migrateLegacyModelConfig(
   legacy: Partial<LegacyModelConfig>,
   legacyApiKey: string | null,
 ): ModelConfig {
-  const provider =
-    legacy.provider == null || ['claude', 'ollama'].includes(legacy.provider)
-      ? 'anthropic'
-      : 'webllm';
+  // Model-first selection. Only an explicit WebLLM user stays local; Claude,
+  // Ollama, and missing all map to Anthropic (Ollama is gone — nothing to carry).
+  const selected: ModelSelection =
+    legacy.provider === 'webllm'
+      ? { provider: 'webllm', model: legacy.webllmModel ?? DEFAULT_WEBLLM_MODEL }
+      : { provider: 'anthropic', model: legacy.claudeModel ?? DEFAULT_ANTHROPIC_MODEL };
   return {
-    provider,
-    anthropic: {
-      ...DEFAULT_ANTHROPIC_CONFIG,
-      apiKey: legacyApiKey,
-      model: legacy.claudeModel ?? DEFAULT_ANTHROPIC_CONFIG.model,
-    },
-    webllm: { ...DEFAULT_WEBLLM_CONFIG, model: legacy.webllmModel ?? DEFAULT_WEBLLM_CONFIG.model },
+    selected,
+    anthropic: { ...DEFAULT_ANTHROPIC_CONFIG, apiKey: legacyApiKey },
     openai: { ...DEFAULT_OPENAI_CONFIG },
+    webllm: { ...DEFAULT_WEBLLM_CONFIG },
   };
 }
 

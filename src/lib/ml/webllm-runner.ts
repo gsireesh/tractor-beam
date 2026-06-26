@@ -21,14 +21,15 @@ export interface WebLlmParams {
   maxTokens?: number;
 }
 
-/** WebLLM provider configuration block (composed into ModelConfig). */
+/**
+ * WebLLM provider config block (composed into ModelConfig). Local, so no
+ * key/URL — just generation params; the active model lives in ModelConfig.selected.
+ */
 export interface WebLlmConfig {
-  model: WebLlmModelId;
   params: WebLlmParams;
 }
 
 export const DEFAULT_WEBLLM_CONFIG: WebLlmConfig = {
-  model: DEFAULT_WEBLLM_MODEL,
   params: { maxTokens: 1024 },
 };
 

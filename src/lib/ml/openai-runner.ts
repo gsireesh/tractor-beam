@@ -22,13 +22,11 @@ export interface OpenAiParams {
 export interface OpenAiConfig {
   apiKey: string | null;
   baseUrl: string;
-  model: string;
   params: OpenAiParams;
 }
 
 export const DEFAULT_OPENAI_CONFIG: OpenAiConfig = {
   apiKey: null,
   baseUrl: '',
-  model: '',
   params: { maxTokens: 1024 },
 };

@@ -3,19 +3,19 @@ import { coerceModelConfig } from '@/lib/config-storage.ts';
 import { DEFAULT_MODEL_CONFIG } from '@/lib/ml/model-config.ts';
 
 // `coerceModelConfig` is the heal-on-read entry point for model config. Given
-// whatever sits under the `modelConfig` storage key — the new per-provider
-// shape, the legacy flat shape, or nothing — plus the value read from the
-// legacy top-level `claudeApiKey` key, it returns a valid new-shape ModelConfig.
-// It is pure, so we exercise it with literal inputs rather than mocking
-// chrome.storage.
+// whatever sits under the `modelConfig` storage key — the new shape, the legacy
+// flat shape, or nothing — plus the value read from the legacy `claudeApiKey`
+// key, it returns a valid new-shape ModelConfig. Pure, so we exercise it with
+// literal inputs rather than mocking chrome.storage.
 //
-// The legacy fixtures mirror the real on-disk shape that shipped to users:
-//   { provider, webllmModel, claudeModel, ollamaModel }
-// with credentials stored separately under `claudeApiKey` / `ollamaBaseUrl`.
+// New shape: provider connection blocks (anthropic/openai/webllm, no model) plus
+// a top-level model-first `selected: { provider, model }`. Legacy fixtures mirror
+// the real on-disk shape that shipped: { provider, webllmModel, claudeModel,
+// ollamaModel }, with the API key under a separate `claudeApiKey` key.
 
 describe('coerceModelConfig', () => {
-  describe('legacy flat config → per-provider shape', () => {
-    it('maps a Claude user onto the anthropic block, folding in the separate API key', () => {
+  describe('legacy flat config → selection + provider blocks', () => {
+    it('maps a Claude user to an anthropic selection, folding in the separate API key', () => {
       const legacy = {
         provider: 'claude',
         webllmModel: 'Qwen2.5-3B-Instruct-q4f16_1-MLC',
@@ -24,12 +24,11 @@ describe('coerceModelConfig', () => {
       };
       const config = coerceModelConfig(legacy, 'sk-ant-test-key');
 
-      expect(config.provider).toBe('anthropic');
+      expect(config.selected).toEqual({ provider: 'anthropic', model: 'claude-opus-4-7' });
       expect(config.anthropic.apiKey).toBe('sk-ant-test-key');
-      expect(config.anthropic.model).toBe('claude-opus-4-7');
     });
 
-    it('maps an Ollama user onto anthropic and drops Ollama settings entirely', () => {
+    it('maps an Ollama user to an anthropic selection and drops Ollama settings', () => {
       const legacy = {
         provider: 'ollama',
         webllmModel: 'Qwen2.5-3B-Instruct-q4f16_1-MLC',
@@ -38,12 +37,9 @@ describe('coerceModelConfig', () => {
       };
       const config = coerceModelConfig(legacy, null);
 
-      // Ollama is gone. Rather than the local default, these users land on
-      // Anthropic — and since they had no Claude key stored, apiKey heals to
-      // null (they'll be prompted to add one).
-      expect(config.provider).toBe('anthropic');
+      // Ollama is gone: these users land on Anthropic with no key stored yet.
+      expect(config.selected.provider).toBe('anthropic');
       expect(config.anthropic.apiKey).toBeNull();
-      // The openai block stays at defaults — nothing from ollamaModel leaks in.
       expect(config.openai).toEqual(DEFAULT_MODEL_CONFIG.openai);
     });
 
@@ -56,13 +52,18 @@ describe('coerceModelConfig', () => {
       };
       const config = coerceModelConfig(legacy, null);
 
-      expect(config.provider).toBe('webllm');
-      expect(config.webllm.model).toBe('Phi-3.5-mini-instruct-q4f16_1-MLC');
+      expect(config.selected).toEqual({
+        provider: 'webllm',
+        model: 'Phi-3.5-mini-instruct-q4f16_1-MLC',
+      });
     });
 
-    it('leaves anthropic.apiKey null when no legacy key was stored', () => {
-      const legacy = { provider: 'claude', claudeModel: 'claude-sonnet-4-6' };
+    it('falls back to the default model when the legacy block had none', () => {
+      const legacy = { provider: 'claude' };
       const config = coerceModelConfig(legacy, null);
+
+      expect(config.selected.provider).toBe('anthropic');
+      expect(config.selected.model).toBe(DEFAULT_MODEL_CONFIG.selected.model);
       expect(config.anthropic.apiKey).toBeNull();
     });
   });
@@ -70,18 +71,17 @@ describe('coerceModelConfig', () => {
   describe('already new-shape config', () => {
     it('returns it intact, healing any missing block from defaults', () => {
       const stored = {
-        provider: 'anthropic' as const,
+        selected: { provider: 'anthropic' as const, model: 'claude-opus-4-8' },
         anthropic: {
           apiKey: 'sk-ant-existing',
           baseUrl: 'https://proxy.example.com',
-          model: 'claude-opus-4-8',
           params: { effort: 'high' as const, maxTokens: 2048 },
         },
-        // openai + webllm blocks omitted — should be filled from defaults.
+        // openai + webllm blocks omitted — filled from defaults.
       };
       const config = coerceModelConfig(stored, null);
 
-      expect(config.provider).toBe('anthropic');
+      expect(config.selected).toEqual({ provider: 'anthropic', model: 'claude-opus-4-8' });
       expect(config.anthropic.baseUrl).toBe('https://proxy.example.com');
       expect(config.anthropic.params.maxTokens).toBe(2048);
       expect(config.openai).toEqual(DEFAULT_MODEL_CONFIG.openai);
