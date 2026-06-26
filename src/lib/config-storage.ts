@@ -1,4 +1,11 @@
-import { DEFAULT_MODEL_CONFIG, MODEL_CONFIG_KEY, type ModelConfig } from './ml/types';
+import {
+  DEFAULT_MODEL_CONFIG as DEFAULT_LEGACY_MODEL_CONFIG,
+  type ModelConfig as LegacyModelConfig,
+} from './ml/types';
+import { DEFAULT_MODEL_CONFIG, type ModelConfig } from './ml/model-config';
+import { DEFAULT_ANTHROPIC_CONFIG } from '@/lib/ml/claude-runner.ts';
+import { DEFAULT_WEBLLM_CONFIG } from '@/lib/ml/webllm-runner.ts';
+import { DEFAULT_OPENAI_CONFIG } from '@/lib/ml/openai-runner.ts';
 
 /**
  * Single source of truth for everything persisted in chrome.storage.local.
@@ -19,6 +26,7 @@ import { DEFAULT_MODEL_CONFIG, MODEL_CONFIG_KEY, type ModelConfig } from './ml/t
  * {@link updateUiState}, which serializes them on one promise chain.
  */
 
+const MODEL_CONFIG_KEY = 'modelConfig';
 const API_KEY_STORAGE_KEY = 'claudeApiKey';
 const OLLAMA_BASE_URL_KEY = 'ollamaBaseUrl';
 const UI_STATE_KEY = 'uiState';
@@ -78,21 +86,106 @@ const DEFAULT_UI_STATE: UiState = {
 
 // ─── Model config + credentials ───
 
-/** Read model config from chrome.storage.local, merged with defaults. */
-export async function getModelConfig(): Promise<ModelConfig> {
+/**
+ * @deprecated Legacy flat-shape accessor, kept during the expand/contract
+ * migration to the per-provider {@link ModelConfig}. The runtime path still uses
+ * this; consumers move to a {@link coerceModelConfig}-backed read in the contract
+ * step, after which this (and the separate credential accessors below) are removed.
+ */
+export async function getModelConfig(): Promise<LegacyModelConfig> {
   const store = localStore();
-  if (!store) return { ...DEFAULT_MODEL_CONFIG };
+  if (!store) return { ...DEFAULT_LEGACY_MODEL_CONFIG };
   const result = await store.get(MODEL_CONFIG_KEY);
-  const stored = result[MODEL_CONFIG_KEY] as Partial<ModelConfig> | undefined;
-  return { ...DEFAULT_MODEL_CONFIG, ...stored };
+  const stored = result[MODEL_CONFIG_KEY] as Partial<LegacyModelConfig> | undefined;
+  return { ...DEFAULT_LEGACY_MODEL_CONFIG, ...stored };
 }
 
-/** Partial-update model config in chrome.storage.local. */
-export async function setModelConfig(config: Partial<ModelConfig>): Promise<void> {
+/** @deprecated See {@link getModelConfig}. */
+export async function setModelConfig(config: Partial<LegacyModelConfig>): Promise<void> {
   const store = localStore();
   if (!store) return;
   const current = await getModelConfig();
   await store.set({ [MODEL_CONFIG_KEY]: { ...current, ...config } });
+}
+
+// ─── New per-provider model config (expand/contract migration) ───
+//
+// The live pipeline still uses the legacy accessors above. The helpers below
+// produce the new per-provider ModelConfig and are unit-tested in isolation;
+// they become the live read/write path in the contract step.
+
+/** Fill any missing block or field of a (possibly partial) new-shape config from defaults. */
+function withDefaults(stored: Partial<ModelConfig>): ModelConfig {
+  return {
+    provider: stored.provider ?? DEFAULT_MODEL_CONFIG.provider,
+    anthropic: {
+      ...DEFAULT_MODEL_CONFIG.anthropic,
+      ...stored.anthropic,
+      params: { ...DEFAULT_MODEL_CONFIG.anthropic.params, ...stored.anthropic?.params },
+    },
+    openai: {
+      ...DEFAULT_MODEL_CONFIG.openai,
+      ...stored.openai,
+      params: { ...DEFAULT_MODEL_CONFIG.openai.params, ...stored.openai?.params },
+    },
+    webllm: {
+      ...DEFAULT_MODEL_CONFIG.webllm,
+      ...stored.webllm,
+      params: { ...DEFAULT_MODEL_CONFIG.webllm.params, ...stored.webllm?.params },
+    },
+  };
+}
+
+/**
+ * A stored blob is the legacy flat shape iff it has none of the new per-provider
+ * blocks but carries at least one legacy field.
+ */
+function isLegacyModelConfig(stored: object): stored is Partial<LegacyModelConfig> {
+  return (
+    !('anthropic' in stored) &&
+    !('openai' in stored) &&
+    !('webllm' in stored) &&
+    ('provider' in stored ||
+      'claudeModel' in stored ||
+      'ollamaModel' in stored ||
+      'webllmModel' in stored)
+  );
+}
+
+/**
+ * Heal a legacy flat config (plus the legacy top-level `claudeApiKey`) into the
+ * new per-provider ModelConfig. Read-only on the legacy values — non-destructive.
+ * Ollama settings are intentionally dropped (the provider is gone).
+ */
+function migrateLegacyModelConfig(
+  legacy: Partial<LegacyModelConfig>,
+  legacyApiKey: string | null,
+): ModelConfig {
+  const provider =
+    legacy.provider == null || ['claude', 'ollama'].includes(legacy.provider)
+      ? 'anthropic'
+      : 'webllm';
+  return {
+    provider,
+    anthropic: {
+      ...DEFAULT_ANTHROPIC_CONFIG,
+      apiKey: legacyApiKey,
+      model: legacy.claudeModel ?? DEFAULT_ANTHROPIC_CONFIG.model,
+    },
+    webllm: { ...DEFAULT_WEBLLM_CONFIG, model: legacy.webllmModel ?? DEFAULT_WEBLLM_CONFIG.model },
+    openai: { ...DEFAULT_OPENAI_CONFIG },
+  };
+}
+
+/**
+ * Heal whatever is under the `modelConfig` storage key into a valid new-shape
+ * ModelConfig. Pure: pass the stored blob plus the value read from the legacy
+ * `claudeApiKey` key, so this stays unit-testable without chrome.storage.
+ */
+export function coerceModelConfig(stored: unknown, legacyApiKey: string | null): ModelConfig {
+  if (stored === null || typeof stored !== 'object') return withDefaults({});
+  if (isLegacyModelConfig(stored)) return migrateLegacyModelConfig(stored, legacyApiKey);
+  return withDefaults(stored as Partial<ModelConfig>);
 }
 
 /** Read the Claude API key from chrome.storage.local. */

@@ -14,6 +14,12 @@ import { type WebLlmConfig, DEFAULT_WEBLLM_CONFIG } from './webllm-runner';
 /** The active inference backend. */
 export type ModelProvider = 'webllm' | 'anthropic' | 'openai';
 
+export const ModelProviderNameMap: Record<ModelProvider, string> = {
+  webllm: 'Local (webLLM)',
+  anthropic: 'Anthropic Compatible',
+  openai: 'OpenAI Compatible',
+};
+
 /**
  * Full persisted model configuration: one settings block per provider, with
  * `provider` selecting which is active. Each block is the runner's own config
@@ -27,7 +33,7 @@ export interface ModelConfig {
 }
 
 export const DEFAULT_MODEL_CONFIG: ModelConfig = {
-  provider: 'webllm',
+  provider: 'anthropic',
   anthropic: DEFAULT_ANTHROPIC_CONFIG,
   openai: DEFAULT_OPENAI_CONFIG,
   webllm: DEFAULT_WEBLLM_CONFIG,

@@ -67,10 +67,12 @@ export interface ModelConfig {
 }
 
 export const DEFAULT_MODEL_CONFIG: ModelConfig = {
-  provider: 'webllm',
+  provider: 'claude',
   webllmModel: DEFAULT_WEBLLM_MODEL,
   claudeModel: DEFAULT_CLAUDE_MODEL,
   ollamaModel: DEFAULT_OLLAMA_MODEL,
 };
 
-export const MODEL_CONFIG_KEY = 'modelConfig';
+// MODEL_CONFIG_KEY moved to config-storage.ts — it's a storage detail, not part
+// of the config shape. The legacy ModelConfig/DEFAULT_MODEL_CONFIG above remain
+// until their consumers move to the per-provider config in model-config.ts.
