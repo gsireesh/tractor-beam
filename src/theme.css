@@ -54,6 +54,16 @@
      `text-foreground`. */
   color: hsl(var(--foreground));
 
+  /* App-wide default font, pinned on the marker class for the same reason as
+     `color` above: preflight runs on `html` (above this element, or skipped
+     entirely on the scoped pdf.js surfaces), so it never reaches here. Defining
+     `--font-sans` on the marker class overrides Tailwind's default token within
+     every themed subtree — so the `font-sans` utility, the scoped surfaces'
+     `var(--font-sans)`, and this declaration all resolve to one value — without
+     leaking the variable onto the host pdf.js page (`:root`). */
+  --font-sans: 'IBM Plex Sans', sans-serif;
+  font-family: var(--font-sans);
+
   --background: 0 0% 100%;
   --foreground: 0 0% 3.9%;
   --card: 0 0% 100%;

@@ -32,9 +32,18 @@
       line-height: 1.5;
       -webkit-text-size-adjust: 100%;
       tab-size: 4;
-      font-family:
-        ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+      /* Read the shared font token (theme.css). The system stack is the
+         fallback for any context where the token isn't defined. */
+      font-family: var(
+        --font-sans,
+        ui-sans-serif,
+        system-ui,
+        sans-serif,
+        'Apple Color Emoji',
+        'Segoe UI Emoji',
+        'Segoe UI Symbol',
+        'Noto Color Emoji'
+      );
       -webkit-tap-highlight-color: transparent;
     }
 
@@ -154,10 +163,9 @@
   z-index: 10000;
   display: flex;
   flex-direction: column;
-  font-family:
-    system-ui,
-    -apple-system,
-    sans-serif;
+  /* No font-family here: inherit `--font-sans` from the `.tractor-beam-themed`
+     root (this panel is a child of it). Pinning a font here would shadow the
+     shared token for all drawer content. */
   overflow-x: hidden;
   overflow-y: auto;
 }
@@ -187,7 +195,7 @@
   justify-content: center;
   width: 28px;
   height: 72px;
-  background: #4f46e5;
+  background: #9370DB;
   color: white;
   border: none;
   border-radius: 6px 0 0 6px;
