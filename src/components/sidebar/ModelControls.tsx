@@ -2,7 +2,15 @@ import { useEffect, useMemo, useState } from 'react';
 import { MlProgressMessage } from '@/lib/messaging/message_definitions.ts';
 
 import { Progress } from '@/components/ui/progress.tsx';
-import { ChevronDown, LayoutPanelLeft, Play, Square, History, MoreVertical } from 'lucide-react';
+import {
+  ChevronDown,
+  EyeOff,
+  Highlighter,
+  History,
+  LayoutPanelLeft,
+  MoreVertical,
+  Square,
+} from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -77,7 +85,7 @@ export function ModelControls({ status, progress, message }: ModelControlsProps)
   function sendRunMessage() {
     const requestId = crypto.randomUUID();
     setCurrentRequestId(requestId);
-    window.TractorBeamDrawer.runAnnotationPipeline(activeSchema, requestId);
+    void window.TractorBeamDrawer.runAnnotationPipeline(activeSchema, requestId);
   }
 
   function sendCancelMessage() {
@@ -87,16 +95,16 @@ export function ModelControls({ status, progress, message }: ModelControlsProps)
   }
 
   return (
-    <div className="border-t-2 border-[#9370DB] p-2 m-0 shadow-[0px_-4px_6px_-1px_rgba(0,0,0,0.1)]">
+    <div className="flex flex-col gap-2 border-t-2 border-[#9370DB] p-2 m-0 shadow-[0px_-4px_6px_-1px_rgba(0,0,0,0.1)]">
       <div className="flex items-center justify-between">
-        <h1 className="font-semibold">AI Control Panel</h1>
+        <h1 className="text-sm font-semibold">AI Control Panel</h1>
         <ModelConfigurationModal container={drawerRoot} />
       </div>
 
       {config && (
         <div className="">
           <DropdownMenu>
-            <DropdownMenuTrigger className="flex w-full items-center gap-2 outline-none">
+            <DropdownMenuTrigger className="flex w-full items-center gap-2 text-sm outline-none">
               Highlighter:
               <span className={config.selected.model ? '' : 'text-muted-foreground'}>
                 <b>{config.selected.model || 'Select model…'}</b>
@@ -134,7 +142,7 @@ export function ModelControls({ status, progress, message }: ModelControlsProps)
         </div>
       )}
 
-      <p className="mt-2">
+      <p className="text-sm">
         Status: {status}{' '}
         <span
           className={
@@ -144,23 +152,26 @@ export function ModelControls({ status, progress, message }: ModelControlsProps)
       </p>
 
       {isRunning && (
-        <div className="mt-1">
-          <div className="text-xs text-muted-foreground">{message || 'Annotating...'}</div>
+        <div className="flex flex-col gap-1">
+          <div className="text-sm text-muted-foreground">{message || 'Annotating...'}</div>
           <Progress value={progress * 100} className="h-2 [&>div]:bg-green-500" />
         </div>
       )}
       {status === 'loading' && (
-        <div className="mt-1">
-          <div className="text-xs text-muted-foreground">Loading model...</div>
+        <div className="flex flex-col gap-1">
+          <div className="text-sm text-muted-foreground">Loading model...</div>
           <Progress value={progress * 100} className="h-2" />
         </div>
       )}
 
-      <div className="flex flex-row justify-between gap-1 mt-1">
-        <div className="flex flex-row justify-start">
+      <div className="flex flex-row justify-between gap-1">
+        <div className="flex flex-row items-center justify-start gap-1">
           <IconButton
             title="Highlight with AI"
-            icon={Play}
+            label="Highlight with AI"
+            variant="outline"
+            className="border-[green]"
+            icon={Highlighter}
             color={'green'}
             onClick={sendRunMessage}
             disabled={isRunning}
@@ -180,6 +191,14 @@ export function ModelControls({ status, progress, message }: ModelControlsProps)
               void window.TractorBeamDrawer.loadCachedAnnotations(activeSchema.id, pdfUrl)
             }
           />
+          <IconButton
+            title={'Hide AI Highlights'}
+            icon={EyeOff}
+            onClick={() => {
+              void window.TractorBeamHighlights.setHighlights('layout', []);
+              void window.TractorBeamHighlights.setHighlights('provisional', []);
+            }}
+          />
         </div>
         <div className="flex flex-row justify-end">
           <DropdownMenu>
@@ -191,7 +210,7 @@ export function ModelControls({ status, progress, message }: ModelControlsProps)
                 <DropdownMenuItem
                   onClick={() => void window.TractorBeamDrawer.runSegmentationPipeline()}
                 >
-                  <LayoutPanelLeft /> Run Segmentation Pipeline
+                  <LayoutPanelLeft /> View Page Segmentation
                 </DropdownMenuItem>
               </DropdownMenuGroup>
             </DropdownMenuContent>
