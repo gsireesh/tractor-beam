@@ -1,8 +1,11 @@
-// `@mlc-ai/web-llm` is loaded lazily inside ensureEngine() (see below): its
-// transitive web-xgrammar dep runs `new URL(...)` at module-load, which throws
-// under WXT's Node build evaluation, so merely importing this file (e.g. for
-// DEFAULT_WEBLLM_CONFIG) must not pull in the runtime. The type import is erased
-// at compile time, so it adds no load.
+// `@mlc-ai/web-llm` is loaded lazily inside ensureEngine() (see below), never at
+// module load. Two reasons: (1) its transitive web-xgrammar dep runs `new URL(...)`
+// at module-load, which throws under WXT's Node build evaluation, so merely
+// importing this file (e.g. for DEFAULT_WEBLLM_CONFIG) must not pull in the
+// runtime; (2) store builds exclude the library entirely — its model_lib WASM is
+// fetched from a remote CDN, which MV3 forbids — so wxt.config.ts aliases the
+// package to webllm-stub.ts unless VITE_ENABLE_WEBLLM=true. The type import below
+// is erased at compile time, so it adds no load.
 import type { MLCEngine } from '@mlc-ai/web-llm';
 import { type ChatMessage, DEFAULT_WEBLLM_MODEL, type ProgressCallback } from './types';
 
@@ -64,7 +67,9 @@ export class WebLlmRunner {
     this.loading = true;
     try {
       // Lazy-load the runtime only when actually creating an engine (browser
-      // context), keeping web-llm out of the build-time module graph.
+      // context). In store builds this specifier is aliased to webllm-stub.ts
+      // (see wxt.config.ts), whose CreateMLCEngine throws — so the real library
+      // is never bundled and this path is unreachable unless WebLLM is enabled.
       const { CreateMLCEngine } = await import('@mlc-ai/web-llm');
       this.engine = await CreateMLCEngine(this.currentModel, {
         initProgressCallback: (report) => {
