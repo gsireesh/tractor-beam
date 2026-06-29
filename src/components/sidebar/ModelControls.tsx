@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { MlProgressMessage } from '@/lib/messaging/message_definitions.ts';
-
+import type { Highlight } from '@/lib/definitions.ts';
 import { Progress } from '@/components/ui/progress.tsx';
 import {
   ChevronDown,
@@ -39,6 +39,7 @@ import { ModelConfigurationModal } from '@/components/model-configuration/ModelC
 
 export interface ModelControlsProps {
   status: MlProgressMessage['stage'];
+  setMlHighlights: (highlights: Highlight[]) => void;
   progress: number;
   message: string;
 }
@@ -58,7 +59,7 @@ const PROVIDER_MODELS: { provider: ModelProvider; models: readonly string[] }[] 
   { provider: 'webllm', models: WEBLLM_MODELS },
 ];
 
-export function ModelControls({ status, progress, message }: ModelControlsProps) {
+export function ModelControls({ status, progress, message, setMlHighlights }: ModelControlsProps) {
   const { activeSchema, pdfUrl } = useDrawerContext();
   const [currentRequestId, setCurrentRequestId] = useState<string | null>(null);
   const [config, setConfig] = useState<ModelConfig | null>(null);
@@ -195,8 +196,7 @@ export function ModelControls({ status, progress, message }: ModelControlsProps)
             title={'Hide AI Highlights'}
             icon={EyeOff}
             onClick={() => {
-              void window.TractorBeamHighlights.setHighlights('layout', []);
-              void window.TractorBeamHighlights.setHighlights('provisional', []);
+              setMlHighlights([]);
             }}
           />
         </div>
