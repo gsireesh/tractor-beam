@@ -36,7 +36,6 @@ export interface InstancePopoverContentProps {
   inputValue: string;
   onInputValueChange: (v: string) => void;
   actionButtons: ReactNode;
-  actionSlotWidthPx: number;
   allowCreateClass?: boolean;
   /** Class list the combobox offers — injected so this component never reads ambient state. */
   classes: SchemaClass[];
@@ -61,7 +60,6 @@ export function InstancePopoverContent({
   inputValue,
   onInputValueChange,
   actionButtons,
-  actionSlotWidthPx,
   allowCreateClass = true,
   classes,
   accentColor,
@@ -106,7 +104,7 @@ export function InstancePopoverContent({
         onChange={(e) => onNotesChange(e.target.value)}
         onBlur={onNotesBlur}
       />
-      <div className="flex gap-2">
+      <div className="flex items-start gap-2">
         <CreatableCombobox
           items={classes.map((c) => c.name)}
           value={selectedClass?.name ?? ''}
@@ -127,12 +125,14 @@ export function InstancePopoverContent({
             );
           }}
           renderCreateLabel={(label) => `Create new class "${label}"`}
-          inputClassName="flex-1 bg-card"
+          inputClassName="flex-1 min-w-0 bg-card"
           contentContainer={comboboxContainer}
           contentPositionerClassName={comboboxPositionerClassName}
           closeOnScroll={closeComboboxOnScroll}
         />
-        <div className="flex shrink-0" style={{ width: actionSlotWidthPx, gap: 4 }}>
+        {/* Intrinsic width: the action buttons size to their own labels (e.g.
+            "Add example") and never wrap; the combobox above takes the rest. */}
+        <div className="flex shrink-0" style={{ gap: 4 }}>
           {actionButtons}
         </div>
       </div>

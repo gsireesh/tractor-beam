@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { Highlight, Instance, SchemaClass } from '@/lib/definitions';
-import { generateId, rgbaToHex } from '@/lib/utils';
+import { generateId } from '@/lib/utils';
 import { InstancePopover } from './InstancePopover';
+import { AddExampleButton } from './AddExampleButton';
 
 interface PromoteInstancePopoverProps {
   highlight: Highlight;
@@ -19,7 +20,6 @@ export function PromoteInstancePopover({
   const [selectedClass, setSelectedClass] = useState<SchemaClass | null>(initialClass);
   const [inputValue, setInputValue] = useState<string>(initialClass?.name ?? '');
   const [notesValue, setNotesValue] = useState<string | null>(null);
-  const [addButtonHovered, setAddButtonHovered] = useState<boolean>(false);
 
   // Track whether the user submitted (so we know whether to restore on unmount).
   const submittedRef = useRef(false);
@@ -74,31 +74,11 @@ export function PromoteInstancePopover({
   };
 
   const actionButtons = (
-    <div
-      className="flex shrink-0 w-full"
-      style={{ gap: 4 }}
-      onMouseEnter={() => setAddButtonHovered(true)}
-      onMouseLeave={() => setAddButtonHovered(false)}
-    >
-      <button
-        className="flex-1 px-3 py-2 rounded-md text-sm font-medium cursor-pointer border-none text-white disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90"
-        style={{ backgroundColor: rgbaToHex(accentColor, 1.0) }}
-        onClick={() => submit(true)}
-        disabled={!selectedClass?.id || !activeSchema}
-      >
-        {addButtonHovered ? '+' : 'Add'}
-      </button>
-      {addButtonHovered && (
-        <button
-          className="flex-1 px-3 py-2 rounded-md text-sm font-medium cursor-pointer border-none text-white disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90"
-          style={{ backgroundColor: rgbaToHex(accentColor, 1.0) }}
-          onClick={() => submit(false)}
-          disabled={!selectedClass?.id || !activeSchema}
-        >
-          −
-        </button>
-      )}
-    </div>
+    <AddExampleButton
+      accentColor={accentColor}
+      disabled={!selectedClass?.id || !activeSchema}
+      onSubmit={submit}
+    />
   );
 
   return (
@@ -112,7 +92,6 @@ export function PromoteInstancePopover({
       inputValue={inputValue}
       onInputValueChange={setInputValue}
       actionButtons={actionButtons}
-      actionSlotWidthPx={100}
       onClose={onClose}
     />
   );

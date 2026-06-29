@@ -4,7 +4,9 @@ import { rgbaToHex } from '@/lib/utils';
 import { InstancePopoverContent, useStableAccentColor } from './InstancePopoverContent';
 
 const POPOVER_MIN_WIDTH_PX = 320;
-const POPOVER_MAX_WIDTH_PX = 400;
+// Roomy enough that a typical class name and the "Add example" button share one
+// row without squeezing; the card still shrinks toward the min for short content.
+const POPOVER_MAX_WIDTH_PX = 480;
 
 export interface InstancePopoverProps {
   text: string;
@@ -17,7 +19,6 @@ export interface InstancePopoverProps {
   inputValue: string;
   onInputValueChange: (v: string) => void;
   actionButtons: ReactNode;
-  actionSlotWidthPx: number;
   onClose: () => void;
   allowCreateClass?: boolean;
 }
@@ -38,7 +39,6 @@ export function InstancePopover({
   inputValue,
   onInputValueChange,
   actionButtons,
-  actionSlotWidthPx,
   onClose,
   allowCreateClass = true,
 }: InstancePopoverProps) {
@@ -146,7 +146,6 @@ export function InstancePopover({
             inputValue={inputValue}
             onInputValueChange={onInputValueChange}
             actionButtons={actionButtons}
-            actionSlotWidthPx={actionSlotWidthPx}
             allowCreateClass={allowCreateClass}
             classes={activeSchema?.classes ?? []}
             accentColor={accentColor}

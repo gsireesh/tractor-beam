@@ -55,7 +55,6 @@ export function EditInstancePopover({
       inputValue={editor.inputValue}
       onInputValueChange={editor.setInputValue}
       actionButtons={editor.actionButtons}
-      actionSlotWidthPx={40}
       onClose={onClose}
       allowCreateClass={true}
     />

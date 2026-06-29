@@ -59,7 +59,6 @@ export function ConfirmedInstanceViewer({
           inputValue={editor.inputValue}
           onInputValueChange={editor.setInputValue}
           actionButtons={editor.actionButtons}
-          actionSlotWidthPx={40}
           allowCreateClass={true}
           classes={editor.classes}
           accentColor={accentColor}

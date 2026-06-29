@@ -48,7 +48,6 @@ export function EditInstanceInline({
         inputValue={editor.inputValue}
         onInputValueChange={editor.setInputValue}
         actionButtons={editor.actionButtons}
-        actionSlotWidthPx={40}
         allowCreateClass={true}
         classes={editor.classes}
         accentColor={accentColor}

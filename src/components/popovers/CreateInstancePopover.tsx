@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Instance, PdfBox, SchemaClass } from '@/lib/definitions';
-import { generateId, rgbaToHex } from '@/lib/utils';
+import { generateId } from '@/lib/utils';
 import { InstancePopover } from './InstancePopover';
+import { AddExampleButton } from './AddExampleButton';
 
 interface CreateInstancePopoverProps {
   text: string;
@@ -28,7 +29,6 @@ export function CreateInstancePopover({
   );
   const [inputValue, setInputValue] = useState<string>(activeSchema?.classes?.[0]?.name ?? '');
   const [notesValue, setNotesValue] = useState<string | null>(null);
-  const [addButtonHovered, setAddButtonHovered] = useState<boolean>(false);
 
   const accentColor = selectedClass?.color ?? 'rgba(0,0,0,0)';
 
@@ -51,31 +51,11 @@ export function CreateInstancePopover({
   };
 
   const actionButtons = (
-    <div
-      className="flex shrink-0 w-full"
-      style={{ gap: 4 }}
-      onMouseEnter={() => setAddButtonHovered(true)}
-      onMouseLeave={() => setAddButtonHovered(false)}
-    >
-      <button
-        className="flex-1 px-3 py-2 rounded-md text-sm font-medium cursor-pointer border-none text-white disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90"
-        style={{ backgroundColor: rgbaToHex(accentColor, 1.0) }}
-        onClick={() => submit(true)}
-        disabled={!selectedClass?.id || !activeSchema}
-      >
-        {addButtonHovered ? '+' : 'Add'}
-      </button>
-      {addButtonHovered && (
-        <button
-          className="flex-1 px-3 py-2 rounded-md text-sm font-medium cursor-pointer border-none text-white disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90"
-          style={{ backgroundColor: rgbaToHex(accentColor, 1.0) }}
-          onClick={() => submit(false)}
-          disabled={!selectedClass?.id || !activeSchema}
-        >
-          −
-        </button>
-      )}
-    </div>
+    <AddExampleButton
+      accentColor={accentColor}
+      disabled={!selectedClass?.id || !activeSchema}
+      onSubmit={submit}
+    />
   );
 
   return (
@@ -89,7 +69,6 @@ export function CreateInstancePopover({
       inputValue={inputValue}
       onInputValueChange={setInputValue}
       actionButtons={actionButtons}
-      actionSlotWidthPx={100}
       onClose={onClose}
     />
   );

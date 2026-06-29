@@ -7,6 +7,7 @@ import {
   InstancePopoverContent,
   useStableAccentColor,
 } from '@/components/popovers/InstancePopoverContent.tsx';
+import { AddExampleButton } from '@/components/popovers/AddExampleButton.tsx';
 
 /**
  * A provisional (ML-suggested) annotation. Unlike the confirmed signpost, it has
@@ -20,7 +21,6 @@ export function ProvisionalHighlightSignpost({ id, classId, coords, text }: Sign
   const [selectedClass, setSelectedClass] = useState<SchemaClass | null>(initialClass);
   const [inputValue, setInputValue] = useState<string>(initialClass?.name ?? '');
   const [notesValue, setNotesValue] = useState<string | null>(null);
-  const [addButtonHovered, setAddButtonHovered] = useState<boolean>(false);
 
   const accentColor = useStableAccentColor(selectedClass);
 
@@ -73,31 +73,7 @@ export function ProvisionalHighlightSignpost({ id, classId, coords, text }: Sign
   };
 
   const actionButtons = (
-    <div
-      className="flex shrink-0 w-full"
-      style={{ gap: 4 }}
-      onMouseEnter={() => setAddButtonHovered(true)}
-      onMouseLeave={() => setAddButtonHovered(false)}
-    >
-      <button
-        className="flex-1 px-3 py-2 rounded-md text-sm font-medium cursor-pointer border-none text-white disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90"
-        style={{ backgroundColor: rgbaToHex(accentColor, 1.0) }}
-        onClick={() => submit(true)}
-        disabled={!selectedClass?.id}
-      >
-        {addButtonHovered ? '+' : 'Add'}
-      </button>
-      {addButtonHovered && (
-        <button
-          className="flex-1 px-3 py-2 rounded-md text-sm font-medium cursor-pointer border-none text-white disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90"
-          style={{ backgroundColor: rgbaToHex(accentColor, 1.0) }}
-          onClick={() => submit(false)}
-          disabled={!selectedClass?.id}
-        >
-          −
-        </button>
-      )}
-    </div>
+    <AddExampleButton accentColor={accentColor} disabled={!selectedClass?.id} onSubmit={submit} />
   );
 
   return (
@@ -115,7 +91,6 @@ export function ProvisionalHighlightSignpost({ id, classId, coords, text }: Sign
           inputValue={inputValue}
           onInputValueChange={setInputValue}
           actionButtons={actionButtons}
-          actionSlotWidthPx={100}
           allowCreateClass={true}
           classes={activeSchema.classes}
           accentColor={accentColor}
