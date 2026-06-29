@@ -387,11 +387,11 @@ function DrawerContent({
         >
           <TabsList className="w-full">
             <TabsTrigger value={'schema'}>
-              <Layers2Icon /> Schema Editor
+              <Layers2Icon /> Highlighters
             </TabsTrigger>
             <TabsTrigger value={'navigation'}>
               <SignpostIcon />
-              Semantic Index
+              Navigate Highlights
             </TabsTrigger>
           </TabsList>
           <TabsContent value={'schema'} className="overflow-scroll flex-1 min-h-0">

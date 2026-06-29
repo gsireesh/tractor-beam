@@ -73,7 +73,7 @@ export function SchemaHeader({
         {editing ? (
           <input
             autoFocus
-            placeholder="Schema name"
+            placeholder="Untitled Project"
             className="border-2 bg-card text-base px-1 py-0.5 rounded"
             value={activeSchema.name}
             onChange={(e) => onRename(e.target.value)}
@@ -83,7 +83,7 @@ export function SchemaHeader({
           />
         ) : (
           <div className="flex items-center gap-1 group cursor-pointer">
-            <span className="text-base">{activeSchema.name || 'Untitled schema'}</span>
+            <span className="text-base">{activeSchema.name || 'Untitled Project'}</span>
             <PencilLine
               strokeWidth={1}
               size={16}
@@ -95,37 +95,37 @@ export function SchemaHeader({
       <div className="ml-auto flex items-center gap-1">
         <DropdownMenu>
           <DropdownMenuTrigger>
-            <IconButton title="Schema actions" icon={EllipsisVerticalIcon} size="icon-sm" />
+            <IconButton title="Project Actions" icon={EllipsisVerticalIcon} size="icon-sm" />
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuGroup>
               <DropdownMenuItem onClick={onNew}>
                 <Plus strokeWidth={1} size="1em" />
-                New Schema
+                New Project
               </DropdownMenuItem>
               <DropdownMenuSub>
                 <DropdownMenuSubTrigger>
                   <ArrowLeftRight strokeWidth={1} size="1em" />
-                  Switch Schema
+                  Switch Project
                 </DropdownMenuSubTrigger>
                 <DropdownMenuSubContent>
                   {schemas.map((s) => (
                     <DropdownMenuItem key={s.id} onClick={() => onSwitch(s.id)}>
-                      {s.name || 'Untitled schema'}
+                      {s.name || 'Untitled Project'}
                     </DropdownMenuItem>
                   ))}
                 </DropdownMenuSubContent>
               </DropdownMenuSub>
               <DropdownMenuItem variant="destructive" onClick={onDelete}>
                 <Trash2 strokeWidth={1} size="1em" />
-                Delete Schema
+                Delete Project
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
               <DropdownMenuItem onClick={onOpenManager}>
                 <Table2 strokeWidth={1} size={'1em'} />
-                Open Schema Manager
+                Open Project Manager
               </DropdownMenuItem>
               <DropdownMenuItem onClick={onExport}>
                 <Download strokeWidth={1} size="1em" />

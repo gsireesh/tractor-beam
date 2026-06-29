@@ -192,9 +192,9 @@ export function SchemaClassViewer({
         </DropdownMenu>
       </div>
       <label className="block text-sm">
-        Class Description:
         <textarea
           className="block p-0.5 w-4/5 border-1 rounded-lg bg-card"
+          placeholder={'What would you like to highlight?'}
           style={{ borderColor: borderColor }}
           autoFocus={false}
           rows={4}
@@ -205,7 +205,7 @@ export function SchemaClassViewer({
       </label>
       <Accordion type="single" collapsible>
         <AccordionItem value="instances">
-          <AccordionTrigger>Instances</AccordionTrigger>
+          <AccordionTrigger>Examples</AccordionTrigger>
           <AccordionContent>
             {currentPDFInstances.length ? (
               currentPDFInstances.map((instance) => (
@@ -218,7 +218,7 @@ export function SchemaClassViewer({
                 />
               ))
             ) : (
-              <p>No instances annotated on the current PDF.</p>
+              <p>No examples highlighted in the current document.</p>
             )}
           </AccordionContent>
         </AccordionItem>

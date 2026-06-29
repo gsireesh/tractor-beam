@@ -21,7 +21,7 @@ export function SchemaViewer({ schema, dispatch }: SchemaViewerProps) {
       <div className="sticky top-0 z-10 bg-card">
         <div className="flex justify-end">
           <IconButton
-            title="Add Class"
+            title="Add New Highlighted"
             icon={ListPlus}
             strokeWidth={2}
             onClick={() => {
@@ -29,8 +29,8 @@ export function SchemaViewer({ schema, dispatch }: SchemaViewerProps) {
                 actionType: 'addClass',
                 schemaId: schema.id,
                 classInfo: createNewClass(
-                  'New Class',
-                  'This text describes what this class is.',
+                  'New Highlighter',
+                  '',
                   [],
                   schema.classes.map((c) => c.color),
                 ),

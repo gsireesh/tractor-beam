@@ -97,7 +97,7 @@ export function SchemaManagerApp() {
   return (
     <div className="mx-auto max-w-6xl p-6">
       <header className="mb-4 flex flex-wrap items-center gap-3">
-        <h1 className="text-xl font-semibold">Schema Manager</h1>
+        <h1 className="text-xl font-semibold">Project Manager</h1>
         <Select value={activeSchemaId ?? undefined} onValueChange={setActiveSchemaId}>
           <SelectTrigger size="sm" className="min-w-48">
             <SelectValue placeholder="Select schema" />
@@ -224,9 +224,9 @@ export function SchemaManagerApp() {
       <table className="w-full border-collapse text-sm">
         <thead>
           <tr className="border-b border-border text-left text-muted-foreground">
-            <th className="p-2 font-medium">Class</th>
+            <th className="p-2 font-medium">Highlighter</th>
             <th className="p-2 font-medium">PDF</th>
-            <th className="p-2 font-medium">Content</th>
+            <th className="p-2 font-medium">Highlighted Text</th>
             <th className="p-2 font-medium">Notes</th>
             <th className="p-2 font-medium">Open</th>
           </tr>
