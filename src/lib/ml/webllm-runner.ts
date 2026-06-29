@@ -39,6 +39,7 @@ export class WebLlmRunner {
   private loading = false;
   private currentModel: WebLlmModelId = DEFAULT_WEBLLM_MODEL;
   private onProgress: ProgressCallback;
+  private params: WebLlmParams = {};
 
   constructor(onProgress: ProgressCallback) {
     this.onProgress = onProgress;
@@ -46,6 +47,10 @@ export class WebLlmRunner {
 
   setModel(model: WebLlmModelId) {
     this.currentModel = model;
+  }
+
+  setParams(params: WebLlmParams) {
+    this.params = params;
   }
 
   /** Ensure the engine is loaded with the current model. */
@@ -87,7 +92,8 @@ export class WebLlmRunner {
     const engine = await this.ensureEngine(requestId);
     const completionPromise = engine.chat.completions.create({
       messages,
-      max_tokens: maxTokens,
+      max_tokens: this.params.maxTokens ?? maxTokens,
+      ...(this.params.temperature != null ? { temperature: this.params.temperature } : {}),
     });
     const timeoutPromise = new Promise<never>((_, reject) =>
       setTimeout(() => reject(new Error('WebLLM inference timed out')), timeoutMs),
