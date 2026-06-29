@@ -70,7 +70,7 @@
   --card-foreground: 0 0% 3.9%;
   --popover: 0 0% 100%;
   --popover-foreground: 0 0% 3.9%;
-  --primary: 0 0% 9%;
+  --primary: 260 60% 65%;
   --primary-foreground: 0 0% 98%;
   --secondary: 0 0% 96.1%;
   --secondary-foreground: 0 0% 9%;
@@ -92,8 +92,8 @@
    Worked examples (these mostly invert lightness around the same hue/sat):
      light --background 100%  -> dark 3.9%   (near-black surface)
      light --foreground 3.9%  -> dark 98%    (near-white text)
-   `--primary` flips ROLE in dark mode: the bright neutral becomes the accent,
-   so primary text sits on a dark primary-foreground. */
+   `--primary` is the chromatic brand purple, so it does NOT invert: it holds
+   the same hue/sat/lightness in both modes, with a near-white foreground. */
 .tractor-beam-themed.dark {
   --background: 0 0% 3.9%;
   --foreground: 0 0% 98%;
@@ -101,8 +101,8 @@
   --card-foreground: 0 0% 98%;
   --popover: 0 0% 3.9%;
   --popover-foreground: 0 0% 98%;
-  --primary: 0 0% 98%;
-  --primary-foreground: 0 0% 9%;
+  --primary: 260 60% 65%;
+  --primary-foreground: 0 0% 98%;
   --secondary: 0 0% 14.9%;
   --secondary-foreground: 0 0% 98%;
   --destructive: 0 62.8% 30.6%;
