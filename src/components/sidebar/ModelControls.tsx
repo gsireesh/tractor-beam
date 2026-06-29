@@ -2,7 +2,15 @@ import { useEffect, useMemo, useState } from 'react';
 import { MlProgressMessage } from '@/lib/messaging/message_definitions.ts';
 
 import { Progress } from '@/components/ui/progress.tsx';
-import { ChevronDown, LayoutPanelLeft, Play, Square, History, MoreVertical } from 'lucide-react';
+import {
+  ChevronDown,
+  LayoutPanelLeft,
+  Play,
+  Square,
+  History,
+  MoreVertical,
+  Highlighter,
+} from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -89,17 +97,17 @@ export function ModelControls({ status, progress, message }: ModelControlsProps)
   return (
     <div className="border-t-2 border-[#9370DB] p-2 m-0 shadow-[0px_-4px_6px_-1px_rgba(0,0,0,0.1)]">
       <div className="flex items-center justify-between">
-        <h1 className="font-semibold">Model Control Panel</h1>
+        <h1 className="font-semibold">AI Control Panel</h1>
         <ModelConfigurationModal container={drawerRoot} />
       </div>
 
       {config && (
-        <div className="mt-2">
-          Choose a model:
+        <div className="">
           <DropdownMenu>
-            <DropdownMenuTrigger className="flex w-full items-center justify-between gap-2 rounded-md border border-input bg-transparent px-3 py-2 text-sm outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50">
+            <DropdownMenuTrigger className="flex w-full items-center gap-2 outline-none">
+              Highlighter:
               <span className={config.selected.model ? '' : 'text-muted-foreground'}>
-                {config.selected.model || 'Select model…'}
+                <b>{config.selected.model || 'Select model…'}</b>
               </span>
               <ChevronDown className="size-4 opacity-50" />
             </DropdownMenuTrigger>
@@ -109,7 +117,9 @@ export function ModelControls({ status, progress, message }: ModelControlsProps)
               <DropdownMenuContent align="start" className="z-[10001] w-56">
                 {PROVIDER_MODELS.map(({ provider, models }) => (
                   <DropdownMenuSub key={provider}>
-                    <DropdownMenuSubTrigger>{ModelProviderNameMap[provider]}</DropdownMenuSubTrigger>
+                    <DropdownMenuSubTrigger>
+                      {ModelProviderNameMap[provider]}
+                    </DropdownMenuSubTrigger>
                     <DropdownMenuPortal container={drawerRoot}>
                       <DropdownMenuSubContent className="z-[10002]">
                         <DropdownMenuRadioGroup
@@ -157,7 +167,7 @@ export function ModelControls({ status, progress, message }: ModelControlsProps)
       <div className="flex flex-row justify-between gap-1 mt-1">
         <div className="flex flex-row justify-start">
           <IconButton
-            title="Start Annotation Pipeline"
+            title="Highlight with AI"
             icon={Play}
             color={'green'}
             onClick={sendRunMessage}
