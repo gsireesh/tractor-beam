@@ -1,25 +1,51 @@
-import { CreateMLCEngine, type MLCEngine } from '@mlc-ai/web-llm';
-import { DEFAULT_WEBLLM_MODEL, type ProgressCallback, type WebLlmModelId } from './types';
+// `@mlc-ai/web-llm` is loaded lazily inside ensureEngine() (see below): its
+// transitive web-xgrammar dep runs `new URL(...)` at module-load, which throws
+// under WXT's Node build evaluation, so merely importing this file (e.g. for
+// DEFAULT_WEBLLM_CONFIG) must not pull in the runtime. The type import is erased
+// at compile time, so it adds no load.
+import type { MLCEngine } from '@mlc-ai/web-llm';
+import { type ChatMessage, DEFAULT_WEBLLM_MODEL, type ProgressCallback } from './types';
 
-export interface ChatMessage {
-  role: 'system' | 'user' | 'assistant';
-  content: string;
-  cache_control?: { type: string };
+// ChatMessage now lives in ./types (shared primitive). Re-exported here so the
+// existing `from './webllm-runner'` importers keep working during the refactor.
+export type { ChatMessage };
+
+/** Tunable generation parameters for the in-browser WebLLM runner. */
+export interface WebLlmParams {
+  temperature?: number;
+  maxTokens?: number;
 }
+
+/**
+ * WebLLM provider config block (composed into ModelConfig). Local, so no
+ * key/URL — just generation params; the active model lives in ModelConfig.selected.
+ */
+export interface WebLlmConfig {
+  params: WebLlmParams;
+}
+
+export const DEFAULT_WEBLLM_CONFIG: WebLlmConfig = {
+  params: { maxTokens: 1024 },
+};
 
 export class WebLlmRunner {
   private engine: MLCEngine | null = null;
   private loadedModel: string | null = null;
   private loading = false;
-  private currentModel: WebLlmModelId = DEFAULT_WEBLLM_MODEL;
+  private currentModel: string = DEFAULT_WEBLLM_MODEL;
   private onProgress: ProgressCallback;
+  private params: WebLlmParams = {};
 
   constructor(onProgress: ProgressCallback) {
     this.onProgress = onProgress;
   }
 
-  setModel(model: WebLlmModelId) {
+  setModel(model: string) {
     this.currentModel = model;
+  }
+
+  setParams(params: WebLlmParams) {
+    this.params = params;
   }
 
   /** Ensure the engine is loaded with the current model. */
@@ -37,6 +63,9 @@ export class WebLlmRunner {
 
     this.loading = true;
     try {
+      // Lazy-load the runtime only when actually creating an engine (browser
+      // context), keeping web-llm out of the build-time module graph.
+      const { CreateMLCEngine } = await import('@mlc-ai/web-llm');
       this.engine = await CreateMLCEngine(this.currentModel, {
         initProgressCallback: (report) => {
           this.onProgress('loading', report.progress, report.text, requestId);
@@ -58,7 +87,8 @@ export class WebLlmRunner {
     const engine = await this.ensureEngine(requestId);
     const completionPromise = engine.chat.completions.create({
       messages,
-      max_tokens: maxTokens,
+      max_tokens: this.params.maxTokens ?? maxTokens,
+      ...(this.params.temperature != null ? { temperature: this.params.temperature } : {}),
     });
     const timeoutPromise = new Promise<never>((_, reject) =>
       setTimeout(() => reject(new Error('WebLLM inference timed out')), timeoutMs),

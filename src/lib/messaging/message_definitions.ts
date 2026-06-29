@@ -1,5 +1,6 @@
 import { Schema, VisualBlock, MlAnnotation } from '@/lib/definitions';
-import type { ModelConfig, MlStage } from '@/lib/ml/types';
+import type { MlStage } from '@/lib/ml/types';
+import type { ModelConfig } from '@/lib/ml/model-config';
 
 // ─── Viewer ↔ background messages ───
 
@@ -58,9 +59,9 @@ export interface RunAnnotationPipelineMessage {
   requestId: string;
   schema: Schema;
   blocks?: VisualBlock[];
+  // The full per-provider config travels in the message (incl. the active
+  // provider's secret) because the offscreen document can't read chrome.storage.
   modelConfig?: ModelConfig;
-  claudeApiKey?: string;
-  ollamaBaseUrl?: string;
 }
 
 export interface CancelAnnotationPipelineMessage {
@@ -122,8 +123,8 @@ export interface ModelStatusReportMessage {
   type: 'modelStatusReport';
   webllm: { loaded: boolean; model: string | null };
   transformers: { loaded: boolean; pipelines: string[] };
-  claude: { loaded: boolean; model: string | null };
-  ollama: { loaded: boolean; model: string | null };
+  anthropic: { loaded: boolean; model: string | null };
+  openai: { loaded: boolean; model: string | null };
 }
 
 // ─── Discriminated union of all messages ───

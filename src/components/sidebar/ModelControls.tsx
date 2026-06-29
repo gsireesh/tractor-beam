@@ -1,39 +1,41 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { MlProgressMessage } from '@/lib/messaging/message_definitions.ts';
 
 import { Progress } from '@/components/ui/progress.tsx';
-import { LayoutPanelLeft, Play, Settings, Square, Save, History } from 'lucide-react';
+import {
+  ChevronDown,
+  EyeOff,
+  Highlighter,
+  History,
+  LayoutPanelLeft,
+  MoreVertical,
+  Square,
+} from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuLabel,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuPortal,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
-  DropdownMenuSeparator,
-  DropdownMenuPortal,
   DropdownMenuSub,
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu.tsx';
+import { loadModelConfig, saveModelConfig } from '@/lib/config-storage.ts';
 import {
-  WEBLLM_MODELS,
-  CLAUDE_MODELS,
-  OLLAMA_MODELS,
-  type ModelProvider,
   type ModelConfig,
-} from '@/lib/ml/types.ts';
-import { DEFAULT_OLLAMA_BASE_URL } from '@/lib/ml/types.ts';
-import {
-  getModelConfig,
-  setModelConfig,
-  getClaudeApiKey,
-  setClaudeApiKey,
-  getOllamaBaseUrl,
-  setOllamaBaseUrl,
-} from '@/lib/config-storage.ts';
+  type ModelProvider,
+  ModelProviderNameMap,
+} from '@/lib/ml/model-config.ts';
+import { ANTHROPIC_MODELS } from '@/lib/ml/claude-runner.ts';
+import { OPENAI_MODELS } from '@/lib/ml/openai-runner.ts';
+import { WEBLLM_MODELS } from '@/lib/ml/types.ts';
 import { useDrawerContext } from '@/contexts/DrawerContext.tsx';
 import { IconButton } from '@/components/ui/IconButton.tsx';
+import { ModelConfigurationModal } from '@/components/model-configuration/ModelConfigurationModal.tsx';
 
 export interface ModelControlsProps {
   status: MlProgressMessage['stage'];
@@ -48,231 +50,172 @@ const STATUS_MAP: Record<string, string> = {
   running: 'bg-green-600',
 };
 
+// Curated default models per provider — a static placeholder until the lists are
+// fetched live from each provider. One entry per submenu in the model picker.
+const PROVIDER_MODELS: { provider: ModelProvider; models: readonly string[] }[] = [
+  { provider: 'anthropic', models: ANTHROPIC_MODELS },
+  { provider: 'openai', models: OPENAI_MODELS },
+  { provider: 'webllm', models: WEBLLM_MODELS },
+];
+
 export function ModelControls({ status, progress, message }: ModelControlsProps) {
   const { activeSchema, pdfUrl } = useDrawerContext();
   const [currentRequestId, setCurrentRequestId] = useState<string | null>(null);
-  const [config, setLocalConfig] = useState<Partial<ModelConfig>>({});
-  const [apiKey, setApiKey] = useState('');
-  const [apiKeySaved, setApiKeySaved] = useState(false);
-  const [ollamaUrl, setOllamaUrl] = useState(DEFAULT_OLLAMA_BASE_URL);
-  const [ollamaUrlSaved, setOllamaUrlSaved] = useState(false);
+  const [config, setConfig] = useState<ModelConfig | null>(null);
+  const drawerRoot = useMemo(() => document.getElementById('tractor-beam-drawer-root'), []);
+
   const isRunning = status === 'running' && progress < 1;
 
   useEffect(() => {
-    Promise.all([getModelConfig(), getClaudeApiKey(), getOllamaBaseUrl()]).then(
-      ([cfg, key, url]) => {
-        setLocalConfig(cfg);
-        if (key) setApiKey(key);
-        if (url) setOllamaUrl(url);
-      },
-    );
+    void loadModelConfig().then(setConfig);
   }, []);
 
-  function updateConfig(partial: Partial<ModelConfig>) {
-    setLocalConfig((prev) => ({ ...prev, ...partial }));
-    void setModelConfig(partial);
+  // Set the active model + the provider it belongs to. Local state updates for a
+  // snappy UI; the patch persists the selection.
+  function choose(provider: ModelProvider, model: string) {
+    setConfig((c) => c && { ...c, selected: { provider, model } });
+    void saveModelConfig({ selected: { provider, model } });
   }
 
-  async function saveApiKey() {
-    await setClaudeApiKey(apiKey);
-    setApiKeySaved(true);
-    setTimeout(() => setApiKeySaved(false), 2000);
-  }
-
-  async function saveOllamaUrl() {
-    await setOllamaBaseUrl(ollamaUrl);
-    setOllamaUrlSaved(true);
-    setTimeout(() => setOllamaUrlSaved(false), 2000);
-  }
+  // The radio value for a provider's submenu: the active model when that provider
+  // is selected, else '' (so no item shows a checkmark).
+  const modelFor = (p: ModelProvider) =>
+    config?.selected.provider === p ? config.selected.model : '';
 
   function sendRunMessage() {
     const requestId = crypto.randomUUID();
     setCurrentRequestId(requestId);
-    console.log('[ModelControls] triggering annotation pipeline!');
-    window.TractorBeamDrawer.runAnnotationPipeline(activeSchema, requestId);
+    void window.TractorBeamDrawer.runAnnotationPipeline(activeSchema, requestId);
   }
 
   function sendCancelMessage() {
     if (!currentRequestId) return;
-    console.log('[ModelControls] cancelling annotation pipeline!');
     window.TractorBeamDrawer.cancelAnnotationPipeline(currentRequestId);
     setCurrentRequestId(null);
   }
 
-  const currentModel =
-    config.provider === 'claude'
-      ? config.claudeModel
-      : config.provider === 'ollama'
-        ? config.ollamaModel
-        : config.webllmModel;
-
   return (
-    <div className="border-t-2 border-blue-500 p-2 m-0 shadow-[0px_-4px_6px_-1px_rgba(0,0,0,0.1)]">
+    <div className="flex flex-col gap-2 border-t-2 border-[#9370DB] p-2 m-0 shadow-[0px_-4px_6px_-1px_rgba(0,0,0,0.1)]">
       <div className="flex items-center justify-between">
-        <h1 className="font-semibold">Model Control Panel</h1>
-        <DropdownMenu>
-          <DropdownMenuTrigger>
-            <IconButton icon={Settings} title="Model Settings" />
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-64 z-[10001]">
-            <DropdownMenuLabel>Provider</DropdownMenuLabel>
-            <DropdownMenuRadioGroup
-              value={config.provider ?? 'webllm'}
-              onValueChange={(v) => updateConfig({ provider: v as ModelProvider })}
-            >
-              <DropdownMenuRadioItem value="webllm">WebLLM (local)</DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="claude">Claude API</DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="ollama">Ollama (local)</DropdownMenuRadioItem>
-            </DropdownMenuRadioGroup>
-            <DropdownMenuSeparator />
-            <DropdownMenuLabel>Model</DropdownMenuLabel>
-            <DropdownMenuSub>
-              <DropdownMenuSubTrigger>{currentModel ?? 'Select model...'}</DropdownMenuSubTrigger>
-              {/* Portal into the themed drawer root: without a container Radix
-                  portals to document.body, outside #tractor-beam-drawer-root's
-                  .tractor-beam-themed scope, so --popover is undefined and the
-                  submenu renders transparent. */}
-              <DropdownMenuPortal container={document.getElementById('tractor-beam-drawer-root')}>
-                <DropdownMenuSubContent className="z-[10002]">
-                  {config.provider === 'claude' ? (
-                    <DropdownMenuRadioGroup
-                      value={config.claudeModel ?? ''}
-                      onValueChange={(v) =>
-                        updateConfig({ claudeModel: v as (typeof CLAUDE_MODELS)[number] })
-                      }
-                    >
-                      {CLAUDE_MODELS.map((m) => (
-                        <DropdownMenuRadioItem key={m} value={m}>
-                          {m}
-                        </DropdownMenuRadioItem>
-                      ))}
-                    </DropdownMenuRadioGroup>
-                  ) : config.provider === 'ollama' ? (
-                    <DropdownMenuRadioGroup
-                      value={config.ollamaModel ?? ''}
-                      onValueChange={(v) => updateConfig({ ollamaModel: v })}
-                    >
-                      {OLLAMA_MODELS.map((m) => (
-                        <DropdownMenuRadioItem key={m} value={m}>
-                          {m}
-                        </DropdownMenuRadioItem>
-                      ))}
-                    </DropdownMenuRadioGroup>
-                  ) : (
-                    <DropdownMenuRadioGroup
-                      value={config.webllmModel ?? ''}
-                      onValueChange={(v) =>
-                        updateConfig({ webllmModel: v as (typeof WEBLLM_MODELS)[number] })
-                      }
-                    >
-                      {WEBLLM_MODELS.map((m) => (
-                        <DropdownMenuRadioItem key={m} value={m}>
-                          {m}
-                        </DropdownMenuRadioItem>
-                      ))}
-                    </DropdownMenuRadioGroup>
-                  )}
-                </DropdownMenuSubContent>
-              </DropdownMenuPortal>
-            </DropdownMenuSub>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <h1 className="text-sm font-semibold">AI Control Panel</h1>
+        <ModelConfigurationModal container={drawerRoot} />
       </div>
-      {config.provider === 'claude' && (
-        <div className="flex items-center gap-1 mt-1">
-          <input
-            type="password"
-            placeholder="Claude API Key"
-            className="flex-1 px-2 py-1 text-xs border rounded"
-            value={apiKey}
-            onChange={(e) => setApiKey(e.target.value)}
-          />
-          <IconButton
-            title="Save API Key"
-            icon={Save}
-            size="icon-xs"
-            onClick={() => void saveApiKey()}
-          />
-          {apiKeySaved && <span className="text-xs text-green-600">Saved!</span>}
+
+      {config && (
+        <div className="">
+          <DropdownMenu>
+            <DropdownMenuTrigger className="flex w-full items-center gap-2 text-sm outline-none">
+              Highlighter:
+              <span className={config.selected.model ? '' : 'text-muted-foreground'}>
+                <b>{config.selected.model || 'Select model…'}</b>
+              </span>
+              <ChevronDown className="size-4 opacity-50" />
+            </DropdownMenuTrigger>
+            {/* Portal into the themed drawer root, or --popover is undefined and
+                the menu renders transparent (same for each SubContent below). */}
+            <DropdownMenuPortal container={drawerRoot}>
+              <DropdownMenuContent align="start" className="z-[10001] w-56">
+                {PROVIDER_MODELS.map(({ provider, models }) => (
+                  <DropdownMenuSub key={provider}>
+                    <DropdownMenuSubTrigger>
+                      {ModelProviderNameMap[provider]}
+                    </DropdownMenuSubTrigger>
+                    <DropdownMenuPortal container={drawerRoot}>
+                      <DropdownMenuSubContent className="z-[10002]">
+                        <DropdownMenuRadioGroup
+                          value={modelFor(provider)}
+                          onValueChange={(m) => choose(provider, m)}
+                        >
+                          {models.map((m) => (
+                            <DropdownMenuRadioItem key={m} value={m}>
+                              {m}
+                            </DropdownMenuRadioItem>
+                          ))}
+                        </DropdownMenuRadioGroup>
+                      </DropdownMenuSubContent>
+                    </DropdownMenuPortal>
+                  </DropdownMenuSub>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenuPortal>
+          </DropdownMenu>
         </div>
       )}
-      {config.provider === 'ollama' && (
-        <div className="flex items-center gap-1 mt-1">
-          <input
-            type="text"
-            placeholder="Ollama URL"
-            className="flex-1 px-2 py-1 text-xs border rounded"
-            value={ollamaUrl}
-            onChange={(e) => setOllamaUrl(e.target.value)}
-          />
-          <IconButton
-            title="Save Ollama URL"
-            icon={Save}
-            size="icon-xs"
-            onClick={() => void saveOllamaUrl()}
-          />
-          {ollamaUrlSaved && <span className="text-xs text-green-600">Saved!</span>}
-        </div>
-      )}
-      <div className="flex items-center gap-2 text-sm">
-        <span>
-          {config.provider === 'claude'
-            ? 'Claude'
-            : config.provider === 'ollama'
-              ? 'Ollama'
-              : 'WebLLM'}
-          : {status}
-        </span>
+
+      <p className="text-sm">
+        Status: {status}{' '}
         <span
           className={
             'inline-block w-2 h-2 rounded-full ' + (STATUS_MAP[status] || 'bg-muted-foreground')
           }
         />
-      </div>
-      {status === 'loading' && (
-        <div className="mt-1">
-          <div className="text-xs text-muted-foreground">Loading model...</div>
-          <Progress value={progress * 100} className="h-2" />
-        </div>
-      )}
+      </p>
+
       {isRunning && (
-        <div className="mt-1">
-          <div className="text-xs text-muted-foreground">{message || 'Annotating...'}</div>
+        <div className="flex flex-col gap-1">
+          <div className="text-sm text-muted-foreground">{message || 'Annotating...'}</div>
           <Progress value={progress * 100} className="h-2 [&>div]:bg-green-500" />
         </div>
       )}
-      <div className="flex gap-1 mt-1">
-        <IconButton
-          title="Start Annotation Pipeline"
-          icon={Play}
-          color={'green'}
-          onClick={sendRunMessage}
-          disabled={isRunning}
-        />
-        {isRunning && (
+      {status === 'loading' && (
+        <div className="flex flex-col gap-1">
+          <div className="text-sm text-muted-foreground">Loading model...</div>
+          <Progress value={progress * 100} className="h-2" />
+        </div>
+      )}
+
+      <div className="flex flex-row justify-between gap-1">
+        <div className="flex flex-row items-center justify-start gap-1">
           <IconButton
-            title={'Stop Annotation'}
-            icon={Square}
-            color={'red'}
-            onClick={sendCancelMessage}
+            title="Highlight with AI"
+            label="Highlight with AI"
+            variant="outline"
+            className="border-[green]"
+            icon={Highlighter}
+            color={'green'}
+            onClick={sendRunMessage}
+            disabled={isRunning}
           />
-        )}
-        <IconButton
-          title={'Run Segmentation Pipeline'}
-          icon={LayoutPanelLeft}
-          onClick={() => {
-            console.log('[drawer] Running segmentation pipeline!');
-            void window.TractorBeamDrawer.runSegmentationPipeline();
-          }}
-        />
-        <IconButton
-          title={'Load Prior Annotations'}
-          icon={History}
-          onClick={() => {
-            console.log('[ModelControls] Loading cached annotations');
-            void window.TractorBeamDrawer.loadCachedAnnotations(activeSchema.id, pdfUrl);
-          }}
-        />
+          {isRunning && (
+            <IconButton
+              title={'Stop Annotation'}
+              icon={Square}
+              color={'red'}
+              onClick={sendCancelMessage}
+            />
+          )}
+          <IconButton
+            title={'Load Prior Annotations'}
+            icon={History}
+            onClick={() =>
+              void window.TractorBeamDrawer.loadCachedAnnotations(activeSchema.id, pdfUrl)
+            }
+          />
+          <IconButton
+            title={'Hide AI Highlights'}
+            icon={EyeOff}
+            onClick={() => {
+              void window.TractorBeamHighlights.setHighlights('layout', []);
+              void window.TractorBeamHighlights.setHighlights('provisional', []);
+            }}
+          />
+        </div>
+        <div className="flex flex-row justify-end">
+          <DropdownMenu>
+            <DropdownMenuTrigger>
+              <IconButton title="More actions" icon={MoreVertical} size={'icon'} />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuGroup>
+                <DropdownMenuItem
+                  onClick={() => void window.TractorBeamDrawer.runSegmentationPipeline()}
+                >
+                  <LayoutPanelLeft /> View Page Segmentation
+                </DropdownMenuItem>
+              </DropdownMenuGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
     </div>
   );

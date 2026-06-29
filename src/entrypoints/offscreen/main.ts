@@ -20,14 +20,41 @@ import { parseSingleBlockNerOutput } from '@/lib/ml/ner-parser.ts';
 import { WebLlmRunner, type ChatMessage } from '@/lib/ml/webllm-runner';
 import { TransformersRunner } from '@/lib/ml/transformers-runner';
 import { ClaudeRunner } from '@/lib/ml/claude-runner';
-import { OllamaRunner } from '@/lib/ml/ollama-runner';
-import { DEFAULT_MODEL_CONFIG } from '@/lib/ml/types';
+import { OpenAiRunner } from '@/lib/ml/openai-runner';
+import { DEFAULT_MODEL_CONFIG, type ModelConfig } from '@/lib/ml/model-config';
 import { parallelMap } from '@/lib/ml/parallel';
 
 const webllm = new WebLlmRunner(broadcastProgress);
 const transformers = new TransformersRunner(broadcastProgress);
 const claude = new ClaudeRunner(broadcastProgress);
-const ollama = new OllamaRunner(broadcastProgress);
+const openai = new OpenAiRunner(broadcastProgress);
+
+/** The inference backends that drive the annotation pipeline. */
+type Runner = ClaudeRunner | OpenAiRunner | WebLlmRunner;
+const RUNNERS = { anthropic: claude, openai, webllm } as const;
+
+/**
+ * Configure the runner for the active provider from the per-provider config,
+ * and return it ready to run. Each provider block (config.anthropic /
+ * config.openai / config.webllm) holds that backend's connection settings +
+ * params; config.selected names the active provider and model.
+ */
+function configureRunner(config: ModelConfig): Runner {
+  const runner = RUNNERS[config.selected.provider];
+  if (runner instanceof ClaudeRunner) {
+    runner.setApiKeyDirect(config.anthropic.apiKey);
+    runner.setParams(config.anthropic.params);
+    runner.setModel(config.selected.model);
+  } else if (runner instanceof OpenAiRunner) {
+    if (config.openai.baseUrl) runner.setBaseUrl(config.openai.baseUrl);
+    runner.setApiKeyDirect(config.openai.apiKey);
+    runner.setParams(config.openai.params);
+    runner.setModel(config.selected.model);
+  } else {
+    runner.setModel(config.selected.model);
+  }
+  return runner;
+}
 
 const cancelledRequestIds = new Set<string>();
 
@@ -78,30 +105,11 @@ async function handleAnnotationPipeline(task: RunAnnotationPipelineMessage) {
   }
   console.log(`[offscreen] Processing ${blocks.length} visual blocks one at a time`);
 
-  // Use model config from the message (offscreen can't access chrome.storage)
+  // Use model config from the message (offscreen can't access chrome.storage).
   const config = task.modelConfig ?? DEFAULT_MODEL_CONFIG;
-  const runner =
-    config.provider === 'claude' ? claude : config.provider === 'ollama' ? ollama : webllm;
-  if (config.provider === 'claude') {
-    claude.setModel(config.claudeModel);
-    if (task.claudeApiKey) {
-      claude.setApiKeyDirect(task.claudeApiKey);
-    }
-    console.log(`[offscreen] Using Claude API: ${config.claudeModel}`);
-  } else if (config.provider === 'ollama') {
-    ollama.setModel(config.ollamaModel);
-    ollama.setBaseUrl(task.ollamaBaseUrl ?? 'http://localhost:11434');
-    const reachable = await ollama.checkAvailability();
-    if (!reachable) {
-      throw new Error(
-        `Ollama server not reachable at ${task.ollamaBaseUrl ?? 'http://localhost:11434'}`,
-      );
-    }
-    console.log(`[offscreen] Using Ollama: ${config.ollamaModel}`);
-  } else {
-    webllm.setModel(config.webllmModel);
-    console.log(`[offscreen] Using WebLLM: ${config.webllmModel}`);
-  }
+  const provider = config.selected.provider;
+  const runner = configureRunner(config);
+  console.log(`[offscreen] Using ${provider}: ${config.selected.model}`);
 
   const systemPrompt = constructSchemaNERPrompt(task.schema);
   console.log('System prompt: ', systemPrompt);
@@ -113,14 +121,16 @@ async function handleAnnotationPipeline(task: RunAnnotationPipelineMessage) {
     `[offscreen] ${processableBlocks.length} blocks to process (${blocks.length - processableBlocks.length} skipped as too short)`,
   );
 
-  if (config.provider === 'claude' || config.provider === 'ollama') {
-    // Parallel execution for remote/local API (benefits from concurrent requests)
-    const CONCURRENCY = config.provider === 'claude' ? 5 : 3;
+  if (provider === 'anthropic' || provider === 'openai') {
+    // Parallel execution for remote APIs (benefits from concurrent requests)
+    const CONCURRENCY = provider === 'anthropic' ? 5 : 3;
     let completed = 0;
 
     const processBlock = async (block: (typeof processableBlocks)[number]) => {
       const messages: ChatMessage[] = [
-        { role: 'system', content: systemPrompt, cache_control: { type: 'ephemeral' } },
+        // Prompt-cache breakpoints are applied inside claude-runner when it
+        // builds the Anthropic request — not set here on the neutral message.
+        { role: 'system', content: systemPrompt },
         { role: 'user', content: block.text },
       ];
       const result = await runner.run(messages, task.requestId);
@@ -219,7 +229,7 @@ async function handleAnnotationPipeline(task: RunAnnotationPipelineMessage) {
     .sendMessage({
       type: 'mlTaskResult',
       requestId: task.requestId,
-      result: `Processed ${processableBlocks.length} blocks via ${config.provider}`,
+      result: `Processed ${processableBlocks.length} blocks via ${provider}`,
     })
     .catch(() => {});
 }
@@ -293,8 +303,8 @@ chrome.runtime.onMessage.addListener((message: ExtensionMessage, _sender, sendRe
         type: 'modelStatusReport',
         webllm: webllm.getStatus(),
         transformers: transformers.getStatus(),
-        claude: claude.getStatus(),
-        ollama: ollama.getStatus(),
+        anthropic: claude.getStatus(),
+        openai: openai.getStatus(),
       });
       return true;
   }

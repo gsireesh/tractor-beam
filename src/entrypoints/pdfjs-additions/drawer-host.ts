@@ -13,7 +13,7 @@
 import { getMlAnnotationRuns } from '@/lib/schema-storage';
 import { APP_CONFIG } from '@/app-config';
 import type { Highlight, Instance, Schema, SchemaAction } from '@/lib/definitions';
-import { getClaudeApiKey, getModelConfig, getOllamaBaseUrl } from '@/lib/config-storage';
+import { loadModelConfig } from '@/lib/config-storage';
 import { colorMapForSchema, mergePdfBoxes } from '@/lib/utils.ts';
 import { VISUAL_BLOCK_CLASS_ID } from '@/components/highlights/HighlightOverlay.tsx';
 
@@ -153,12 +153,10 @@ async function runAnnotationPipeline(schema: Schema, requestId: string) {
     console.warn('[drawer] ensureOffscreen failed — offscreen may already exist');
   });
 
-  // 3. Read model config and send the complete message to the offscreen document
-  const modelConfig = await getModelConfig();
-  const claudeApiKey =
-    modelConfig.provider === 'claude' ? ((await getClaudeApiKey()) ?? undefined) : undefined;
-  const ollamaBaseUrl =
-    modelConfig.provider === 'ollama' ? ((await getOllamaBaseUrl()) ?? undefined) : undefined;
+  // 3. Read the per-provider model config (healed on read) and send the
+  // complete message to the offscreen document. The active provider's secret
+  // travels inside modelConfig — offscreen can't read chrome.storage itself.
+  const modelConfig = await loadModelConfig();
 
   chrome.runtime
     .sendMessage({
@@ -167,8 +165,6 @@ async function runAnnotationPipeline(schema: Schema, requestId: string) {
       schema,
       blocks,
       modelConfig,
-      claudeApiKey,
-      ollamaBaseUrl,
     })
     .catch((err) => {
       console.error('[drawer] Failed to send runAnnotationPipeline:', err);
