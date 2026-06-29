@@ -61,7 +61,7 @@
      every themed subtree — so the `font-sans` utility, the scoped surfaces'
      `var(--font-sans)`, and this declaration all resolve to one value — without
      leaking the variable onto the host pdf.js page (`:root`). */
-  --font-sans: 'IBM Plex Sans', sans-serif;
+  --font-sans: sans-serif;
   font-family: var(--font-sans);
 
   --background: 0 0% 100%;
