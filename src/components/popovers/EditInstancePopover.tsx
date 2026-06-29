@@ -46,7 +46,8 @@ export function EditInstancePopover({
   return (
     <InstancePopover
       text={editor.text}
-      positiveExample={editor.instance.positiveExample}
+      positiveExample={editor.positiveExample}
+      onTogglePositiveExample={editor.togglePositiveExample}
       position={position}
       notesValue={editor.notesValue}
       onNotesChange={editor.setNotesValue}

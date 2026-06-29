@@ -11,6 +11,7 @@ const POPOVER_MAX_WIDTH_PX = 480;
 export interface InstancePopoverProps {
   text: string;
   positiveExample?: boolean;
+  onTogglePositiveExample?: () => void;
   position: { top: number; left: number; bottom: number };
   notesValue: string | null;
   onNotesChange: (v: string) => void;
@@ -31,6 +32,7 @@ export interface InstancePopoverProps {
 export function InstancePopover({
   text,
   positiveExample,
+  onTogglePositiveExample,
   position,
   notesValue,
   onNotesChange,
@@ -139,6 +141,7 @@ export function InstancePopover({
           <InstancePopoverContent
             text={text}
             positiveExample={positiveExample}
+            onTogglePositiveExample={onTogglePositiveExample}
             notesValue={notesValue}
             onNotesChange={onNotesChange}
             selectedClass={selectedClass}

@@ -40,6 +40,11 @@ export function useEditInstance(
   const [selectedClass, setSelectedClass] = useState<SchemaClass | null>(initialClass);
   const [inputValue, setInputValue] = useState<string>(initialClass?.name ?? '');
   const [notesValue, setNotesValue] = useState<string | null>(instance?.notes ?? null);
+  // Local copy so the chip flips immediately even in the floating popover, which
+  // reads a window-API snapshot and so doesn't re-render on dispatch alone.
+  const [positiveExample, setPositiveExample] = useState<boolean>(
+    instance?.positiveExample ?? true,
+  );
 
   // Snapshot of last-persisted values for the dirty check. Reset after each save
   // so repeated saves (the inline editor saves often) don't re-dispatch no-ops.
@@ -63,6 +68,12 @@ export function useEditInstance(
   useEffect(() => {
     setNotesValue(persistedNotes);
   }, [persistedNotes]);
+
+  // Same re-sync for the positive/negative flag (e.g. toggled from another surface).
+  const persistedPositive = instance?.positiveExample;
+  useEffect(() => {
+    if (persistedPositive !== undefined) setPositiveExample(persistedPositive);
+  }, [persistedPositive]);
 
   const computeUpdates = (): SchemaAction[] => {
     const updateActions: SchemaAction[] = [];
@@ -123,6 +134,22 @@ export function useEditInstance(
     onDeleted?.();
   };
 
+  // Flip positive <-> negative immediately (it's a discrete toggle, not part of
+  // the dirty-diff form state). Read the live instance so rapid clicks compose.
+  const togglePositiveExample = () => {
+    const current = adapter.getInstance(schemaId, classId, instanceId);
+    if (!current) return;
+    const next = !current.positiveExample;
+    setPositiveExample(next); // optimistic — drives the floating popover's re-render
+    adapter.dispatch({
+      actionType: 'updateInstance',
+      schemaId,
+      classId,
+      instanceId,
+      updates: { positiveExample: next },
+    });
+  };
+
   const actionButtons = createElement(InstanceActionsMenu, { onDelete: handleDelete });
 
   return {
@@ -134,9 +161,11 @@ export function useEditInstance(
     setSelectedClass,
     inputValue,
     setInputValue,
+    positiveExample,
     actionButtons,
     classes: activeSchema?.classes ?? [],
     save,
     handleDelete,
+    togglePositiveExample,
   };
 }

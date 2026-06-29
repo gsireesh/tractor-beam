@@ -49,7 +49,8 @@ export function ConfirmedInstanceViewer({
       >
         <InstancePopoverContent
           text={editor.text}
-          positiveExample={editor.instance.positiveExample}
+          positiveExample={editor.positiveExample}
+          onTogglePositiveExample={editor.togglePositiveExample}
           pageNumber={editor.instance.coords?.[0]?.pageNumber}
           notesValue={editor.notesValue}
           onNotesChange={editor.setNotesValue}

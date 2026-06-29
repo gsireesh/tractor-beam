@@ -5,9 +5,44 @@ import { SchemaClass } from '@/lib/definitions';
 import { CreatableCombobox } from '@/components/ui/creatable-combobox';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
-import { createNewClass } from '@/lib/utils';
+import { cn, createNewClass } from '@/lib/utils';
 
 const accentColorFallback = 'rgba(0,0,0,0)';
+
+/**
+ * The positive/negative indicator under the quote. When `onToggle` is supplied
+ * (confirmed instances, which can be re-labeled) it renders as a button that
+ * flips the status; otherwise it's a static badge.
+ */
+function ExampleChip({
+  positiveExample,
+  onToggle,
+}: {
+  positiveExample: boolean;
+  onToggle?: () => void;
+}) {
+  const tone = positiveExample
+    ? 'bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-300'
+    : 'bg-red-50 text-red-700 dark:bg-red-950 dark:text-red-300';
+  const inner = (
+    <>
+      {positiveExample ? <Plus /> : <Minus />}
+      {positiveExample ? 'Positive Example' : 'Negative Example'}
+    </>
+  );
+  if (!onToggle) return <Badge className={tone}>{inner}</Badge>;
+  return (
+    <Badge asChild className={cn(tone, 'cursor-pointer')}>
+      <button
+        type="button"
+        onClick={onToggle}
+        title="Click to switch between positive and negative example"
+      >
+        {inner}
+      </button>
+    </Badge>
+  );
+}
 
 /**
  * The accent color follows the selected class, but the combobox briefly sets
@@ -25,6 +60,8 @@ export interface InstancePopoverContentProps {
   text: string;
   /** Positive/negative indicator, shown under the quote. Omit when there's no instance yet (create/promote). */
   positiveExample?: boolean;
+  /** When set, the positive/negative chip becomes a button that flips the status. */
+  onTogglePositiveExample?: () => void;
   /** PDF page of the annotation. Passed only by the navigation-view host, so the page badge is nav-only. */
   pageNumber?: number;
   notesValue: string | null;
@@ -51,6 +88,7 @@ export interface InstancePopoverContentProps {
 export function InstancePopoverContent({
   text,
   positiveExample,
+  onTogglePositiveExample,
   pageNumber,
   notesValue,
   onNotesChange,
@@ -77,18 +115,9 @@ export function InstancePopoverContent({
       </div>
       {(positiveExample !== undefined || pageNumber !== undefined) && (
         <div className="mb-3 flex items-center gap-2">
-          {positiveExample !== undefined &&
-            (positiveExample ? (
-              <Badge className="bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-300">
-                <Plus />
-                Positive Example
-              </Badge>
-            ) : (
-              <Badge className="bg-red-50 text-red-700 dark:bg-red-950 dark:text-red-300">
-                <Minus />
-                Negative Example
-              </Badge>
-            ))}
+          {positiveExample !== undefined && (
+            <ExampleChip positiveExample={positiveExample} onToggle={onTogglePositiveExample} />
+          )}
           {pageNumber !== undefined && (
             <Badge className="bg-muted text-muted-foreground" style={{ borderColor: accentColor }}>
               Page {pageNumber}
