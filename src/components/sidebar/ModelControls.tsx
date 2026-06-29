@@ -2,15 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { MlProgressMessage } from '@/lib/messaging/message_definitions.ts';
 
 import { Progress } from '@/components/ui/progress.tsx';
-import {
-  ChevronDown,
-  LayoutPanelLeft,
-  Play,
-  Square,
-  History,
-  MoreVertical,
-  Highlighter,
-} from 'lucide-react';
+import { ChevronDown, LayoutPanelLeft, Play, Square, History, MoreVertical } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
