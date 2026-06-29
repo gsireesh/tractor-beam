@@ -35,6 +35,14 @@ export const DEFAULT_OPENAI_CONFIG: OpenAiConfig = {
   params: { maxTokens: 1024 },
 };
 
+/**
+ * Curated default models for OpenAI-compatible endpoints — a couple of current
+ * OpenAI GPT-5.4 models. Placeholder until the list is fetched live from the
+ * endpoint's /v1/models, since the real catalog is endpoint-specific (a custom
+ * Ollama/Together/OpenRouter endpoint will serve entirely different ids).
+ */
+export const OPENAI_MODELS = ['gpt-5.4', 'gpt-5.4-mini'] as const;
+
 export class OpenAiRunner {
   private apiKey: string | null = null;
   private baseUrl = '';
