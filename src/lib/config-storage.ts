@@ -1,8 +1,4 @@
-import {
-  DEFAULT_MODEL_CONFIG as DEFAULT_LEGACY_MODEL_CONFIG,
-  DEFAULT_WEBLLM_MODEL,
-  type ModelConfig as LegacyModelConfig,
-} from './ml/types';
+import { DEFAULT_WEBLLM_MODEL } from './ml/types';
 import { DEFAULT_MODEL_CONFIG, type ModelConfig, type ModelSelection } from './ml/model-config';
 import { DEFAULT_ANTHROPIC_CONFIG, DEFAULT_ANTHROPIC_MODEL } from '@/lib/ml/claude-runner.ts';
 import { DEFAULT_WEBLLM_CONFIG } from '@/lib/ml/webllm-runner.ts';
@@ -15,8 +11,8 @@ import { DEFAULT_OPENAI_CONFIG } from '@/lib/ml/openai-runner.ts';
  * read/written only through the accessors in this module — no component should
  * touch chrome.storage.local directly. There are two families of state:
  *
- *  - Config: model selection + credentials (`modelConfig`, `claudeApiKey`,
- *    `ollamaBaseUrl`), each under its own key for backward compatibility.
+ *  - Config: the per-provider model config under a single `modelConfig` key. The
+ *    legacy `claudeApiKey` key is still read once to migrate older installs.
  *  - UI: drawer position, consolidated under a single `uiState` key.
  *
  * Note: offscreen documents can't reach chrome.storage — config is passed to them
@@ -28,8 +24,8 @@ import { DEFAULT_OPENAI_CONFIG } from '@/lib/ml/openai-runner.ts';
  */
 
 const MODEL_CONFIG_KEY = 'modelConfig';
+/** Legacy key — read only to migrate older installs into modelConfig.anthropic.apiKey. */
 const API_KEY_STORAGE_KEY = 'claudeApiKey';
-const OLLAMA_BASE_URL_KEY = 'ollamaBaseUrl';
 const UI_STATE_KEY = 'uiState';
 
 /**
@@ -73,8 +69,7 @@ export interface UiState {
 /** Full documented shape of chrome.storage.local. */
 export interface PersistedState {
   modelConfig: ModelConfig; // key: 'modelConfig'
-  claudeApiKey: string | null; // key: 'claudeApiKey'
-  ollamaBaseUrl: string | null; // key: 'ollamaBaseUrl'
+  claudeApiKey: string | null; // legacy key: 'claudeApiKey' — read only for migration
   uiState: UiState; // key: 'uiState'
 }
 
@@ -85,35 +80,21 @@ const DEFAULT_UI_STATE: UiState = {
   themePreference: 'system',
 };
 
-// ─── Model config + credentials ───
-
-/**
- * @deprecated Legacy flat-shape accessor, kept during the expand/contract
- * migration to the per-provider {@link ModelConfig}. The runtime path still uses
- * this; consumers move to a {@link coerceModelConfig}-backed read in the contract
- * step, after which this (and the separate credential accessors below) are removed.
- */
-export async function getModelConfig(): Promise<LegacyModelConfig> {
-  const store = localStore();
-  if (!store) return { ...DEFAULT_LEGACY_MODEL_CONFIG };
-  const result = await store.get(MODEL_CONFIG_KEY);
-  const stored = result[MODEL_CONFIG_KEY] as Partial<LegacyModelConfig> | undefined;
-  return { ...DEFAULT_LEGACY_MODEL_CONFIG, ...stored };
-}
-
-/** @deprecated See {@link getModelConfig}. */
-export async function setModelConfig(config: Partial<LegacyModelConfig>): Promise<void> {
-  const store = localStore();
-  if (!store) return;
-  const current = await getModelConfig();
-  await store.set({ [MODEL_CONFIG_KEY]: { ...current, ...config } });
-}
-
-// ─── New per-provider model config (expand/contract migration) ───
+// ─── Model config (per-provider) ───
 //
-// The live pipeline still uses the legacy accessors above. The helpers below
-// produce the new per-provider ModelConfig and are unit-tested in isolation;
-// they become the live read/write path in the contract step.
+// `modelConfig` holds the per-provider ModelConfig. loadModelConfig heals
+// whatever is stored (new shape, the old flat shape, or nothing) on read, and
+// saveModelConfig persists the new shape — so older installs migrate the first
+// time either runs. The pure helpers below do the healing and are unit-tested.
+
+/** The pre-migration flat config shape — read-only (heal-on-read). Fields are
+ *  loose strings: it's whatever an older build happened to persist. */
+type LegacyModelConfig = {
+  provider?: string;
+  claudeModel?: string;
+  webllmModel?: string;
+  ollamaModel?: string;
+};
 
 /** Fill any missing block or field of a (possibly partial) new-shape config from defaults. */
 function withDefaults(stored: Partial<ModelConfig>): ModelConfig {
@@ -247,54 +228,20 @@ export function applyModelConfigPatch(base: ModelConfig, patch: ModelConfigPatch
  * Persist a patch to the per-provider config. Reads the current (healed) config
  * first, so the very first write after a legacy migration also persists the
  * fully-migrated new shape — the contract half of the expand/contract migration.
+ *
+ * API keys live in this blob in plaintext, deliberately. chrome.storage is
+ * isolated per-extension, so other extensions can't read it and have no
+ * filesystem API to grep the profile. The only threat that sees the value is
+ * malware running as the user — which already owns ~/.claude, .env, env vars,
+ * etc., so encrypting this one slot buys nothing it couldn't bypass elsewhere.
+ * Blast-radius control lives at the provider console: scoped keys, spend caps,
+ * rotation.
  */
 export async function saveModelConfig(patch: ModelConfigPatch): Promise<void> {
   const store = localStore();
   if (!store) return;
   const next = applyModelConfigPatch(await loadModelConfig(), patch);
   await store.set({ [MODEL_CONFIG_KEY]: next });
-}
-
-/** Read the Claude API key from chrome.storage.local. */
-export async function getClaudeApiKey(): Promise<string | null> {
-  const store = localStore();
-  if (!store) return null;
-  const result: Record<string, string> = await store.get(API_KEY_STORAGE_KEY);
-  return result[API_KEY_STORAGE_KEY] ?? null;
-}
-
-/**
- * Store the Claude API key in chrome.storage.local.
- *
- * Plaintext-at-rest is a deliberate choice, not an oversight. chrome.storage is
- * isolated per-extension, so other extensions can't read it and have no filesystem
- * API to grep the profile either. The only threat that sees this value is malware
- * running as the user — which also already owns ~/.claude, .env, env vars, etc., so
- * encrypting this one slot buys nothing it couldn't bypass elsewhere. Any client-side
- * encryption would need its decryption material in the bundle (= obfuscation) or a
- * per-session passphrase prompt (= friction for ~zero gain against our threat model).
- * The real blast-radius control lives at the Anthropic console: scoped keys, spend
- * caps, easy rotation.
- */
-export async function setClaudeApiKey(key: string): Promise<void> {
-  const store = localStore();
-  if (!store) return;
-  await store.set({ [API_KEY_STORAGE_KEY]: key });
-}
-
-/** Read the Ollama base URL from chrome.storage.local. */
-export async function getOllamaBaseUrl(): Promise<string | null> {
-  const store = localStore();
-  if (!store) return null;
-  const result: Record<string, string> = await store.get(OLLAMA_BASE_URL_KEY);
-  return result[OLLAMA_BASE_URL_KEY] ?? null;
-}
-
-/** Store the Ollama base URL in chrome.storage.local. */
-export async function setOllamaBaseUrl(url: string): Promise<void> {
-  const store = localStore();
-  if (!store) return;
-  await store.set({ [OLLAMA_BASE_URL_KEY]: url });
 }
 
 // ─── UI state ───
