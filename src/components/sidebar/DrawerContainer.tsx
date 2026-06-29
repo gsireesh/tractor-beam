@@ -405,6 +405,7 @@ function DrawerContent({
       <div className="shrink-0">
         <ModelControls
           status={llmLoaded.stage}
+          setMlHighlights={setMlHighlights}
           progress={llmLoaded.progress}
           message={llmLoaded.message}
         />
