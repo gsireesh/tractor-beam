@@ -1,4 +1,4 @@
-import { ReactNode, useEffect, useState } from 'react';
+import { ReactNode, useEffect, useRef, useState } from 'react';
 import { Combobox as ComboboxPrimitive } from '@base-ui/react';
 import {
   Combobox,
@@ -59,6 +59,42 @@ export function CreatableCombobox({
     return () => window.removeEventListener('scroll', close, true);
   }, [closeOnScroll, open]);
 
+  // Track the last *committed* (non-empty) selection so we can restore it if the
+  // user leaves the field with half-typed or unmatched text. An effect keeps the
+  // ref current, so the deferred blur handler below always reads a post-commit
+  // value — making it a no-op when the blur actually accompanied a real selection.
+  const lastValidValueRef = useRef(value);
+  useEffect(() => {
+    if (value) lastValidValueRef.current = value;
+  }, [value]);
+
+  // Guard the deferred revert against running after unmount (the popover unmounts
+  // on outside-click, which is itself a blur).
+  const mountedRef = useRef(true);
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
+
+  const revertToLastValidOnBlur = () => {
+    // Defer past the current task so any item-selection commit lands first; by the
+    // next macrotask `lastValidValueRef` reflects it and re-committing is a no-op.
+    window.setTimeout(() => {
+      if (!mountedRef.current) return;
+      const committed = lastValidValueRef.current;
+      // Re-derive the selection ONLY for a name that's in the list — onSelect looks
+      // the class up there. A just-created class isn't in `items` yet (it lives as
+      // the current selection until save), so looking it up would null it out and
+      // blank the field; its selection is already correct, so only fix the text.
+      if (items.includes(committed)) {
+        onSelect(committed);
+      }
+      onInputValueChange(committed);
+    }, 0);
+  };
+
   const trimmed = inputValue.trim();
   const hasExactMatch =
     items.some((i) => i.toLowerCase() === trimmed.toLowerCase()) ||
@@ -89,7 +125,11 @@ export function CreatableCombobox({
         }
       }}
     >
-      <ComboboxInput className={inputClassName} onClick={() => onSelect('')} />
+      <ComboboxInput
+        className={inputClassName}
+        onClick={() => onSelect('')}
+        onBlur={revertToLastValidOnBlur}
+      />
       <ComboboxContent
         container={contentContainer}
         positionerClassName={contentPositionerClassName}

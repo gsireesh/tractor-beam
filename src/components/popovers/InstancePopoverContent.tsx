@@ -124,7 +124,7 @@ export function InstancePopoverContent({
               ),
             );
           }}
-          renderCreateLabel={(label) => `Create new class "${label}"`}
+          renderCreateLabel={(label) => `Create new highlighter "${label}"`}
           inputClassName="flex-1 min-w-0 bg-card"
           contentContainer={comboboxContainer}
           contentPositionerClassName={comboboxPositionerClassName}
