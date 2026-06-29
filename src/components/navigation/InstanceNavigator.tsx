@@ -17,10 +17,11 @@ interface InstanceNavigatorProps {
   confirmedSignposts: Signpost[];
 }
 
-const defaultSourceState = ['confirmed', 'suggested'];
+const defaultSourceState: string[] = [];
 
 export function InstanceNavigator({ confirmedSignposts, mlSignposts }: InstanceNavigatorProps) {
   const [sourceEnabled, setSourceEnabled] = useState<string[]>(defaultSourceState);
+  const noneSelected = sourceEnabled.length === 0;
   const [query, setQuery] = useState<string>('');
 
   const toggleSource = (source: string, pressed: boolean) =>
@@ -28,8 +29,8 @@ export function InstanceNavigator({ confirmedSignposts, mlSignposts }: InstanceN
 
   // Pipeline: filter by source → filter by text → sort by page.
   const bySource = [
-    ...(sourceEnabled.includes('confirmed') ? confirmedSignposts : []),
-    ...(sourceEnabled.includes('suggested') ? mlSignposts : []),
+    ...(noneSelected || sourceEnabled.includes('confirmed') ? confirmedSignposts : []),
+    ...(noneSelected || sourceEnabled.includes('suggested') ? mlSignposts : []),
   ];
   const q = query.trim().toLowerCase();
   const visible = (

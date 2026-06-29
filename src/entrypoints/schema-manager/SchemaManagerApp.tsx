@@ -29,7 +29,7 @@ const ALL_PDFS = '__all__';
 
 function emptyFilters(schema: Schema | undefined): FilterState {
   return {
-    classIds: schema ? schema.classes.map((c) => c.id) : [],
+    classIds: [],
     pdfUrl: null,
     contentQuery: '',
     notesQuery: '',
@@ -140,7 +140,7 @@ export function SchemaManagerApp() {
               <Search />
             </InputGroupAddon>
             <InputGroupInput
-              placeholder="Search content…"
+              placeholder="Search quote text…"
               value={filters.contentQuery}
               onChange={(e) => setFilters((f) => ({ ...f, contentQuery: e.target.value }))}
             />
@@ -162,7 +162,7 @@ export function SchemaManagerApp() {
               <Search />
             </InputGroupAddon>
             <InputGroupInput
-              placeholder="Search notes…"
+              placeholder="Search your notes…"
               value={filters.notesQuery}
               onChange={(e) => setFilters((f) => ({ ...f, notesQuery: e.target.value }))}
             />
@@ -214,7 +214,7 @@ export function SchemaManagerApp() {
               pressed={filters.classIds.includes(cls.id)}
               onPressedChange={(p) => toggleClass(cls.id, p)}
             >
-              {cls.name}
+              {cls.name} ({cls.instances.length})
             </Toggle>
           ))}
         </div>

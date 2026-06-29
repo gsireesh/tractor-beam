@@ -205,7 +205,7 @@ export function SchemaClassViewer({
       </label>
       <Accordion type="single" collapsible>
         <AccordionItem value="instances">
-          <AccordionTrigger>Examples</AccordionTrigger>
+          <AccordionTrigger>Examples ({currentPDFInstances.length})</AccordionTrigger>
           <AccordionContent>
             {currentPDFInstances.length ? (
               currentPDFInstances.map((instance) => (
