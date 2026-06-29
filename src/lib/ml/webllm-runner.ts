@@ -4,12 +4,7 @@
 // DEFAULT_WEBLLM_CONFIG) must not pull in the runtime. The type import is erased
 // at compile time, so it adds no load.
 import type { MLCEngine } from '@mlc-ai/web-llm';
-import {
-  type ChatMessage,
-  DEFAULT_WEBLLM_MODEL,
-  type ProgressCallback,
-  type WebLlmModelId,
-} from './types';
+import { type ChatMessage, DEFAULT_WEBLLM_MODEL, type ProgressCallback } from './types';
 
 // ChatMessage now lives in ./types (shared primitive). Re-exported here so the
 // existing `from './webllm-runner'` importers keep working during the refactor.
@@ -37,7 +32,7 @@ export class WebLlmRunner {
   private engine: MLCEngine | null = null;
   private loadedModel: string | null = null;
   private loading = false;
-  private currentModel: WebLlmModelId = DEFAULT_WEBLLM_MODEL;
+  private currentModel: string = DEFAULT_WEBLLM_MODEL;
   private onProgress: ProgressCallback;
   private params: WebLlmParams = {};
 
@@ -45,7 +40,7 @@ export class WebLlmRunner {
     this.onProgress = onProgress;
   }
 
-  setModel(model: WebLlmModelId) {
+  setModel(model: string) {
     this.currentModel = model;
   }
 

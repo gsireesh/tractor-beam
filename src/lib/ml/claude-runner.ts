@@ -43,6 +43,7 @@ export class ClaudeRunner {
   private apiKey: string | null = null;
   private baseUrl = 'https://api.anthropic.com';
   private model: string = DEFAULT_CLAUDE_MODEL;
+  private params: AnthropicParams = {};
 
   // Accepts the progress callback for interface parity with the other runners;
   // Claude calls return in one shot, so there's no load/stream progress to report.
@@ -50,6 +51,10 @@ export class ClaudeRunner {
 
   setModel(model: string) {
     this.model = model;
+  }
+
+  setParams(params: AnthropicParams) {
+    this.params = params;
   }
 
   /** Set the API key in memory only (offscreen can't access chrome.storage). */
@@ -90,17 +95,22 @@ export class ClaudeRunner {
       .filter((m) => m.role !== 'system')
       .map((m) => ({ role: m.role as 'user' | 'assistant', content: m.content }));
 
-    const message = await client.messages.create(
-      {
-        model: this.model,
-        max_tokens: maxTokens,
-        system: systemMessage
-          ? [{ type: 'text', text: systemMessage.content, cache_control: { type: 'ephemeral' } }]
-          : undefined,
-        messages: turns,
-      },
-      { timeout: timeoutMs },
-    );
+    const request: Anthropic.MessageCreateParamsNonStreaming = {
+      model: this.model,
+      max_tokens: this.params.maxTokens ?? maxTokens,
+      system: systemMessage
+        ? [{ type: 'text', text: systemMessage.content, cache_control: { type: 'ephemeral' } }]
+        : undefined,
+      messages: turns,
+    };
+    // `effort` is GA on the Messages API but only typed under the SDK's beta
+    // messages resource in this version; attach it directly rather than switching
+    // the whole call to client.beta.messages.
+    if (this.params.effort) {
+      (request as unknown as Record<string, unknown>).output_config = { effort: this.params.effort };
+    }
+
+    const message = await client.messages.create(request, { timeout: timeoutMs });
 
     const text =
       message.content.find((b): b is Anthropic.TextBlock => b.type === 'text')?.text ?? '';

@@ -187,6 +187,74 @@ export function coerceModelConfig(stored: unknown, legacyApiKey: string | null):
   return withDefaults(stored as Partial<ModelConfig>);
 }
 
+/**
+ * Read the per-provider {@link ModelConfig} from storage, healing whatever is
+ * there (new shape, legacy flat shape, or nothing) into a valid config. This is
+ * the new live read path — the pipeline reads through here while the UI still
+ * writes the legacy shape, which {@link coerceModelConfig} heals on the way out.
+ * Reads the legacy `claudeApiKey` key too, so a migrated config keeps its key.
+ */
+export async function loadModelConfig(): Promise<ModelConfig> {
+  const store = localStore();
+  if (!store) return coerceModelConfig(null, null);
+  const [cfgResult, keyResult] = await Promise.all([
+    store.get(MODEL_CONFIG_KEY),
+    store.get(API_KEY_STORAGE_KEY),
+  ]);
+  return coerceModelConfig(
+    cfgResult[MODEL_CONFIG_KEY] ?? null,
+    (keyResult[API_KEY_STORAGE_KEY] as string | undefined) ?? null,
+  );
+}
+
+/**
+ * A shallow-per-block patch over {@link ModelConfig}: update `selected` and/or
+ * any provider block (each block's own fields, incl. `params`, individually).
+ * Using `ModelConfig['anthropic']` etc. avoids importing the runner config types.
+ */
+export type ModelConfigPatch = {
+  selected?: Partial<ModelConfig['selected']>;
+  anthropic?: Partial<ModelConfig['anthropic']>;
+  openai?: Partial<ModelConfig['openai']>;
+  webllm?: Partial<ModelConfig['webllm']>;
+};
+
+/** Merge a patch over a full config — symmetric to {@link withDefaults}: top-level
+ *  block spread, with `params` merged one level deeper so a partial params update
+ *  doesn't wipe sibling params. */
+export function applyModelConfigPatch(base: ModelConfig, patch: ModelConfigPatch): ModelConfig {
+  return {
+    selected: { ...base.selected, ...patch.selected },
+    anthropic: {
+      ...base.anthropic,
+      ...patch.anthropic,
+      params: { ...base.anthropic.params, ...patch.anthropic?.params },
+    },
+    openai: {
+      ...base.openai,
+      ...patch.openai,
+      params: { ...base.openai.params, ...patch.openai?.params },
+    },
+    webllm: {
+      ...base.webllm,
+      ...patch.webllm,
+      params: { ...base.webllm.params, ...patch.webllm?.params },
+    },
+  };
+}
+
+/**
+ * Persist a patch to the per-provider config. Reads the current (healed) config
+ * first, so the very first write after a legacy migration also persists the
+ * fully-migrated new shape — the contract half of the expand/contract migration.
+ */
+export async function saveModelConfig(patch: ModelConfigPatch): Promise<void> {
+  const store = localStore();
+  if (!store) return;
+  const next = applyModelConfigPatch(await loadModelConfig(), patch);
+  await store.set({ [MODEL_CONFIG_KEY]: next });
+}
+
 /** Read the Claude API key from chrome.storage.local. */
 export async function getClaudeApiKey(): Promise<string | null> {
   const store = localStore();

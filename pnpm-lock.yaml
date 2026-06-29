@@ -47,9 +47,6 @@ importers:
       lucide-react:
         specifier: ^1.7.0
         version: 1.7.0(react@19.1.0)
-      ollama:
-        specifier: ^0.6.3
-        version: 0.6.3
       openai:
         specifier: ^6.45.0
         version: 6.45.0(zod@3.25.76)
@@ -3811,9 +3808,6 @@ packages:
   ohash@2.0.11:
     resolution: {integrity: sha512-RdR9FQrFwNBNXAr4GixM8YaRZRJ5PUWbKYbE5eOsrwAjJW0q2REGcf79oYPsLyskQCZG1PLN+S/K1V00joZAoQ==}
 
-  ollama@0.6.3:
-    resolution: {integrity: sha512-KEWEhIqE5wtfzEIZbDCLH51VFZ6Z3ZSa6sIOg/E/tBV8S51flyqBOXi+bRxlOYKDf8i327zG9eSTb8IJxvm3Zg==}
-
   on-exit-leak-free@2.1.2:
     resolution: {integrity: sha512-0eJJY6hXLGf1udHwfNftBqH+g73EU4B504nZeKpz1sYRKafAghwxEJunB2O7rDZkL4PGfsMVnTXZ2EjibbqcsA==}
     engines: {node: '>=14.0.0'}
@@ -4790,9 +4784,6 @@ packages:
 
   webpack-virtual-modules@0.6.2:
     resolution: {integrity: sha512-66/V2i5hQanC51vBQKPH4aI8NMAcBW59FVBs+rC7eGHupMyfn34q7rZIE+ETlJ+XTevqfUhVVBgSUNSW2flEUQ==}
-
-  whatwg-fetch@3.6.20:
-    resolution: {integrity: sha512-EqhiFU6daOA8kpjOWTL0olhVOF3i7OrFzSYiGsEMB8GcXS+RrzauAERX65xMeNWVqxA6HXH2m69Z9LaKKdisfg==}
 
   when-exit@2.1.4:
     resolution: {integrity: sha512-4rnvd3A1t16PWzrBUcSDZqcAmsUIy4minDXT/CZ8F2mVDgd65i4Aalimgz1aQkRGU0iH5eT5+6Rx2TK8o443Pg==}
@@ -8884,10 +8875,6 @@ snapshots:
 
   ohash@2.0.11: {}
 
-  ollama@0.6.3:
-    dependencies:
-      whatwg-fetch: 3.6.20
-
   on-exit-leak-free@2.1.2: {}
 
   on-finished@2.4.1:
@@ -10038,8 +10025,6 @@ snapshots:
   web-namespaces@2.0.1: {}
 
   webpack-virtual-modules@0.6.2: {}
-
-  whatwg-fetch@3.6.20: {}
 
   when-exit@2.1.4: {}
 
