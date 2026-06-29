@@ -2,7 +2,17 @@ import { useState, useEffect, useMemo } from 'react';
 import { MlProgressMessage } from '@/lib/messaging/message_definitions.ts';
 
 import { Progress } from '@/components/ui/progress.tsx';
-import { LayoutPanelLeft, Play, Settings, Square, Save, History } from 'lucide-react';
+import {
+  LayoutPanelLeft,
+  Play,
+  Settings,
+  Square,
+  Save,
+  History,
+  Highlighter,
+  MoreVertical,
+  ChevronDown,
+} from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,6 +25,8 @@ import {
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
+  DropdownMenuItem,
+  DropdownMenuGroup,
 } from '@/components/ui/dropdown-menu.tsx';
 import {
   WEBLLM_MODELS,
@@ -35,6 +47,8 @@ import {
 import { useDrawerContext } from '@/contexts/DrawerContext.tsx';
 import { IconButton } from '@/components/ui/IconButton.tsx';
 import { ModelConfigurationModal } from '@/components/model-configuration/ModelConfigurationModal.tsx';
+import { ModelProviderNameMap } from '@/lib/ml/model-config.ts';
+import { DropdownMenuGroup } from '@/components/ui/dropdown-menu';
 
 export interface ModelControlsProps {
   status: MlProgressMessage['stage'];
@@ -110,7 +124,7 @@ export function ModelControls({ status, progress, message }: ModelControlsProps)
         : config.webllmModel;
 
   return (
-    <div className="border-t-2 border-blue-500 p-2 m-0 shadow-[0px_-4px_6px_-1px_rgba(0,0,0,0.1)]">
+    <div className="border-t-2 border-[#9370DB] p-2 m-0 shadow-[0px_-4px_6px_-1px_rgba(0,0,0,0.1)]">
       <div className="flex items-center justify-between">
         <h1 className="font-semibold">Model Control Panel</h1>
         <ModelConfigurationModal container={drawerRoot} />
@@ -182,101 +196,103 @@ export function ModelControls({ status, progress, message }: ModelControlsProps)
         {/*  </DropdownMenuContent>*/}
         {/*</DropdownMenu>*/}
       </div>
-      {config.provider === 'claude' && (
-        <div className="flex items-center gap-1 mt-1">
-          <input
-            type="password"
-            placeholder="Claude API Key"
-            className="flex-1 px-2 py-1 text-xs border rounded"
-            value={apiKey}
-            onChange={(e) => setApiKey(e.target.value)}
+      <div>
+        <DropdownMenu>
+          <DropdownMenuTrigger className="flex w-60 items-center justify-between gap-2 rounded-md border border-input bg-transparent px-3 py-2 text-sm whitespace-nowrap shadow-xs outline-none transition-[color,box-shadow] focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 data-[placeholder]:text-muted-foreground dark:bg-input/30 dark:hover:bg-input/50">
+            {currentModel ?? <span className="text-muted-foreground">Select model…</span>}
+            <ChevronDown className="size-4 opacity-50" />
+          </DropdownMenuTrigger>
+          <DropdownMenuPortal container={document.getElementById('tractor-beam-drawer-root')}>
+            <DropdownMenuContent className="z-[10001]">
+              <DropdownMenuGroup>
+                <DropdownMenuItem>
+                  <DropdownMenuSub>
+                    <DropdownMenuSubTrigger>
+                      <DropdownMenuItem>Test 2</DropdownMenuItem>
+                    </DropdownMenuSubTrigger>
+                    <DropdownMenuSubContent>
+                      <DropdownMenuGroup>
+                        <DropdownMenuRadioGroup>
+                          <DropdownMenuRadioItem value={'test'}>
+                            <p>Test 2</p>
+                          </DropdownMenuRadioItem>
+                        </DropdownMenuRadioGroup>
+                      </DropdownMenuGroup>
+                    </DropdownMenuSubContent>
+                  </DropdownMenuSub>
+                </DropdownMenuItem>
+              </DropdownMenuGroup>
+            </DropdownMenuContent>
+          </DropdownMenuPortal>
+        </DropdownMenu>
+        <p>
+          Status: {status}{' '}
+          <span
+            className={
+              'inline-block w-2 h-2 rounded-full ' + (STATUS_MAP[status] || 'bg-muted-foreground')
+            }
           />
-          <IconButton
-            title="Save API Key"
-            icon={Save}
-            size="icon-xs"
-            onClick={() => void saveApiKey()}
-          />
-          {apiKeySaved && <span className="text-xs text-green-600">Saved!</span>}
-        </div>
-      )}
-      {config.provider === 'ollama' && (
-        <div className="flex items-center gap-1 mt-1">
-          <input
-            type="text"
-            placeholder="Ollama URL"
-            className="flex-1 px-2 py-1 text-xs border rounded"
-            value={ollamaUrl}
-            onChange={(e) => setOllamaUrl(e.target.value)}
-          />
-          <IconButton
-            title="Save Ollama URL"
-            icon={Save}
-            size="icon-xs"
-            onClick={() => void saveOllamaUrl()}
-          />
-          {ollamaUrlSaved && <span className="text-xs text-green-600">Saved!</span>}
-        </div>
-      )}
-      <div className="flex items-center gap-2 text-sm">
-        <span>
-          {config.provider === 'claude'
-            ? 'Claude'
-            : config.provider === 'ollama'
-              ? 'Ollama'
-              : 'WebLLM'}
-          : {status}
-        </span>
-        <span
-          className={
-            'inline-block w-2 h-2 rounded-full ' + (STATUS_MAP[status] || 'bg-muted-foreground')
-          }
-        />
+        </p>
       </div>
-      {status === 'loading' && (
-        <div className="mt-1">
-          <div className="text-xs text-muted-foreground">Loading model...</div>
-          <Progress value={progress * 100} className="h-2" />
-        </div>
-      )}
       {isRunning && (
         <div className="mt-1">
           <div className="text-xs text-muted-foreground">{message || 'Annotating...'}</div>
           <Progress value={progress * 100} className="h-2 [&>div]:bg-green-500" />
         </div>
       )}
-      <div className="flex gap-1 mt-1">
-        <IconButton
-          title="Start Annotation Pipeline"
-          icon={Play}
-          color={'green'}
-          onClick={sendRunMessage}
-          disabled={isRunning}
-        />
-        {isRunning && (
-          <IconButton
-            title={'Stop Annotation'}
-            icon={Square}
-            color={'red'}
-            onClick={sendCancelMessage}
-          />
-        )}
-        <IconButton
-          title={'Run Segmentation Pipeline'}
-          icon={LayoutPanelLeft}
-          onClick={() => {
-            console.log('[drawer] Running segmentation pipeline!');
-            void window.TractorBeamDrawer.runSegmentationPipeline();
-          }}
-        />
-        <IconButton
-          title={'Load Prior Annotations'}
-          icon={History}
-          onClick={() => {
-            console.log('[ModelControls] Loading cached annotations');
-            void window.TractorBeamDrawer.loadCachedAnnotations(activeSchema.id, pdfUrl);
-          }}
-        />
+      {status === 'loading' && (
+        <div className="mt-1">
+          <div className="text-xs text-muted-foreground">Loading model...</div>
+          <Progress value={progress * 100} className="h-2" />
+        </div>
+      )}
+      <div className="flex flex-row justify-between flex gap-1 mt-1">
+        <div className="flex flex-row justify-start">
+          <div>
+            <IconButton
+              title="Start Annotation Pipeline"
+              icon={Play}
+              color={'green'}
+              onClick={sendRunMessage}
+              disabled={isRunning}
+            />
+            {isRunning && (
+              <IconButton
+                title={'Stop Annotation'}
+                icon={Square}
+                color={'red'}
+                onClick={sendCancelMessage}
+              />
+            )}
+            <IconButton
+              title={'Load Prior Annotations'}
+              icon={History}
+              onClick={() => {
+                console.log('[ModelControls] Loading cached annotations');
+                void window.TractorBeamDrawer.loadCachedAnnotations(activeSchema.id, pdfUrl);
+              }}
+            />
+          </div>
+        </div>
+        <div className={'flex flex-row justify-end'}>
+          <DropdownMenu>
+            <DropdownMenuTrigger>
+              <IconButton title="More actions" icon={MoreVertical} size={'icon'} />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuGroup>
+                <DropdownMenuItem
+                  onClick={() => {
+                    console.log('[drawer] Running segmentation pipeline!');
+                    void window.TractorBeamDrawer.runSegmentationPipeline();
+                  }}
+                >
+                  <LayoutPanelLeft /> Run Segmentation Pipeline
+                </DropdownMenuItem>
+              </DropdownMenuGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
     </div>
   );
