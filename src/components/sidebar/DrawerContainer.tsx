@@ -42,6 +42,7 @@ import { SchemaHeader } from '@/components/sidebar/SchemaHeader.tsx';
 import { DrawerVisibilityToggle } from '@/components/sidebar/DrawerVisibilityToggle.tsx';
 import {
   clearDrawerContent,
+  getRunModel,
   ownsAnnotationRequest,
   registerDrawerContent,
   syncProvisionalHighlights,
@@ -280,6 +281,7 @@ function DrawerContent({
               schemaId: activeSchema?.id ?? '',
               annotations: message.annotations,
               createdAt: Date.now(),
+              model: getRunModel(message.requestId),
             }).catch((err: unknown) =>
               console.error('[drawer] Failed to store ML annotations:', err),
             );

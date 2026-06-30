@@ -105,6 +105,34 @@ describe('ModelControls — ML run history', () => {
 
     expect(await screen.findByText('No prior AI runs')).toBeInTheDocument();
   });
+
+  it("expands a run's config without loading the run (stopPropagation inside the menu)", async () => {
+    const user = userEvent.setup();
+    findByMock.mockResolvedValue([
+      run({
+        id: 'r1',
+        createdAt: 1_700_100_000_000,
+        annotations: makeAnns(3),
+        model: {
+          provider: 'anthropic',
+          model: 'claude-opus-4-8',
+          baseUrl: 'https://proxy.example.com',
+          params: { maxTokens: 2048 },
+        },
+      }),
+    ]);
+
+    renderControls();
+    await user.click(screen.getByTitle('Prior AI runs'));
+
+    // The model line shows; config is collapsed.
+    expect(await screen.findByText(/Model:\s*claude-opus-4-8/)).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: /config/i }));
+
+    // Config revealed, and crucially the run was NOT loaded by that click.
+    expect(screen.getByText('https://proxy.example.com')).toBeInTheDocument();
+    expect(loadCachedAnnotations).not.toHaveBeenCalled();
+  });
 });
 
 // Build N minimal annotations so a run's `annotations.length` is controllable.

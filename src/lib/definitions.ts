@@ -59,12 +59,27 @@ export interface MlAnnotation {
   createdAt: number;
 }
 
+/**
+ * Secret-stripped snapshot of the model config a run was produced with, recorded
+ * at run time for provenance/display. Deliberately omits credentials (the
+ * provider apiKey) — this is persisted to IndexedDB. `params` is provider-shaped
+ * (e.g. effort/maxTokens), kept generic so it survives provider changes.
+ */
+export interface MlRunModel {
+  provider: string;
+  model: string;
+  baseUrl?: string;
+  params?: Record<string, number | string | undefined>;
+}
+
 export interface MlAnnotationRun {
   id: string; // requestId
   pdfUrl: string;
   schemaId: string;
   annotations: MlAnnotation[];
   createdAt: number;
+  /** Model used for this run; absent on runs recorded before this was captured. */
+  model?: MlRunModel;
 }
 
 export interface SchemaClass {

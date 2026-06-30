@@ -11,8 +11,9 @@
  */
 
 import { mlAnnotationRunRepo } from '@/storage/repositories';
-import type { Highlight, Instance, Schema, SchemaAction } from '@/lib/definitions';
+import type { Highlight, Instance, MlRunModel, Schema, SchemaAction } from '@/lib/definitions';
 import { loadModelConfig } from '@/lib/config-storage';
+import type { ModelConfig } from '@/lib/ml/model-config';
 import { colorMapForSchema, mergePdfBoxes } from '@/lib/utils.ts';
 import { VISUAL_BLOCK_CLASS_ID } from '@/components/highlights/HighlightOverlay.tsx';
 
@@ -139,9 +140,34 @@ export function syncProvisionalHighlights(mlHighlights: Highlight[]) {
 // tab's run — otherwise a run on document A gets persisted under tab B's pdfUrl.
 const ownedRequestIds = new Set<string>();
 
+// Secret-stripped model snapshot per owned run, captured at initiation so the
+// receiver can persist provenance with the run (the apiKey never leaves here).
+const runModels = new Map<string, MlRunModel>();
+
 /** True if this tab initiated the given annotation run. */
 export function ownsAnnotationRequest(requestId: string): boolean {
   return ownedRequestIds.has(requestId);
+}
+
+/** The model snapshot recorded for a run this tab initiated, if any. */
+export function getRunModel(requestId: string): MlRunModel | undefined {
+  return runModels.get(requestId);
+}
+
+/**
+ * Distill the active selection into a credential-free snapshot for storage.
+ * Only `params` (effort/maxTokens/…) and `baseUrl` are copied; the provider
+ * block's sibling `apiKey` is never read, so it cannot reach IndexedDB.
+ */
+function modelSnapshot(config: ModelConfig): MlRunModel {
+  const { provider, model } = config.selected;
+  const block = config[provider];
+  return {
+    provider,
+    model,
+    baseUrl: 'baseUrl' in block ? block.baseUrl : undefined,
+    params: { ...block.params },
+  };
 }
 
 // ─── Pipeline orchestration (called via window API) ───
@@ -176,6 +202,9 @@ async function runAnnotationPipeline(schema: Schema, requestId: string) {
   // complete message to the offscreen document. The active provider's secret
   // travels inside modelConfig — offscreen can't read chrome.storage itself.
   const modelConfig = await loadModelConfig();
+  // Record what ran, for the history card. Set before dispatching so it's present
+  // by the time results broadcast back. Credential-free (see modelSnapshot).
+  runModels.set(requestId, modelSnapshot(modelConfig));
 
   chrome.runtime
     .sendMessage({
