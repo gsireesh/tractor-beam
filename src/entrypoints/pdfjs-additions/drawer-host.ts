@@ -10,8 +10,7 @@
  * each own a single window.TractorBeam* API.
  */
 
-import { getMlAnnotationRuns } from '@/lib/schema-storage';
-import { APP_CONFIG } from '@/app-config';
+import { mlAnnotationRunRepo } from '@/storage/repositories';
 import type { Highlight, Instance, Schema, SchemaAction } from '@/lib/definitions';
 import { loadModelConfig } from '@/lib/config-storage';
 import { colorMapForSchema, mergePdfBoxes } from '@/lib/utils.ts';
@@ -82,19 +81,25 @@ async function runSegmentationPipeline() {
   );
 }
 
-async function loadCachedAnnotations(schemaId: string, pdfUrl: string) {
+async function loadCachedAnnotations(schemaId: string, pdfUrl: string, runId?: string) {
   console.log('[drawer] Loading cached annotations from IndexedDB');
-  const runs = await getMlAnnotationRuns(APP_CONFIG.indexedDBConfig, schemaId, pdfUrl);
+  const runs = await mlAnnotationRunRepo.findBy(schemaId, pdfUrl);
   if (runs.length === 0) {
     console.log('[drawer] No cached annotation runs found');
     return;
   }
-  const mostRecent = runs.sort((a, b) => b.createdAt - a.createdAt)[0];
-  console.log(
-    `[drawer] Loaded cached run ${mostRecent.id} with ${mostRecent.annotations.length} annotations`,
-  );
+  // With a runId, time-travel to that specific run; without one, default to the
+  // most recent (the History icon's bare-click behavior).
+  const run = runId
+    ? runs.find((r) => r.id === runId)
+    : runs.sort((a, b) => b.createdAt - a.createdAt)[0];
+  if (!run) {
+    console.warn(`[drawer] Requested cached run ${runId} not found`);
+    return;
+  }
+  console.log(`[drawer] Loaded cached run ${run.id} with ${run.annotations.length} annotations`);
   const colorsByClass = colorMapForSchema(getActiveSchemaFn());
-  const loaded: Highlight[] = mostRecent.annotations.map((a) => ({
+  const loaded: Highlight[] = run.annotations.map((a) => ({
     id: a.id,
     classId: a.classId,
     schemaId,
@@ -208,7 +213,7 @@ declare global {
       getInstance: (schemaId: string, classId: string, instanceId: string) => Instance | null;
       runAnnotationPipeline: (schema: Schema, requestId: string) => Promise<void>;
       runSegmentationPipeline: () => Promise<void>;
-      loadCachedAnnotations: (schemaId: string, pdfUrl: string) => Promise<void>;
+      loadCachedAnnotations: (schemaId: string, pdfUrl: string, runId?: string) => Promise<void>;
       cancelAnnotationPipeline: (requestId: string) => void;
     };
   }
