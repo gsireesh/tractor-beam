@@ -126,9 +126,23 @@ export function syncProvisionalHighlights(mlHighlights: Highlight[]) {
   window.TractorBeamHighlights.setHighlights('provisional', highlights);
 }
 
+// ─── Run ownership ───
+// The offscreen document BROADCASTS annotationResults/mlProgress to every open
+// viewer tab, tagged only by requestId. This module is per-tab (one instance per
+// viewer page), so the set of requestIds initiated here IS "runs this tab owns".
+// Receivers (DrawerContainer's message listener) consult this to ignore another
+// tab's run — otherwise a run on document A gets persisted under tab B's pdfUrl.
+const ownedRequestIds = new Set<string>();
+
+/** True if this tab initiated the given annotation run. */
+export function ownsAnnotationRequest(requestId: string): boolean {
+  return ownedRequestIds.has(requestId);
+}
+
 // ─── Pipeline orchestration (called via window API) ───
 async function runAnnotationPipeline(schema: Schema, requestId: string) {
   console.log('[drawer] Starting annotation pipeline:', requestId);
+  ownedRequestIds.add(requestId);
 
   // Reset ML highlights for the new run (state change re-syncs the viewer).
   setMlHighlightsFn?.([]);

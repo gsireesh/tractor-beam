@@ -42,6 +42,7 @@ import { SchemaHeader } from '@/components/sidebar/SchemaHeader.tsx';
 import { DrawerVisibilityToggle } from '@/components/sidebar/DrawerVisibilityToggle.tsx';
 import {
   clearDrawerContent,
+  ownsAnnotationRequest,
   registerDrawerContent,
   syncProvisionalHighlights,
 } from '@/entrypoints/pdfjs-additions/drawer-host';
@@ -254,6 +255,10 @@ function DrawerContent({
     const listener = (message: ExtensionMessage) => {
       switch (message.type) {
         case 'mlProgress':
+          // Results/progress are broadcast to every viewer tab tagged only by
+          // requestId. Ignore progress for a run another tab started; allow
+          // requestId-less generic progress (e.g. model load) through.
+          if (message.requestId && !ownsAnnotationRequest(message.requestId)) break;
           setLlmLoaded({
             stage: message.stage,
             progress: message.progress,
@@ -261,7 +266,13 @@ function DrawerContent({
           });
           break;
         case 'annotationResults':
-          if (message.annotations && message.requestId) {
+          // Only persist/render results for a run THIS tab initiated — otherwise
+          // another document's annotations get saved under this tab's pdfUrl.
+          if (
+            message.annotations &&
+            message.requestId &&
+            ownsAnnotationRequest(message.requestId)
+          ) {
             // Store for later review
             storeMlAnnotationRun(APP_CONFIG.indexedDBConfig, {
               id: message.requestId,
