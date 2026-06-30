@@ -4,6 +4,7 @@ import reactHooks from 'eslint-plugin-react-hooks';
 import reactRefresh from 'eslint-plugin-react-refresh';
 import tseslint from 'typescript-eslint';
 import eslintConfigPrettier from 'eslint-config-prettier';
+import vitest from '@vitest/eslint-plugin';
 
 import autoImports from './.wxt/eslint-auto-imports.mjs';
 
@@ -36,5 +37,17 @@ export default tseslint.config(
     },
   },
   autoImports,
+  // Test-file-only rules. Scoped to *.test.* so production code is unaffected.
+  {
+    files: ['**/*.test.{ts,tsx}'],
+    plugins: { vitest },
+    rules: {
+      // The rule that would have caught our assertion-less test: every test
+      // must contain at least one assertion.
+      'vitest/expect-expect': 'error',
+      // Catches malformed assertions, e.g. expect() called with no matcher.
+      'vitest/valid-expect': 'error',
+    },
+  },
   eslintConfigPrettier,
 );
