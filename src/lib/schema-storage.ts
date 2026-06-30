@@ -165,6 +165,22 @@ export async function getUpdates(
   });
 }
 
+/** All snapshots recorded for a schema (every version), via the schemaId index. */
+export async function getSnapshots(
+  indexedDBConfig: IndexedDBConfig,
+  schemaId: string,
+): Promise<SchemaSnapshot[]> {
+  const db = await getDB(indexedDBConfig);
+  const snapshotStore = db
+    .transaction(indexedDBConfig.snapshotObjectStoreName, 'readonly')
+    .objectStore(indexedDBConfig.snapshotObjectStoreName);
+  return new Promise<SchemaSnapshot[]>((resolve, reject) => {
+    const request = snapshotStore.index('schemaId').getAll(schemaId);
+    request.onsuccess = () => resolve(request.result as SchemaSnapshot[]);
+    request.onerror = () => reject(request.error as Error);
+  });
+}
+
 export async function createUpdate(
   indexedDBConfig: IndexedDBConfig,
   schemaId: string,
