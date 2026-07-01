@@ -9,29 +9,61 @@ export interface SchemaBookmarkButtonProps {
 }
 
 /**
- * Records a snapshot (user version) of the current schema — the creation side of
- * the schema history's bookmark indicators. Snapshotting is a persistence
- * concern, not a SchemaAction (doc 02), so this calls the repo write seam
- * directly rather than dispatching. Briefly tints the icon as save feedback.
+ * Snapshots the current schema (a user version) and reflects whether there are
+ * unsaved changes since the last snapshot:
+ *   - clean  → filled bookmark, disabled (nothing to save)
+ *   - dirty  → outline bookmark, click to snapshot → clean
+ *
+ * "Dirty" is derived, never stored (doc 02). We read the baseline once from the
+ * event log on mount / schema switch, then flip to dirty on any edit — an edit is
+ * exactly when `schema`'s identity changes for the same id (the reducer produced
+ * new state). We deliberately DON'T re-read the log on edit: that would race the
+ * async createUpdate write, and "there was an edit" already implies dirty.
+ * Snapshotting is a persistence concern, not a SchemaAction, so this calls the
+ * repo write seam directly.
  */
 export function SchemaBookmarkButton({ schema }: SchemaBookmarkButtonProps) {
-  const [justSaved, setJustSaved] = useState(false);
-  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [dirty, setDirty] = useState(false);
+  const prevId = useRef<string | null>(null);
 
-  useEffect(() => () => clearTimeout(timer.current ?? undefined), []);
+  useEffect(() => {
+    if (prevId.current === schema.id) {
+      // Same schema, new object → a dispatch mutated it → unsaved.
+      setDirty(true);
+      return;
+    }
+    // Mount or schema switch → compute the baseline from storage.
+    prevId.current = schema.id;
+    let cancelled = false;
+    void Promise.all([schemaRepo.listUpdates(schema.id), schemaRepo.listVersions(schema.id)]).then(
+      ([updates, versions]) => {
+        if (cancelled) return;
+        const maxUpdate = updates.reduce((m, u) => Math.max(m, u.updateIndex), 0);
+        const maxAnchor = versions.reduce((m, v) => Math.max(m, v.lastAppliedUpdateIndex), 0);
+        setDirty(versions.length === 0 || maxUpdate > maxAnchor);
+      },
+    );
+    return () => {
+      cancelled = true;
+    };
+  }, [schema]);
 
   async function bookmark() {
     await schemaRepo.snapshot(schema);
-    setJustSaved(true);
-    clearTimeout(timer.current ?? undefined);
-    timer.current = setTimeout(() => setJustSaved(false), 1500);
+    // The snapshot captured the current schema, so we're now clean.
+    setDirty(false);
   }
 
   return (
     <IconButton
-      title={justSaved ? 'Version bookmarked' : 'Bookmark this version'}
+      title={dirty ? 'Bookmark this version — unsaved changes' : 'Version saved'}
       icon={Bookmark}
-      color={justSaved ? '#9370DB' : null}
+      // Disabled when clean (nothing to save), but keep it filled purple rather
+      // than the default faded/gray look — override Button's disabled:opacity-50.
+      disabled={!dirty}
+      className="disabled:opacity-100"
+      color={dirty ? null : '#9370DB'}
+      fill={dirty ? undefined : '#9370DB'}
       onClick={() => void bookmark()}
     />
   );
