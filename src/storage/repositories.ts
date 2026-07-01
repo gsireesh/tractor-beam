@@ -8,9 +8,9 @@
  * covered so far. As callsites migrate, more repositories (e.g. `schemaRepo`) move
  * here and the free functions in `schema-storage.ts` are deleted.
  */
-import { getMlAnnotationRuns, getSnapshots, getUpdates } from '@/lib/schema-storage';
+import { createSnapshot, getMlAnnotationRuns, getSnapshots, getUpdates } from '@/lib/schema-storage';
 import { APP_CONFIG } from '@/app-config';
-import type { MlAnnotationRun, SchemaSnapshot, SchemaUpdate } from '@/lib/definitions';
+import type { MlAnnotationRun, Schema, SchemaSnapshot, SchemaUpdate } from '@/lib/definitions';
 
 /**
  * ML annotation runs are an *immutable archive* (doc 02): each run is written once
@@ -39,5 +39,14 @@ export const schemaRepo = {
   /** Every snapshot (version) recorded for a schema. */
   listVersions(schemaId: string): Promise<SchemaSnapshot[]> {
     return getSnapshots(APP_CONFIG.indexedDBConfig, schemaId);
+  },
+  /**
+   * Record a snapshot (user version) of the schema's current state. A persistence
+   * concern, not a SchemaAction (doc 02). `createSnapshot` stamps it with the
+   * current global max updateIndex as the replay/version anchor. (A `kind:
+   * 'manual'` discriminator will be added when that field lands on SchemaSnapshot.)
+   */
+  snapshot(schema: Schema): Promise<void> {
+    return createSnapshot(APP_CONFIG.indexedDBConfig, schema);
   },
 };

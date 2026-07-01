@@ -1,18 +1,30 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { APP_CONFIG } from '@/app-config';
-import type { MlAnnotationRun } from '@/lib/definitions';
+import type { MlAnnotationRun, Schema } from '@/lib/definitions';
 
 // The repository's job is to be the typed seam over the low-level IDB free
 // functions in schema-storage — supplying the IDB config so callers don't thread
-// it, and forwarding the query args unchanged. We mock the free function and
-// assert that contract; we do NOT exercise real IndexedDB here.
+// it, and forwarding the args unchanged. We mock the free functions and assert
+// that contract; we do NOT exercise real IndexedDB here.
 //
-// vi.mock is hoisted above imports, so the spy is created via vi.hoisted (the
+// vi.mock is hoisted above imports, so the spies are created via vi.hoisted (the
 // factory can't close over ordinary outer variables).
-const { getMlAnnotationRunsMock } = vi.hoisted(() => ({ getMlAnnotationRunsMock: vi.fn() }));
-vi.mock('@/lib/schema-storage', () => ({ getMlAnnotationRuns: getMlAnnotationRunsMock }));
+const { getMlAnnotationRunsMock, createSnapshotMock, getUpdatesMock, getSnapshotsMock } = vi.hoisted(
+  () => ({
+    getMlAnnotationRunsMock: vi.fn(),
+    createSnapshotMock: vi.fn(),
+    getUpdatesMock: vi.fn(),
+    getSnapshotsMock: vi.fn(),
+  }),
+);
+vi.mock('@/lib/schema-storage', () => ({
+  getMlAnnotationRuns: getMlAnnotationRunsMock,
+  createSnapshot: createSnapshotMock,
+  getUpdates: getUpdatesMock,
+  getSnapshots: getSnapshotsMock,
+}));
 
-import { mlAnnotationRunRepo } from './repositories';
+import { mlAnnotationRunRepo, schemaRepo } from './repositories';
 
 describe('mlAnnotationRunRepo.findBy', () => {
   beforeEach(() => {
@@ -36,5 +48,25 @@ describe('mlAnnotationRunRepo.findBy', () => {
     );
     // And it passes the archive through untouched.
     expect(result).toBe(runs);
+  });
+});
+
+describe('schemaRepo', () => {
+  beforeEach(() => {
+    createSnapshotMock.mockReset();
+    getUpdatesMock.mockReset();
+    getSnapshotsMock.mockReset();
+  });
+
+  it('listUpdates returns the full event log (afterUpdateIndex -1) with config injected', async () => {
+    getUpdatesMock.mockResolvedValue([]);
+    await schemaRepo.listUpdates('s1');
+    expect(getUpdatesMock).toHaveBeenCalledWith(APP_CONFIG.indexedDBConfig, 's1', -1);
+  });
+
+  it('snapshot delegates to createSnapshot with the schema and config', async () => {
+    const schema: Schema = { id: 's1', name: 'Paper', classes: [] };
+    await schemaRepo.snapshot(schema);
+    expect(createSnapshotMock).toHaveBeenCalledWith(APP_CONFIG.indexedDBConfig, schema);
   });
 });

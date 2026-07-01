@@ -41,9 +41,7 @@ export function MlRunCard({ run, snapshotLabel }: MlRunCardProps) {
   const [showConfig, setShowConfig] = useState(false);
   const count = run.annotations.length;
   const model = run.model;
-  const params = Object.entries(model?.params ?? {}).filter(
-    ([, v]) => v !== undefined && v !== '',
-  );
+  const params = Object.entries(model?.params ?? {}).filter(([, v]) => v !== undefined && v !== '');
   const hasConfig = Boolean(model && (model.baseUrl || params.length > 0));
 
   return (
