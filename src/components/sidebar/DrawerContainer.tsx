@@ -12,7 +12,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Layers2Icon, SignpostIcon } from 'lucide-react';
 import { SchemaViewer } from '@/components/sidebar/SchemaViewer.tsx';
-import { createSnapshot, rebuildState, storeMlAnnotationRun } from '@/lib/schema-storage';
+import { rebuildState, storeMlAnnotationRun } from '@/lib/schema-storage';
+import { schemaRepo } from '@/storage/repositories';
 import { APP_CONFIG } from '@/app-config';
 import { Schema } from '@/lib/definitions';
 import { schemasReducer } from '@/lib/schema-reducer';
@@ -181,7 +182,7 @@ function DrawerContent({
   const handleExport = useCallback(
     (opts: ExportOptions) => {
       if (!activeSchema) return;
-      createSnapshot(APP_CONFIG.indexedDBConfig, activeSchema).catch((e) =>
+      void schemaRepo.snapshot(activeSchema).catch((e) =>
         console.error('[export] snapshot failed', e),
       );
       exportSchema(activeSchema, opts);

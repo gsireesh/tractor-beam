@@ -36,7 +36,7 @@ import { WEBLLM_MODELS } from '@/lib/ml/types.ts';
 import { useDrawerContext } from '@/contexts/DrawerContext.tsx';
 import { IconButton } from '@/components/ui/IconButton.tsx';
 import { ModelConfigurationModal } from '@/components/model-configuration/ModelConfigurationModal.tsx';
-import { mlAnnotationRunRepo } from '@/storage/repositories.ts';
+import { mlAnnotationRunRepo, schemaRepo } from '@/storage/repositories.ts';
 import { MlRunCard } from '@/components/sidebar/MlRunCard.tsx';
 import type { MlAnnotationRun } from '@/lib/definitions.ts';
 
@@ -92,6 +92,10 @@ export function ModelControls({ status, progress, message, setMlHighlights }: Mo
   function sendRunMessage() {
     const requestId = crypto.randomUUID();
     setCurrentRequestId(requestId);
+    // Snapshot the schema this run is based on (doc 02's mlRun version), mirroring
+    // the snapshot taken before an export. A persistence concern, not a
+    // SchemaAction, so it goes through the repo seam.
+    void schemaRepo.snapshot(activeSchema);
     void window.TractorBeamDrawer.runAnnotationPipeline(activeSchema, requestId);
   }
 

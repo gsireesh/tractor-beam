@@ -45,8 +45,24 @@ export const schemaRepo = {
    * concern, not a SchemaAction (doc 02). `createSnapshot` stamps it with the
    * current global max updateIndex as the replay/version anchor. (A `kind:
    * 'manual'` discriminator will be added when that field lands on SchemaSnapshot.)
+   *
+   * Notifies snapshot subscribers on success so derived "unsaved changes"
+   * indicators refresh regardless of which path (bookmark / export / ML run)
+   * created the snapshot.
    */
-  snapshot(schema: Schema): Promise<void> {
-    return createSnapshot(APP_CONFIG.indexedDBConfig, schema);
+  async snapshot(schema: Schema): Promise<void> {
+    await createSnapshot(APP_CONFIG.indexedDBConfig, schema);
+    snapshotListeners.forEach((listener) => listener());
   },
 };
+
+// ─── Snapshot-created notifications ───
+// Interim reactivity until the doc-02 store derives "dirty" centrally: any
+// `schemaRepo.snapshot` fires these so UI (the bookmark button) can re-derive.
+const snapshotListeners = new Set<() => void>();
+
+/** Subscribe to schema-snapshot creation; returns an unsubscribe function. */
+export function onSnapshotCreated(listener: () => void): () => void {
+  snapshotListeners.add(listener);
+  return () => snapshotListeners.delete(listener);
+}

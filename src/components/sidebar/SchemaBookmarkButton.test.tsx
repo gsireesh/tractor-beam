@@ -1,17 +1,28 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, act } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { SchemaBookmarkButton } from './SchemaBookmarkButton';
 import type { Schema, SchemaSnapshot, SchemaUpdate } from '@/lib/definitions.ts';
 
-const { listUpdatesMock, listVersionsMock, snapshotMock } = vi.hoisted(() => ({
-  listUpdatesMock: vi.fn(),
-  listVersionsMock: vi.fn(),
-  snapshotMock: vi.fn(),
-}));
+const { listUpdatesMock, listVersionsMock, snapshotMock, onSnapshotCreatedMock, listenerRef } =
+  vi.hoisted(() => {
+    const listenerRef: { current: (() => void) | null } = { current: null };
+    return {
+      listUpdatesMock: vi.fn(),
+      listVersionsMock: vi.fn(),
+      snapshotMock: vi.fn(),
+      // Capture the subscriber so a test can simulate a snapshot from elsewhere.
+      onSnapshotCreatedMock: vi.fn((fn: () => void) => {
+        listenerRef.current = fn;
+        return () => {};
+      }),
+      listenerRef,
+    };
+  });
 vi.mock('@/storage/repositories.ts', () => ({
   schemaRepo: { listUpdates: listUpdatesMock, listVersions: listVersionsMock, snapshot: snapshotMock },
+  onSnapshotCreated: onSnapshotCreatedMock,
 }));
 
 const schema: Schema = { id: 's1', name: 'Paper', classes: [] };
@@ -23,6 +34,7 @@ describe('SchemaBookmarkButton dirty state', () => {
     listUpdatesMock.mockReset();
     listVersionsMock.mockReset();
     snapshotMock.mockReset().mockResolvedValue(undefined);
+    listenerRef.current = null;
   });
 
   it('is disabled (but kept full-opacity, not grayed) when clean', async () => {
@@ -78,5 +90,21 @@ describe('SchemaBookmarkButton dirty state', () => {
     rerender(<SchemaBookmarkButton schema={{ ...schema, name: 'Paper edited' }} />);
 
     expect(await screen.findByRole('button', { name: /unsaved changes/i })).toBeInTheDocument();
+  });
+
+  it('updates to saved when a snapshot is created elsewhere (e.g. an ML run or export)', async () => {
+    listUpdatesMock.mockResolvedValue([update(5)]);
+    listVersionsMock.mockResolvedValue([version(3)]);
+
+    render(<SchemaBookmarkButton schema={schema} />);
+    await screen.findByRole('button', { name: /unsaved changes/i }); // dirty baseline
+
+    // Another path snapshots the schema: the log is now covered by a new version.
+    listVersionsMock.mockResolvedValue([version(3), version(5)]);
+    await act(async () => {
+      listenerRef.current?.(); // simulate the onSnapshotCreated fire
+    });
+
+    expect(await screen.findByRole('button', { name: /version saved/i })).toBeInTheDocument();
   });
 });
