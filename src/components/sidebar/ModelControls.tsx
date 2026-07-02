@@ -68,6 +68,8 @@ export function ModelControls({ status, progress, message, setMlHighlights }: Mo
   const [config, setConfig] = useState<ModelConfig | null>(null);
   // Prior ML runs for this schema+PDF, fetched lazily when the history menu opens.
   const [runs, setRuns] = useState<MlAnnotationRun[]>([]);
+  // snapshotIndex → version label, to derive each run's schema-version name.
+  const [versionLabels, setVersionLabels] = useState<Map<number, string>>(new Map());
   const [runsLoaded, setRunsLoaded] = useState(false);
   const drawerRoot = useMemo(() => document.getElementById('tractor-beam-drawer-root'), []);
 
@@ -89,14 +91,14 @@ export function ModelControls({ status, progress, message, setMlHighlights }: Mo
   const modelFor = (p: ModelProvider) =>
     config?.selected.provider === p ? config.selected.model : '';
 
-  function sendRunMessage() {
+  async function sendRunMessage() {
     const requestId = crypto.randomUUID();
     setCurrentRequestId(requestId);
-    // Snapshot the schema this run is based on (doc 02's mlRun version), mirroring
-    // the snapshot taken before an export. A persistence concern, not a
-    // SchemaAction, so it goes through the repo seam.
-    void schemaRepo.snapshot(activeSchema, 'mlRun');
-    void window.TractorBeamDrawer.runAnnotationPipeline(activeSchema, requestId);
+    // Snapshot the schema this run is based on (doc 02 mlRun version) and reference
+    // it from the run by snapshotIndex — the version's label is derived from that
+    // snapshot, never copied. Snapshotting is a persistence concern → repo seam.
+    const snapshotIndex = await schemaRepo.snapshot(activeSchema, 'mlRun');
+    void window.TractorBeamDrawer.runAnnotationPipeline(activeSchema, requestId, snapshotIndex);
   }
 
   function sendCancelMessage() {
@@ -110,19 +112,17 @@ export function ModelControls({ status, progress, message, setMlHighlights }: Mo
   // state by clearing runsLoaded up front.
   async function refreshRuns() {
     setRunsLoaded(false);
-    const all = await mlAnnotationRunRepo.findBy(activeSchema.id, pdfUrl);
-    // TEMP diagnostic: are the returned runs actually scoped to this schema+PDF?
-    console.log('[history] query', { schemaId: activeSchema.id, pdfUrl });
-    console.table(
-      all.map((r) => ({
-        id: r.id,
-        createdAt: new Date(r.createdAt).toLocaleString(),
-        count: r.annotations.length,
-        schemaId: r.schemaId,
-        pdfUrl: r.pdfUrl,
-      })),
-    );
-    setRuns(all.sort((a, b) => b.createdAt - a.createdAt));
+    // Runs + the schema's versions: the latter lets us derive each run's version
+    // label from its snapshotIndex (doc 02: run references the snapshot, label is
+    // derived — never copied onto the run).
+    const [all, versions] = await Promise.all([
+      mlAnnotationRunRepo.findBy(activeSchema.id, pdfUrl),
+      schemaRepo.listVersions(activeSchema.id),
+    ]);
+    const labels = new Map<number, string>();
+    for (const v of versions) if (v.label) labels.set(v.snapshotIndex, v.label);
+    setRuns([...all].sort((a, b) => b.createdAt - a.createdAt));
+    setVersionLabels(labels);
     setRunsLoaded(true);
   }
 
@@ -242,7 +242,14 @@ export function ModelControls({ status, progress, message, setMlHighlights }: Mo
                         )
                       }
                     >
-                      <MlRunCard run={run} />
+                      <MlRunCard
+                        run={run}
+                        schemaVersion={
+                          run.snapshotIndex !== undefined
+                            ? versionLabels.get(run.snapshotIndex)
+                            : undefined
+                        }
+                      />
                     </DropdownMenuItem>
                   ))
                 )}

@@ -80,6 +80,14 @@ export interface MlAnnotationRun {
   createdAt: number;
   /** Model used for this run; absent on runs recorded before this was captured. */
   model?: MlRunModel;
+  /** Friendly `adverb-verb` nickname; absent on runs recorded before naming. */
+  name?: string;
+  /**
+   * References the mlRun SchemaSnapshot this run was based on (doc 02: run →
+   * snapshot). The version's display label is derived from that snapshot, not
+   * stored here. Absent on runs recorded before this link existed.
+   */
+  snapshotIndex?: number;
 }
 
 export interface SchemaClass {
@@ -106,6 +114,8 @@ export interface SchemaSnapshot {
   lastAppliedUpdateIndex: number;
   /** Absent on legacy/seed snapshots — treat as 'manual' on read. */
   kind?: SnapshotKind;
+  /** Friendly `adjective-noun` version nickname; absent on legacy snapshots. */
+  label?: string;
 }
 
 export interface SchemaUpdate {

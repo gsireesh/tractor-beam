@@ -14,6 +14,7 @@ import { mlAnnotationRunRepo } from '@/storage/repositories';
 import type { Highlight, Instance, MlRunModel, Schema, SchemaAction } from '@/lib/definitions';
 import { loadModelConfig } from '@/lib/config-storage';
 import type { ModelConfig } from '@/lib/ml/model-config';
+import { runName } from '@/lib/friendly-name';
 import { colorMapForSchema, mergePdfBoxes } from '@/lib/utils.ts';
 import { VISUAL_BLOCK_CLASS_ID } from '@/components/highlights/HighlightOverlay.tsx';
 
@@ -144,6 +145,15 @@ const ownedRequestIds = new Set<string>();
 // receiver can persist provenance with the run (the apiKey never leaves here).
 const runModels = new Map<string, MlRunModel>();
 
+// Friendly nickname per owned run, generated once at initiation so it stays
+// stable across the per-block annotationResults broadcasts (which each restore
+// the same run record by requestId).
+const runNames = new Map<string, string>();
+
+// The mlRun snapshot each run was based on (by snapshotIndex), so the stored run
+// can reference it (doc 02: run → snapshot); the label is derived from it later.
+const runSnapshotIndices = new Map<string, number>();
+
 /** True if this tab initiated the given annotation run. */
 export function ownsAnnotationRequest(requestId: string): boolean {
   return ownedRequestIds.has(requestId);
@@ -152,6 +162,16 @@ export function ownsAnnotationRequest(requestId: string): boolean {
 /** The model snapshot recorded for a run this tab initiated, if any. */
 export function getRunModel(requestId: string): MlRunModel | undefined {
   return runModels.get(requestId);
+}
+
+/** The friendly nickname assigned to a run this tab initiated, if any. */
+export function getRunName(requestId: string): string | undefined {
+  return runNames.get(requestId);
+}
+
+/** The mlRun snapshot (by index) a run this tab initiated was based on, if any. */
+export function getRunSnapshotIndex(requestId: string): number | undefined {
+  return runSnapshotIndices.get(requestId);
 }
 
 /**
@@ -171,9 +191,11 @@ function modelSnapshot(config: ModelConfig): MlRunModel {
 }
 
 // ─── Pipeline orchestration (called via window API) ───
-async function runAnnotationPipeline(schema: Schema, requestId: string) {
+async function runAnnotationPipeline(schema: Schema, requestId: string, snapshotIndex?: number) {
   console.log('[drawer] Starting annotation pipeline:', requestId);
   ownedRequestIds.add(requestId);
+  runNames.set(requestId, runName());
+  if (snapshotIndex !== undefined) runSnapshotIndices.set(requestId, snapshotIndex);
 
   // Reset ML highlights for the new run (state change re-syncs the viewer).
   setMlHighlightsFn?.([]);
@@ -240,7 +262,11 @@ declare global {
       dispatch: (action: SchemaAction) => void;
       getActiveSchema: () => Schema | null;
       getInstance: (schemaId: string, classId: string, instanceId: string) => Instance | null;
-      runAnnotationPipeline: (schema: Schema, requestId: string) => Promise<void>;
+      runAnnotationPipeline: (
+        schema: Schema,
+        requestId: string,
+        snapshotIndex?: number,
+      ) => Promise<void>;
       runSegmentationPipeline: () => Promise<void>;
       loadCachedAnnotations: (schemaId: string, pdfUrl: string, runId?: string) => Promise<void>;
       cancelAnnotationPipeline: (requestId: string) => void;

@@ -44,6 +44,8 @@ import { DrawerVisibilityToggle } from '@/components/sidebar/DrawerVisibilityTog
 import {
   clearDrawerContent,
   getRunModel,
+  getRunName,
+  getRunSnapshotIndex,
   ownsAnnotationRequest,
   registerDrawerContent,
   syncProvisionalHighlights,
@@ -283,6 +285,8 @@ function DrawerContent({
               annotations: message.annotations,
               createdAt: Date.now(),
               model: getRunModel(message.requestId),
+              name: getRunName(message.requestId),
+              snapshotIndex: getRunSnapshotIndex(message.requestId),
             }).catch((err: unknown) =>
               console.error('[drawer] Failed to store ML annotations:', err),
             );

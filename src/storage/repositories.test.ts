@@ -66,13 +66,17 @@ describe('schemaRepo', () => {
 
   it('snapshot delegates to createSnapshot, defaulting kind to manual', async () => {
     const schema: Schema = { id: 's1', name: 'Paper', classes: [] };
-    await schemaRepo.snapshot(schema);
+    createSnapshotMock.mockResolvedValue(7);
+    const index = await schemaRepo.snapshot(schema);
     expect(createSnapshotMock).toHaveBeenCalledWith(APP_CONFIG.indexedDBConfig, schema, 'manual');
+    expect(index).toBe(7); // returns the new snapshotIndex for callers to reference
   });
 
-  it('snapshot forwards an explicit kind (e.g. mlRun)', async () => {
+  it('snapshot forwards an explicit kind and returns the snapshotIndex', async () => {
     const schema: Schema = { id: 's1', name: 'Paper', classes: [] };
-    await schemaRepo.snapshot(schema, 'mlRun');
+    createSnapshotMock.mockResolvedValue(42);
+    const index = await schemaRepo.snapshot(schema, 'mlRun');
     expect(createSnapshotMock).toHaveBeenCalledWith(APP_CONFIG.indexedDBConfig, schema, 'mlRun');
+    expect(index).toBe(42);
   });
 });

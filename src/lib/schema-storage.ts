@@ -10,6 +10,7 @@ import type {
   SnapshotKind,
 } from '@/lib/definitions.ts';
 import { schemasReducer } from '@/lib/schema-reducer.ts';
+import { schemaName } from '@/lib/friendly-name.ts';
 import { produce } from 'immer';
 
 let dbPromise: Promise<IDBDatabase> | null = null;
@@ -118,13 +119,17 @@ export async function createSnapshot(
   indexedDBConfig: IndexedDBConfig,
   schema: Schema,
   kind: SnapshotKind = 'manual',
-): Promise<void> {
+  label: string = schemaName(),
+): Promise<number> {
   const db = await getDB(indexedDBConfig);
   const tx = db.transaction(
     [indexedDBConfig.snapshotObjectStoreName, indexedDBConfig.updatesObjectStoreName],
     'readwrite',
   );
   const maxReq = tx.objectStore(indexedDBConfig.updatesObjectStoreName).openKeyCursor(null, 'prev'); // first hit = highest updateIndex
+  // Captured from the add request's generated key so callers (e.g. an ML run) can
+  // reference the snapshot by id.
+  let snapshotIndex = 0;
   maxReq.onsuccess = () => {
     const lastAppliedUpdateIndex = maxReq.result ? Number(maxReq.result.key) : 0;
     const snapshot: Omit<SchemaSnapshot, 'snapshotIndex'> = {
@@ -133,12 +138,16 @@ export async function createSnapshot(
       createdAt: Date.now(),
       lastAppliedUpdateIndex: lastAppliedUpdateIndex,
       kind,
+      label,
     };
-    tx.objectStore(indexedDBConfig.snapshotObjectStoreName).add(snapshot);
+    const addReq = tx.objectStore(indexedDBConfig.snapshotObjectStoreName).add(snapshot);
+    addReq.onsuccess = () => {
+      snapshotIndex = Number(addReq.result);
+    };
   };
 
-  return new Promise((resolve, reject) => {
-    tx.oncomplete = () => resolve();
+  return new Promise<number>((resolve, reject) => {
+    tx.oncomplete = () => resolve(snapshotIndex);
     tx.onerror = () => reject(tx.error as Error);
   });
 }

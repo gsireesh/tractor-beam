@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, within } from '@testing-library/react';
+import { render, screen, within, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { DrawerContext, type DrawerContextValue } from '@/contexts/DrawerContext.tsx';
 import { ModelControls } from './ModelControls';
@@ -8,13 +8,14 @@ import type { MlAnnotationRun, Schema } from '@/lib/definitions.ts';
 
 // Replace the storage seam with a spy so no IndexedDB is touched — the repo's own
 // delegation is covered in repositories.test.ts; here we drive the UI.
-const { findByMock, snapshotMock } = vi.hoisted(() => ({
+const { findByMock, snapshotMock, listVersionsMock } = vi.hoisted(() => ({
   findByMock: vi.fn(),
   snapshotMock: vi.fn(),
+  listVersionsMock: vi.fn(),
 }));
 vi.mock('@/storage/repositories.ts', () => ({
   mlAnnotationRunRepo: { findBy: findByMock },
-  schemaRepo: { snapshot: snapshotMock },
+  schemaRepo: { snapshot: snapshotMock, listVersions: listVersionsMock },
 }));
 
 // Config loading reaches chrome.storage, absent in jsdom. Stub it to a resolved
@@ -64,6 +65,7 @@ describe('ModelControls — ML run history', () => {
     loadCachedAnnotations.mockReset();
     runAnnotationPipeline.mockReset();
     snapshotMock.mockReset().mockResolvedValue(undefined);
+    listVersionsMock.mockReset().mockResolvedValue([]);
     window.TractorBeamDrawer = {
       loadCachedAnnotations,
       runAnnotationPipeline,
@@ -116,16 +118,19 @@ describe('ModelControls — ML run history', () => {
     expect(await screen.findByText('No prior AI runs')).toBeInTheDocument();
   });
 
-  it('snapshots the schema when a run is started', async () => {
+  it('snapshots the schema on run start and references it by snapshotIndex', async () => {
     const user = userEvent.setup();
+    snapshotMock.mockResolvedValue(42); // the new snapshot's index
     renderControls();
 
     await user.click(screen.getByRole('button', { name: /highlight with ai/i }));
 
-    // Captures the schema version this run was based on (doc 02 mlRun), and still
-    // kicks off the pipeline.
+    // Creates the mlRun snapshot, then kicks off the pipeline referencing it by
+    // the returned snapshotIndex (label is derived from the snapshot, not passed).
     expect(snapshotMock).toHaveBeenCalledWith(activeSchema, 'mlRun');
-    expect(runAnnotationPipeline).toHaveBeenCalled();
+    await waitFor(() =>
+      expect(runAnnotationPipeline).toHaveBeenCalledWith(activeSchema, expect.any(String), 42),
+    );
   });
 
   it("expands a run's config without loading the run (stopPropagation inside the menu)", async () => {

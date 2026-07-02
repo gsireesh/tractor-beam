@@ -56,9 +56,12 @@ export const schemaRepo = {
    * indicators refresh regardless of which path (bookmark / export / ML run)
    * created the snapshot.
    */
-  async snapshot(schema: Schema, kind: SnapshotKind = 'manual'): Promise<void> {
-    await createSnapshot(APP_CONFIG.indexedDBConfig, schema, kind);
+  async snapshot(schema: Schema, kind: SnapshotKind = 'manual'): Promise<number> {
+    // Returns the new snapshotIndex so callers (e.g. an ML run) can reference the
+    // snapshot by id; the version label is generated on the snapshot itself.
+    const snapshotIndex = await createSnapshot(APP_CONFIG.indexedDBConfig, schema, kind);
     snapshotListeners.forEach((listener) => listener());
+    return snapshotIndex;
   },
 };
 

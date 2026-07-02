@@ -43,6 +43,15 @@ describe('MlRunCard', () => {
     expect(screen.getByText(new Date(createdAt).toLocaleString())).toBeInTheDocument();
   });
 
+  it('shows the run nickname as the title, with the timestamp beneath', () => {
+    const createdAt = 1_700_000_000_000;
+    render(<MlRunCard run={makeRun({ name: 'warily-poked', createdAt })} />);
+
+    expect(screen.getByText('warily-poked')).toBeInTheDocument();
+    // Timestamp still present as the secondary line.
+    expect(screen.getByText(new Date(createdAt).toLocaleString())).toBeInTheDocument();
+  });
+
   it('pluralizes the highlight count, and uses the singular for exactly one', () => {
     const { rerender } = render(
       <MlRunCard run={makeRun({ annotations: [makeAnnotation(), makeAnnotation({ id: 'a2' })] })} />,
@@ -56,15 +65,14 @@ describe('MlRunCard', () => {
     expect(screen.getByText('0 highlights')).toBeInTheDocument();
   });
 
-  it('shows a placeholder for the schema version while the snapshot link is unbuilt', () => {
-    render(<MlRunCard run={makeRun()} />);
-    expect(screen.getByText(/Schema version:\s*not yet tracked/)).toBeInTheDocument();
+  it('reports the derived schema-version label passed by the caller', () => {
+    render(<MlRunCard run={makeRun()} schemaVersion="amber-ledger" />);
+    expect(screen.getByText(/Schema version:\s*amber-ledger/)).toBeInTheDocument();
   });
 
-  it('shows the snapshot label once one is supplied', () => {
-    render(<MlRunCard run={makeRun()} snapshotLabel="v3 — Before export" />);
-    expect(screen.getByText(/Schema version:\s*v3 — Before export/)).toBeInTheDocument();
-    expect(screen.queryByText(/not yet tracked/)).not.toBeInTheDocument();
+  it('falls back to "not recorded" when no schema version is resolved', () => {
+    render(<MlRunCard run={makeRun()} />);
+    expect(screen.getByText(/Schema version:\s*not recorded/)).toBeInTheDocument();
   });
 
   describe('model', () => {

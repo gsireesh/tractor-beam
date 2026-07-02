@@ -46,9 +46,9 @@ describe('SchemaHistory', () => {
         action: { actionType: 'updateInstance', schemaId: 's1', classId: 'c1', instanceId: 'i1', updates: { positiveExample: true } },
       }),
     ]);
-    // Only update #2 was snapshotted — by an ML run.
+    // Only update #2 was snapshotted — by an ML run, named "warm-lantern".
     listVersionsMock.mockResolvedValue([
-      { lastAppliedUpdateIndex: 2, kind: 'mlRun' } as SchemaSnapshot,
+      { snapshotIndex: 5, lastAppliedUpdateIndex: 2, kind: 'mlRun', label: 'warm-lantern' } as SchemaSnapshot,
     ]);
 
     render(<SchemaHistory schema={schema} />);
@@ -65,6 +65,7 @@ describe('SchemaHistory', () => {
     const olderRow = older.closest('div.justify-between') as HTMLElement;
     expect(within(newerRow).getByLabelText('Snapshotted')).toBeInTheDocument();
     expect(within(newerRow).getByLabelText('Model run')).toBeInTheDocument();
+    expect(within(newerRow).getByText('warm-lantern')).toBeInTheDocument(); // version name
     expect(within(olderRow).queryByLabelText('Snapshotted')).not.toBeInTheDocument();
   });
 

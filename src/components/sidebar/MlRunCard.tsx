@@ -6,13 +6,10 @@ import { ModelProviderNameMap, type ModelProvider } from '@/lib/ml/model-config.
 export interface MlRunCardProps {
   run: MlAnnotationRun;
   /**
-   * Human-readable label for the schema version (snapshot) this run was produced
-   * against. Currently always undefined: doc 02 plans a run → snapshot link via a
-   * `snapshotIndex` field on MlAnnotationRun, but that field doesn't exist yet.
-   * When it lands, resolve the snapshot to a label and pass it here — the "Schema
-   * version" row then shows it instead of the placeholder.
+   * The run's schema-version label, derived by the caller from `run.snapshotIndex`
+   * (the mlRun snapshot it references). Undefined for runs with no linked snapshot.
    */
-  snapshotLabel?: string;
+  schemaVersion?: string;
 }
 
 function providerLabel(provider: string): string {
@@ -37,22 +34,25 @@ function ConfigRow({ label, value }: { label: string; value: string }) {
  * config toggle and its panel stop event propagation — interacting with the
  * config must not load the run or close the menu.
  */
-export function MlRunCard({ run, snapshotLabel }: MlRunCardProps) {
+export function MlRunCard({ run, schemaVersion }: MlRunCardProps) {
   const [showConfig, setShowConfig] = useState(false);
   const count = run.annotations.length;
   const model = run.model;
   const params = Object.entries(model?.params ?? {}).filter(([, v]) => v !== undefined && v !== '');
   const hasConfig = Boolean(model && (model.baseUrl || params.length > 0));
 
+  const timestamp = new Date(run.createdAt).toLocaleString();
   return (
     <div className="flex flex-col gap-0.5">
-      <span className="text-sm font-medium">{new Date(run.createdAt).toLocaleString()}</span>
+      {/* The run's nickname is the title; older (unnamed) runs fall back to time. */}
+      <span className="text-sm font-medium">{run.name ?? timestamp}</span>
+      {run.name && <span className="text-xs text-muted-foreground">{timestamp}</span>}
       <span className="text-xs">Model: {model ? model.model : 'not recorded'}</span>
       <span className="text-xs text-muted-foreground">
         {count} highlight{count === 1 ? '' : 's'}
       </span>
       <span className="text-xs text-muted-foreground">
-        Schema version: {snapshotLabel ?? 'not yet tracked'}
+        Schema version: {schemaVersion ?? 'not recorded'}
       </span>
 
       {model && hasConfig && (
