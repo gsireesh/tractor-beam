@@ -124,7 +124,7 @@ describe('ModelControls — ML run history', () => {
 
     // Captures the schema version this run was based on (doc 02 mlRun), and still
     // kicks off the pipeline.
-    expect(snapshotMock).toHaveBeenCalledWith(activeSchema);
+    expect(snapshotMock).toHaveBeenCalledWith(activeSchema, 'mlRun');
     expect(runAnnotationPipeline).toHaveBeenCalled();
   });
 

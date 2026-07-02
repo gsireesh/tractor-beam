@@ -95,7 +95,7 @@ export function ModelControls({ status, progress, message, setMlHighlights }: Mo
     // Snapshot the schema this run is based on (doc 02's mlRun version), mirroring
     // the snapshot taken before an export. A persistence concern, not a
     // SchemaAction, so it goes through the repo seam.
-    void schemaRepo.snapshot(activeSchema);
+    void schemaRepo.snapshot(activeSchema, 'mlRun');
     void window.TractorBeamDrawer.runAnnotationPipeline(activeSchema, requestId);
   }
 

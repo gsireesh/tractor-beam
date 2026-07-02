@@ -10,7 +10,13 @@
  */
 import { createSnapshot, getMlAnnotationRuns, getSnapshots, getUpdates } from '@/lib/schema-storage';
 import { APP_CONFIG } from '@/app-config';
-import type { MlAnnotationRun, Schema, SchemaSnapshot, SchemaUpdate } from '@/lib/definitions';
+import type {
+  MlAnnotationRun,
+  Schema,
+  SchemaSnapshot,
+  SchemaUpdate,
+  SnapshotKind,
+} from '@/lib/definitions';
 
 /**
  * ML annotation runs are an *immutable archive* (doc 02): each run is written once
@@ -50,8 +56,8 @@ export const schemaRepo = {
    * indicators refresh regardless of which path (bookmark / export / ML run)
    * created the snapshot.
    */
-  async snapshot(schema: Schema): Promise<void> {
-    await createSnapshot(APP_CONFIG.indexedDBConfig, schema);
+  async snapshot(schema: Schema, kind: SnapshotKind = 'manual'): Promise<void> {
+    await createSnapshot(APP_CONFIG.indexedDBConfig, schema, kind);
     snapshotListeners.forEach((listener) => listener());
   },
 };

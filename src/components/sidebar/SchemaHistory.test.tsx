@@ -36,7 +36,7 @@ describe('SchemaHistory', () => {
     listVersionsMock.mockReset();
   });
 
-  it('lists changes newest-first and bookmarks snapshotted updates', async () => {
+  it('lists changes newest-first and marks the snapshotted update with its kind', async () => {
     const user = userEvent.setup();
     // Supplied oldest-first to prove the component re-sorts by updateIndex desc.
     listUpdatesMock.mockResolvedValue([
@@ -46,8 +46,10 @@ describe('SchemaHistory', () => {
         action: { actionType: 'updateInstance', schemaId: 's1', classId: 'c1', instanceId: 'i1', updates: { positiveExample: true } },
       }),
     ]);
-    // Only update #2 was snapshotted.
-    listVersionsMock.mockResolvedValue([{ lastAppliedUpdateIndex: 2 } as SchemaSnapshot]);
+    // Only update #2 was snapshotted — by an ML run.
+    listVersionsMock.mockResolvedValue([
+      { lastAppliedUpdateIndex: 2, kind: 'mlRun' } as SchemaSnapshot,
+    ]);
 
     render(<SchemaHistory schema={schema} />);
     await user.click(screen.getByTitle('Schema history'));
@@ -58,11 +60,12 @@ describe('SchemaHistory', () => {
     // Newest-first: the update #2 row precedes the update #1 row.
     expect(newer.compareDocumentPosition(older) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
 
-    // Exactly one bookmark, on the snapshotted (update #2) row.
-    const bookmarks = screen.getAllByLabelText('Snapshotted');
-    expect(bookmarks).toHaveLength(1);
-    expect(within(bookmarks[0].parentElement as HTMLElement).getByText('Marked example positive'))
-      .toBeInTheDocument();
+    // The snapshot indicators (bookmark + model-run) are on update #2's row only.
+    const newerRow = newer.closest('div.justify-between') as HTMLElement;
+    const olderRow = older.closest('div.justify-between') as HTMLElement;
+    expect(within(newerRow).getByLabelText('Snapshotted')).toBeInTheDocument();
+    expect(within(newerRow).getByLabelText('Model run')).toBeInTheDocument();
+    expect(within(olderRow).queryByLabelText('Snapshotted')).not.toBeInTheDocument();
   });
 
   it('shows an empty state when the schema has no changes', async () => {

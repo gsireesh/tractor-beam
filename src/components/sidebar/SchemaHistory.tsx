@@ -9,7 +9,7 @@ import {
 import { IconButton } from '@/components/ui/IconButton.tsx';
 import { schemaRepo } from '@/storage/repositories.ts';
 import { SchemaHistoryCard } from '@/components/sidebar/SchemaHistoryCard.tsx';
-import type { Schema, SchemaUpdate } from '@/lib/definitions.ts';
+import type { Schema, SchemaUpdate, SnapshotKind } from '@/lib/definitions.ts';
 
 export interface SchemaHistoryProps {
   schema: Schema;
@@ -23,8 +23,8 @@ export interface SchemaHistoryProps {
  */
 export function SchemaHistory({ schema }: SchemaHistoryProps) {
   const [updates, setUpdates] = useState<SchemaUpdate[]>([]);
-  // updateIndex values that have a snapshot taken at them → render a bookmark.
-  const [snapshotIndices, setSnapshotIndices] = useState<Set<number>>(new Set());
+  // updateIndex → the kinds of snapshot(s) taken at that update (bookmark + why).
+  const [snapshotKinds, setSnapshotKinds] = useState<Map<number, SnapshotKind[]>>(new Map());
   const [loaded, setLoaded] = useState(false);
   const drawerRoot = useMemo(() => document.getElementById('tractor-beam-drawer-root'), []);
 
@@ -35,8 +35,14 @@ export function SchemaHistory({ schema }: SchemaHistoryProps) {
       schemaRepo.listUpdates(schema.id),
       schemaRepo.listVersions(schema.id),
     ]);
+    const kinds = new Map<number, SnapshotKind[]>();
+    for (const v of versions) {
+      const list = kinds.get(v.lastAppliedUpdateIndex) ?? [];
+      list.push(v.kind ?? 'manual'); // legacy/seed snapshots default to manual
+      kinds.set(v.lastAppliedUpdateIndex, list);
+    }
     setUpdates([...allUpdates].sort((a, b) => b.updateIndex - a.updateIndex));
-    setSnapshotIndices(new Set(versions.map((v) => v.lastAppliedUpdateIndex)));
+    setSnapshotKinds(kinds);
     setLoaded(true);
   }
 
@@ -61,7 +67,7 @@ export function SchemaHistory({ schema }: SchemaHistoryProps) {
                 key={u.updateIndex}
                 update={u}
                 schema={schema}
-                snapshotted={snapshotIndices.has(u.updateIndex)}
+                kinds={snapshotKinds.get(u.updateIndex) ?? []}
               />
             ))
           )}

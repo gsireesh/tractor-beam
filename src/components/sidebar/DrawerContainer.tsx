@@ -182,7 +182,7 @@ function DrawerContent({
   const handleExport = useCallback(
     (opts: ExportOptions) => {
       if (!activeSchema) return;
-      void schemaRepo.snapshot(activeSchema).catch((e) =>
+      void schemaRepo.snapshot(activeSchema, 'export').catch((e) =>
         console.error('[export] snapshot failed', e),
       );
       exportSchema(activeSchema, opts);

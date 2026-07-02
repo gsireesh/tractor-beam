@@ -23,19 +23,35 @@ function makeUpdate(overrides: Partial<SchemaUpdate> = {}): SchemaUpdate {
 describe('SchemaHistoryCard', () => {
   it('renders the change description and timestamp', () => {
     const createdAt = 1_700_000_000_000;
-    render(<SchemaHistoryCard update={makeUpdate({ createdAt })} schema={schema} snapshotted={false} />);
+    render(<SchemaHistoryCard update={makeUpdate({ createdAt })} schema={schema} kinds={[]} />);
 
     expect(screen.getByText('Added highlighter "Materials"')).toBeInTheDocument();
     expect(screen.getByText(new Date(createdAt).toLocaleString())).toBeInTheDocument();
   });
 
-  it('shows the bookmark only when the update is snapshotted', () => {
-    const { rerender } = render(
-      <SchemaHistoryCard update={makeUpdate()} schema={schema} snapshotted={false} />,
-    );
+  it('shows no snapshot indicators when not snapshotted', () => {
+    render(<SchemaHistoryCard update={makeUpdate()} schema={schema} kinds={[]} />);
     expect(screen.queryByLabelText('Snapshotted')).not.toBeInTheDocument();
+  });
 
-    rerender(<SchemaHistoryCard update={makeUpdate()} schema={schema} snapshotted={true} />);
+  it('shows only the bookmark for a manual snapshot', () => {
+    render(<SchemaHistoryCard update={makeUpdate()} schema={schema} kinds={['manual']} />);
     expect(screen.getByLabelText('Snapshotted')).toBeInTheDocument();
+    expect(screen.queryByLabelText('Model run')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Exported')).not.toBeInTheDocument();
+  });
+
+  it('shows the model-run icon (not export) for an mlRun snapshot', () => {
+    render(<SchemaHistoryCard update={makeUpdate()} schema={schema} kinds={['mlRun']} />);
+    expect(screen.getByLabelText('Snapshotted')).toBeInTheDocument();
+    expect(screen.getByLabelText('Model run')).toBeInTheDocument();
+    expect(screen.queryByLabelText('Exported')).not.toBeInTheDocument();
+  });
+
+  it('shows the export icon (not model-run) for an export snapshot', () => {
+    render(<SchemaHistoryCard update={makeUpdate()} schema={schema} kinds={['export']} />);
+    expect(screen.getByLabelText('Snapshotted')).toBeInTheDocument();
+    expect(screen.getByLabelText('Exported')).toBeInTheDocument();
+    expect(screen.queryByLabelText('Model run')).not.toBeInTheDocument();
   });
 });

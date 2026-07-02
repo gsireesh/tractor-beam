@@ -95,12 +95,17 @@ export interface Schema {
   classes: SchemaClass[];
 }
 
+/** Why a snapshot (schema version) was recorded — see docs/architecture/02. */
+export type SnapshotKind = 'manual' | 'export' | 'mlRun';
+
 export interface SchemaSnapshot {
   snapshotIndex: number;
   schemaId: string;
   schema: Schema;
   createdAt: number;
   lastAppliedUpdateIndex: number;
+  /** Absent on legacy/seed snapshots — treat as 'manual' on read. */
+  kind?: SnapshotKind;
 }
 
 export interface SchemaUpdate {

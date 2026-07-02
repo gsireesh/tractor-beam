@@ -7,6 +7,7 @@ import type {
   SchemaAction,
   SchemaSnapshot,
   SchemaUpdate,
+  SnapshotKind,
 } from '@/lib/definitions.ts';
 import { schemasReducer } from '@/lib/schema-reducer.ts';
 import { produce } from 'immer';
@@ -116,6 +117,7 @@ export async function getLatestSnapshotBySchema(
 export async function createSnapshot(
   indexedDBConfig: IndexedDBConfig,
   schema: Schema,
+  kind: SnapshotKind = 'manual',
 ): Promise<void> {
   const db = await getDB(indexedDBConfig);
   const tx = db.transaction(
@@ -130,6 +132,7 @@ export async function createSnapshot(
       schema,
       createdAt: Date.now(),
       lastAppliedUpdateIndex: lastAppliedUpdateIndex,
+      kind,
     };
     tx.objectStore(indexedDBConfig.snapshotObjectStoreName).add(snapshot);
   };

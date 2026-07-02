@@ -64,9 +64,15 @@ describe('schemaRepo', () => {
     expect(getUpdatesMock).toHaveBeenCalledWith(APP_CONFIG.indexedDBConfig, 's1', -1);
   });
 
-  it('snapshot delegates to createSnapshot with the schema and config', async () => {
+  it('snapshot delegates to createSnapshot, defaulting kind to manual', async () => {
     const schema: Schema = { id: 's1', name: 'Paper', classes: [] };
     await schemaRepo.snapshot(schema);
-    expect(createSnapshotMock).toHaveBeenCalledWith(APP_CONFIG.indexedDBConfig, schema);
+    expect(createSnapshotMock).toHaveBeenCalledWith(APP_CONFIG.indexedDBConfig, schema, 'manual');
+  });
+
+  it('snapshot forwards an explicit kind (e.g. mlRun)', async () => {
+    const schema: Schema = { id: 's1', name: 'Paper', classes: [] };
+    await schemaRepo.snapshot(schema, 'mlRun');
+    expect(createSnapshotMock).toHaveBeenCalledWith(APP_CONFIG.indexedDBConfig, schema, 'mlRun');
   });
 });
