@@ -87,7 +87,7 @@ export interface MlAnnotationRun {
    * snapshot). The version's display label is derived from that snapshot, not
    * stored here. Absent on runs recorded before this link existed.
    */
-  snapshotIndex?: number;
+  snapshotIndex?: SchemaActionRef;
 }
 
 export interface SchemaClass {
@@ -106,12 +106,19 @@ export interface Schema {
 /** Why a snapshot (schema version) was recorded — see docs/architecture/02. */
 export type SnapshotKind = 'manual' | 'export' | 'mlRun';
 
+/**
+ * A reference to a point in a schema's op-log — a snapshotIndex or updateIndex.
+ * Doc 06 calls this `OpRef`: a swappable *sequencing* value, kept out of domain
+ * identity so the eventual monotonic-int → replica-safe-id swap stays mechanical.
+ */
+export type SchemaActionRef = number;
+
 export interface SchemaSnapshot {
   snapshotIndex: number;
   schemaId: string;
   schema: Schema;
   createdAt: number;
-  lastAppliedUpdateIndex: number;
+  lastAppliedUpdateIndex: SchemaActionRef;
   /** Absent on legacy/seed snapshots — treat as 'manual' on read. */
   kind?: SnapshotKind;
   /** Friendly `adjective-noun` version nickname; absent on legacy snapshots. */
@@ -186,6 +193,18 @@ interface UpdateInstance {
   };
 }
 
+/**
+ * Restore the schema to an earlier version. A forward-appended op (doc 06), NOT a
+ * rewind — `schema` is the materialized target state and `restoredFrom` records
+ * the version it descends from (the one lineage edge not derivable from ordering).
+ */
+interface Restore {
+  actionType: 'restore';
+  schemaId: string;
+  restoredFrom: SchemaActionRef;
+  schema: Schema;
+}
+
 export type SchemaAction =
   | AddSchema
   | UpdateSchema
@@ -195,4 +214,5 @@ export type SchemaAction =
   | DeleteClass
   | AddInstance
   | DeleteInstance
-  | UpdateInstance;
+  | UpdateInstance
+  | Restore;

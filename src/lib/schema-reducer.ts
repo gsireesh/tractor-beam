@@ -14,6 +14,16 @@ export function schemasReducer(draft: Schema[], action: SchemaAction) {
       }
       return;
     }
+    case 'restore': {
+      // Forward-appended restore (doc 06): replace current state with the
+      // materialized target. Distinct from updateSchema so intent/provenance live
+      // on the op; effect is the same wholesale set.
+      const idx = draft.findIndex((s) => s.id === action.schemaId);
+      if (idx !== -1) {
+        draft[idx] = action.schema;
+      }
+      return;
+    }
     case 'deleteSchema': {
       const idx = draft.findIndex((s) => s.id === action.schemaId);
       if (idx !== -1) {

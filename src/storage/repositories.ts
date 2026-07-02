@@ -8,11 +8,19 @@
  * covered so far. As callsites migrate, more repositories (e.g. `schemaRepo`) move
  * here and the free functions in `schema-storage.ts` are deleted.
  */
-import { createSnapshot, getMlAnnotationRuns, getSnapshots, getUpdates } from '@/lib/schema-storage';
+import {
+  createSnapshot,
+  createSnapshotAt,
+  getMlAnnotationRuns,
+  getSnapshots,
+  getUpdates,
+  schemaAsOf,
+} from '@/lib/schema-storage';
 import { APP_CONFIG } from '@/app-config';
 import type {
   MlAnnotationRun,
   Schema,
+  SchemaActionRef,
   SchemaSnapshot,
   SchemaUpdate,
   SnapshotKind,
@@ -62,6 +70,28 @@ export const schemaRepo = {
     const snapshotIndex = await createSnapshot(APP_CONFIG.indexedDBConfig, schema, kind);
     snapshotListeners.forEach((listener) => listener());
     return snapshotIndex;
+  },
+  /**
+   * The version anchored at update `T` — reused if it already exists, otherwise
+   * created (materializing the past state via schemaAsOf and naming it), so a
+   * restore target always becomes a named version. Returns the snapshot ref +
+   * its schema for the restore op to reference and apply.
+   */
+  async versionAt(
+    schemaId: string,
+    at: SchemaActionRef,
+  ): Promise<{ snapshotIndex: SchemaActionRef; schema: Schema }> {
+    const cfg = APP_CONFIG.indexedDBConfig;
+    const existing = (await getSnapshots(cfg, schemaId)).find(
+      (s) => s.lastAppliedUpdateIndex === at,
+    );
+    if (existing) return { snapshotIndex: existing.snapshotIndex, schema: existing.schema };
+
+    const schema = await schemaAsOf(cfg, schemaId, at);
+    if (!schema) throw new Error(`Cannot materialize schema ${schemaId} as of ${at}`);
+    const snapshotIndex = await createSnapshotAt(cfg, schema, at, 'manual');
+    snapshotListeners.forEach((listener) => listener());
+    return { snapshotIndex, schema };
   },
 };
 

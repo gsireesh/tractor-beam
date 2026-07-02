@@ -106,4 +106,22 @@ describe('describeSchemaAction', () => {
       );
     });
   });
+
+  describe('restore', () => {
+    it('names the target version via the resolver', () => {
+      expect(
+        describeSchemaAction(
+          { actionType: 'restore', schemaId: 's1', restoredFrom: 20, schema },
+          schema,
+          (ref) => (ref === 20 ? 'amber-ledger' : undefined),
+        ),
+      ).toBe('Restored to version "amber-ledger"');
+    });
+
+    it('falls back when the version label cannot be resolved', () => {
+      expect(
+        describeSchemaAction({ actionType: 'restore', schemaId: 's1', restoredFrom: 99, schema }),
+      ).toBe('Restored to an earlier version');
+    });
+  });
 });

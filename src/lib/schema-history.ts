@@ -1,4 +1,4 @@
-import type { Schema, SchemaAction } from '@/lib/definitions';
+import type { Schema, SchemaAction, SchemaActionRef } from '@/lib/definitions';
 
 /**
  * Render a persisted schema-change action as a short, human-friendly sentence for
@@ -7,9 +7,14 @@ import type { Schema, SchemaAction } from '@/lib/definitions';
  * Class-referencing actions resolve the class name against the *current* schema
  * when given one (instance/class IDs alone aren't human-readable). A class that
  * was renamed or deleted since the change won't resolve, so those fall back to
- * generic phrasing rather than a dangling ID.
+ * generic phrasing rather than a dangling ID. `versionLabelOf` (injected, so this
+ * stays pure) resolves a snapshot ref to its version nickname for `restore`.
  */
-export function describeSchemaAction(action: SchemaAction, schema?: Schema): string {
+export function describeSchemaAction(
+  action: SchemaAction,
+  schema?: Schema,
+  versionLabelOf?: (ref: SchemaActionRef) => string | undefined,
+): string {
   switch (action.actionType) {
     case 'addSchema':
       return `Created schema "${action.schema.name}"`;
@@ -46,6 +51,10 @@ export function describeSchemaAction(action: SchemaAction, schema?: Schema): str
         return 'Edited example notes';
       }
       return 'Edited an example';
+    }
+    case 'restore': {
+      const label = versionLabelOf?.(action.restoredFrom);
+      return label ? `Restored to version "${label}"` : 'Restored to an earlier version';
     }
   }
 }
