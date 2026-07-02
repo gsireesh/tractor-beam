@@ -106,17 +106,17 @@ describe('InstanceNavigator', () => {
 
       await user.click(screen.getByRole('button', { name: /confirmed/i }));
 
-      expect(screen.getAllByTestId('signpost')).toHaveLength(1);
-      expect(screen.getByText('gamma')).toBeInTheDocument();
-      expect(screen.queryByText('alpha')).not.toBeInTheDocument();
-
-      await user.click(screen.getByRole('button', { name: /suggested/i }));
-      expect(screen.queryAllByTestId('signpost')).toHaveLength(0);
-
-      await user.click(screen.getByRole('button', { name: /confirmed/i }));
       expect(screen.getAllByTestId('signpost')).toHaveLength(2);
       expect(screen.getByText('alpha')).toBeInTheDocument();
       expect(screen.queryByText('gamma')).not.toBeInTheDocument();
+
+      await user.click(screen.getByRole('button', { name: /suggested/i }));
+      expect(screen.queryAllByTestId('signpost')).toHaveLength(3);
+
+      await user.click(screen.getByRole('button', { name: /confirmed/i }));
+      expect(screen.getAllByTestId('signpost')).toHaveLength(1);
+      expect(screen.getByText('gamma')).toBeInTheDocument();
+      expect(screen.queryByText('alpha')).not.toBeInTheDocument();
     });
   });
 

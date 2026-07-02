@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { produce } from 'immer';
 import { schemasReducer } from '@/lib/schema-reducer.ts';
+import { applyUpdates } from '@/lib/schema-storage.ts';
 import { placeholderSchemas } from '@/lib/placeholder-schemas.ts';
 import type { Schema, SchemaClass, Instance, SchemaAction } from '@/lib/definitions.ts';
 
@@ -505,5 +506,71 @@ describe('schemasReducer', () => {
 
       expect(next).toEqual(freshState());
     });
+  });
+
+  describe('restore', () => {
+    it('replaces the target schema wholesale by id, leaving others untouched', () => {
+      const state = freshState();
+      const targetId = state[0].id;
+      const restored: Schema = { id: targetId, name: 'Restored', classes: [] };
+
+      const next = reduce(state, {
+        actionType: 'restore',
+        schemaId: targetId,
+        restoredFrom: 5,
+        schema: restored,
+      });
+
+      expect(next.find((s) => s.id === targetId)).toEqual(restored);
+      if (state.length > 1) {
+        expect(next.find((s) => s.id === state[1].id)).toEqual(state[1]);
+      }
+      // Immutability: the input state is not mutated.
+      expect(state.find((s) => s.id === targetId)?.name).not.toBe('Restored');
+    });
+
+    it('is a no-op for an unknown schema id', () => {
+      const state = freshState();
+      const next = reduce(state, {
+        actionType: 'restore',
+        schemaId: 'does-not-exist',
+        restoredFrom: 5,
+        schema: { id: 'does-not-exist', name: 'x', classes: [] },
+      });
+      expect(next).toEqual(freshState());
+    });
+  });
+});
+
+describe('applyUpdates', () => {
+  it('replays updates over a base state in order (event-sourcing core)', () => {
+    const base = freshState();
+    const targetId = base[0].id;
+    const next = applyUpdates(base, [
+      {
+        updateIndex: 1,
+        schemaId: targetId,
+        createdAt: 0,
+        action: {
+          actionType: 'addClass',
+          schemaId: targetId,
+          classInfo: { id: 'x', name: 'Added', description: '', color: 'red', instances: [] },
+        },
+      },
+      {
+        updateIndex: 2,
+        schemaId: targetId,
+        createdAt: 0,
+        action: {
+          actionType: 'updateSchema',
+          schemaId: targetId,
+          schemaInfo: { ...base[0], name: 'Renamed' },
+        },
+      },
+    ]);
+    // updateSchema wholesale-replaced last → name is 'Renamed', earlier addClass superseded.
+    expect(next.find((s) => s.id === targetId)?.name).toBe('Renamed');
+    // Base untouched.
+    expect(base.find((s) => s.id === targetId)?.name).not.toBe('Renamed');
   });
 });

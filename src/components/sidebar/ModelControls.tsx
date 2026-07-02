@@ -36,6 +36,9 @@ import { WEBLLM_MODELS } from '@/lib/ml/types.ts';
 import { useDrawerContext } from '@/contexts/DrawerContext.tsx';
 import { IconButton } from '@/components/ui/IconButton.tsx';
 import { ModelConfigurationModal } from '@/components/model-configuration/ModelConfigurationModal.tsx';
+import { mlAnnotationRunRepo, schemaRepo } from '@/storage/repositories.ts';
+import { MlRunCard } from '@/components/sidebar/MlRunCard.tsx';
+import type { MlAnnotationRun } from '@/lib/definitions.ts';
 
 export interface ModelControlsProps {
   status: MlProgressMessage['stage'];
@@ -63,6 +66,11 @@ export function ModelControls({ status, progress, message, setMlHighlights }: Mo
   const { activeSchema, pdfUrl } = useDrawerContext();
   const [currentRequestId, setCurrentRequestId] = useState<string | null>(null);
   const [config, setConfig] = useState<ModelConfig | null>(null);
+  // Prior ML runs for this schema+PDF, fetched lazily when the history menu opens.
+  const [runs, setRuns] = useState<MlAnnotationRun[]>([]);
+  // snapshotIndex → version label, to derive each run's schema-version name.
+  const [versionLabels, setVersionLabels] = useState<Map<number, string>>(new Map());
+  const [runsLoaded, setRunsLoaded] = useState(false);
   const drawerRoot = useMemo(() => document.getElementById('tractor-beam-drawer-root'), []);
 
   const isRunning = status === 'running' && progress < 1;
@@ -83,16 +91,39 @@ export function ModelControls({ status, progress, message, setMlHighlights }: Mo
   const modelFor = (p: ModelProvider) =>
     config?.selected.provider === p ? config.selected.model : '';
 
-  function sendRunMessage() {
+  async function sendRunMessage() {
     const requestId = crypto.randomUUID();
     setCurrentRequestId(requestId);
-    void window.TractorBeamDrawer.runAnnotationPipeline(activeSchema, requestId);
+    // Snapshot the schema this run is based on (doc 02 mlRun version) and reference
+    // it from the run by snapshotIndex — the version's label is derived from that
+    // snapshot, never copied. Snapshotting is a persistence concern → repo seam.
+    const snapshotIndex = await schemaRepo.snapshot(activeSchema, 'mlRun');
+    void window.TractorBeamDrawer.runAnnotationPipeline(activeSchema, requestId, snapshotIndex);
   }
 
   function sendCancelMessage() {
     if (!currentRequestId) return;
     window.TractorBeamDrawer.cancelAnnotationPipeline(currentRequestId);
     setCurrentRequestId(null);
+  }
+
+  // Refetch the run archive each time the history menu opens, newest first, so the
+  // list reflects runs completed since it was last viewed. We show a brief loading
+  // state by clearing runsLoaded up front.
+  async function refreshRuns() {
+    setRunsLoaded(false);
+    // Runs + the schema's versions: the latter lets us derive each run's version
+    // label from its snapshotIndex (doc 02: run references the snapshot, label is
+    // derived — never copied onto the run).
+    const [all, versions] = await Promise.all([
+      mlAnnotationRunRepo.findBy(activeSchema.id, pdfUrl),
+      schemaRepo.listVersions(activeSchema.id),
+    ]);
+    const labels = new Map<number, string>();
+    for (const v of versions) if (v.label) labels.set(v.snapshotIndex, v.label);
+    setRuns([...all].sort((a, b) => b.createdAt - a.createdAt));
+    setVersionLabels(labels);
+    setRunsLoaded(true);
   }
 
   return (
@@ -185,13 +216,46 @@ export function ModelControls({ status, progress, message, setMlHighlights }: Mo
               onClick={sendCancelMessage}
             />
           )}
-          <IconButton
-            title={'Load Prior Annotations'}
-            icon={History}
-            onClick={() =>
-              void window.TractorBeamDrawer.loadCachedAnnotations(activeSchema.id, pdfUrl)
-            }
-          />
+          <DropdownMenu
+            onOpenChange={(open) => {
+              if (open) void refreshRuns();
+            }}
+          >
+            <DropdownMenuTrigger>
+              <IconButton title={'Prior AI runs'} icon={History} />
+            </DropdownMenuTrigger>
+            <DropdownMenuPortal container={drawerRoot}>
+              <DropdownMenuContent align="start" className="z-[10001] w-72 max-h-80 overflow-y-auto">
+                {!runsLoaded ? (
+                  <DropdownMenuItem disabled>Loading…</DropdownMenuItem>
+                ) : runs.length === 0 ? (
+                  <DropdownMenuItem disabled>No prior AI runs</DropdownMenuItem>
+                ) : (
+                  runs.map((run) => (
+                    <DropdownMenuItem
+                      key={run.id}
+                      onClick={() =>
+                        void window.TractorBeamDrawer.loadCachedAnnotations(
+                          activeSchema.id,
+                          pdfUrl,
+                          run.id,
+                        )
+                      }
+                    >
+                      <MlRunCard
+                        run={run}
+                        schemaVersion={
+                          run.snapshotIndex !== undefined
+                            ? versionLabels.get(run.snapshotIndex)
+                            : undefined
+                        }
+                      />
+                    </DropdownMenuItem>
+                  ))
+                )}
+              </DropdownMenuContent>
+            </DropdownMenuPortal>
+          </DropdownMenu>
           <IconButton
             title={'Hide AI Highlights'}
             icon={EyeOff}

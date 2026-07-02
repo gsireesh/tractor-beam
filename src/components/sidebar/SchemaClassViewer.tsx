@@ -118,6 +118,14 @@ export function SchemaClassViewer({
               className="border-2 bg-card rounded-lg"
               value={nameDraft}
               onChange={(e) => setNameDraft(e.target.value)}
+              onKeyDown={(e) => {
+                // Commit + close on Enter. This input has no onBlur (it relies on
+                // the outside-click handler), so Enter commits directly.
+                if (e.key === 'Enter') {
+                  commitName();
+                  setTitleEditable(false);
+                }
+              }}
             />
           ) : (
             <div className="flex flex-row group">

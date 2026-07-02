@@ -20,13 +20,27 @@ interface IconButtonProps {
   onClick?: (e: React.MouseEvent) => void;
   disabled?: boolean;
   color?: string | null;
+  /** SVG fill for the icon. Omit for lucide's default outline; set to render a
+   *  filled icon (e.g. a filled bookmark to signal a saved state). */
+  fill?: string;
   size?: 'icon' | 'icon-xs' | 'icon-sm' | 'icon-lg';
   strokeWidth?: number;
 }
 
 export function IconButton(props: IconButtonProps) {
-  const { onClick, title, icon: Icon, label, variant, className, color, size, strokeWidth, disabled } =
-    props;
+  const {
+    onClick,
+    title,
+    icon: Icon,
+    label,
+    variant,
+    className,
+    color,
+    fill,
+    size,
+    strokeWidth,
+    disabled,
+  } = props;
   return (
     <Button
       variant={variant ?? 'ghost'}
@@ -36,7 +50,7 @@ export function IconButton(props: IconButtonProps) {
       onClick={onClick}
       disabled={disabled}
     >
-      <Icon strokeWidth={strokeWidth ?? 1} color={color ?? 'currentColor'} />
+      <Icon strokeWidth={strokeWidth ?? 1} color={color ?? 'currentColor'} fill={fill ?? 'none'} />
       {label}
     </Button>
   );

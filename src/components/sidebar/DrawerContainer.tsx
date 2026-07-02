@@ -12,7 +12,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Layers2Icon, SignpostIcon } from 'lucide-react';
 import { SchemaViewer } from '@/components/sidebar/SchemaViewer.tsx';
-import { createSnapshot, rebuildState, storeMlAnnotationRun } from '@/lib/schema-storage';
+import { rebuildState, storeMlAnnotationRun } from '@/lib/schema-storage';
+import { schemaRepo } from '@/storage/repositories';
 import { APP_CONFIG } from '@/app-config';
 import { Schema } from '@/lib/definitions';
 import { schemasReducer } from '@/lib/schema-reducer';
@@ -42,6 +43,10 @@ import { SchemaHeader } from '@/components/sidebar/SchemaHeader.tsx';
 import { DrawerVisibilityToggle } from '@/components/sidebar/DrawerVisibilityToggle.tsx';
 import {
   clearDrawerContent,
+  getRunModel,
+  getRunName,
+  getRunSnapshotIndex,
+  ownsAnnotationRequest,
   registerDrawerContent,
   syncProvisionalHighlights,
 } from '@/entrypoints/pdfjs-additions/drawer-host';
@@ -179,7 +184,7 @@ function DrawerContent({
   const handleExport = useCallback(
     (opts: ExportOptions) => {
       if (!activeSchema) return;
-      createSnapshot(APP_CONFIG.indexedDBConfig, activeSchema).catch((e) =>
+      void schemaRepo.snapshot(activeSchema, 'export').catch((e) =>
         console.error('[export] snapshot failed', e),
       );
       exportSchema(activeSchema, opts);
@@ -254,6 +259,10 @@ function DrawerContent({
     const listener = (message: ExtensionMessage) => {
       switch (message.type) {
         case 'mlProgress':
+          // Results/progress are broadcast to every viewer tab tagged only by
+          // requestId. Ignore progress for a run another tab started; allow
+          // requestId-less generic progress (e.g. model load) through.
+          if (message.requestId && !ownsAnnotationRequest(message.requestId)) break;
           setLlmLoaded({
             stage: message.stage,
             progress: message.progress,
@@ -261,7 +270,13 @@ function DrawerContent({
           });
           break;
         case 'annotationResults':
-          if (message.annotations && message.requestId) {
+          // Only persist/render results for a run THIS tab initiated — otherwise
+          // another document's annotations get saved under this tab's pdfUrl.
+          if (
+            message.annotations &&
+            message.requestId &&
+            ownsAnnotationRequest(message.requestId)
+          ) {
             // Store for later review
             storeMlAnnotationRun(APP_CONFIG.indexedDBConfig, {
               id: message.requestId,
@@ -269,6 +284,9 @@ function DrawerContent({
               schemaId: activeSchema?.id ?? '',
               annotations: message.annotations,
               createdAt: Date.now(),
+              model: getRunModel(message.requestId),
+              name: getRunName(message.requestId),
+              snapshotIndex: getRunSnapshotIndex(message.requestId),
             }).catch((err: unknown) =>
               console.error('[drawer] Failed to store ML annotations:', err),
             );

@@ -1,5 +1,5 @@
 import { Schema } from '@/lib/definitions.ts';
-import { useEffect, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import {
   ArrowLeftRight,
   Download,
@@ -46,25 +46,24 @@ export function SchemaHeader({
   onOpenManager: () => void;
   onExport: () => void;
 }) {
-  const titleRef = useRef<HTMLDivElement>(null);
-
+  // Local draft so typing doesn't dispatch on every keystroke (which would log a
+  // schema update per character). Seed it when editing begins; commit once on
+  // blur/Enter. Clicking away or tabbing blurs the input, so blur also replaces
+  // the old outside-click-to-close handler.
+  const [draft, setDraft] = useState('');
   useEffect(() => {
-    if (!editing) return;
-    const handler = (e: MouseEvent) => {
-      if (titleRef.current && !titleRef.current.contains(e.target as Node)) {
-        onEditingChange(false);
-      }
-    };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, [editing, onEditingChange]);
+    if (editing && activeSchema) setDraft(activeSchema.name);
+  }, [editing, activeSchema]);
 
   if (!activeSchema) return null;
+
+  const commitRename = () => {
+    if (draft !== activeSchema.name) onRename(draft);
+  };
 
   return (
     <div className="flex items-center gap-1 px-3 py-1.5 border-b border-border">
       <div
-        ref={titleRef}
         className="w-fit"
         onClick={() => {
           if (!editing) onEditingChange(true);
@@ -75,10 +74,15 @@ export function SchemaHeader({
             autoFocus
             placeholder="Untitled Project"
             className="border-2 bg-card text-base px-1 py-0.5 rounded"
-            value={activeSchema.name}
-            onChange={(e) => onRename(e.target.value)}
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            onBlur={() => {
+              commitRename();
+              onEditingChange(false);
+            }}
             onKeyDown={(e) => {
-              if (e.key === 'Enter') onEditingChange(false);
+              // Enter commits via blur (onBlur handles rename + close).
+              if (e.key === 'Enter') e.currentTarget.blur();
             }}
           />
         ) : (

@@ -10,10 +10,11 @@
  * each own a single window.TractorBeam* API.
  */
 
-import { getMlAnnotationRuns } from '@/lib/schema-storage';
-import { APP_CONFIG } from '@/app-config';
-import type { Highlight, Instance, Schema, SchemaAction } from '@/lib/definitions';
+import { mlAnnotationRunRepo } from '@/storage/repositories';
+import type { Highlight, Instance, MlRunModel, Schema, SchemaAction } from '@/lib/definitions';
 import { loadModelConfig } from '@/lib/config-storage';
+import type { ModelConfig } from '@/lib/ml/model-config';
+import { runName } from '@/lib/friendly-name';
 import { colorMapForSchema, mergePdfBoxes } from '@/lib/utils.ts';
 import { VISUAL_BLOCK_CLASS_ID } from '@/components/highlights/HighlightOverlay.tsx';
 
@@ -82,19 +83,25 @@ async function runSegmentationPipeline() {
   );
 }
 
-async function loadCachedAnnotations(schemaId: string, pdfUrl: string) {
+async function loadCachedAnnotations(schemaId: string, pdfUrl: string, runId?: string) {
   console.log('[drawer] Loading cached annotations from IndexedDB');
-  const runs = await getMlAnnotationRuns(APP_CONFIG.indexedDBConfig, schemaId, pdfUrl);
+  const runs = await mlAnnotationRunRepo.findBy(schemaId, pdfUrl);
   if (runs.length === 0) {
     console.log('[drawer] No cached annotation runs found');
     return;
   }
-  const mostRecent = runs.sort((a, b) => b.createdAt - a.createdAt)[0];
-  console.log(
-    `[drawer] Loaded cached run ${mostRecent.id} with ${mostRecent.annotations.length} annotations`,
-  );
+  // With a runId, time-travel to that specific run; without one, default to the
+  // most recent (the History icon's bare-click behavior).
+  const run = runId
+    ? runs.find((r) => r.id === runId)
+    : runs.sort((a, b) => b.createdAt - a.createdAt)[0];
+  if (!run) {
+    console.warn(`[drawer] Requested cached run ${runId} not found`);
+    return;
+  }
+  console.log(`[drawer] Loaded cached run ${run.id} with ${run.annotations.length} annotations`);
   const colorsByClass = colorMapForSchema(getActiveSchemaFn());
-  const loaded: Highlight[] = mostRecent.annotations.map((a) => ({
+  const loaded: Highlight[] = run.annotations.map((a) => ({
     id: a.id,
     classId: a.classId,
     schemaId,
@@ -126,9 +133,69 @@ export function syncProvisionalHighlights(mlHighlights: Highlight[]) {
   window.TractorBeamHighlights.setHighlights('provisional', highlights);
 }
 
+// ─── Run ownership ───
+// The offscreen document BROADCASTS annotationResults/mlProgress to every open
+// viewer tab, tagged only by requestId. This module is per-tab (one instance per
+// viewer page), so the set of requestIds initiated here IS "runs this tab owns".
+// Receivers (DrawerContainer's message listener) consult this to ignore another
+// tab's run — otherwise a run on document A gets persisted under tab B's pdfUrl.
+const ownedRequestIds = new Set<string>();
+
+// Secret-stripped model snapshot per owned run, captured at initiation so the
+// receiver can persist provenance with the run (the apiKey never leaves here).
+const runModels = new Map<string, MlRunModel>();
+
+// Friendly nickname per owned run, generated once at initiation so it stays
+// stable across the per-block annotationResults broadcasts (which each restore
+// the same run record by requestId).
+const runNames = new Map<string, string>();
+
+// The mlRun snapshot each run was based on (by snapshotIndex), so the stored run
+// can reference it (doc 02: run → snapshot); the label is derived from it later.
+const runSnapshotIndices = new Map<string, number>();
+
+/** True if this tab initiated the given annotation run. */
+export function ownsAnnotationRequest(requestId: string): boolean {
+  return ownedRequestIds.has(requestId);
+}
+
+/** The model snapshot recorded for a run this tab initiated, if any. */
+export function getRunModel(requestId: string): MlRunModel | undefined {
+  return runModels.get(requestId);
+}
+
+/** The friendly nickname assigned to a run this tab initiated, if any. */
+export function getRunName(requestId: string): string | undefined {
+  return runNames.get(requestId);
+}
+
+/** The mlRun snapshot (by index) a run this tab initiated was based on, if any. */
+export function getRunSnapshotIndex(requestId: string): number | undefined {
+  return runSnapshotIndices.get(requestId);
+}
+
+/**
+ * Distill the active selection into a credential-free snapshot for storage.
+ * Only `params` (effort/maxTokens/…) and `baseUrl` are copied; the provider
+ * block's sibling `apiKey` is never read, so it cannot reach IndexedDB.
+ */
+function modelSnapshot(config: ModelConfig): MlRunModel {
+  const { provider, model } = config.selected;
+  const block = config[provider];
+  return {
+    provider,
+    model,
+    baseUrl: 'baseUrl' in block ? block.baseUrl : undefined,
+    params: { ...block.params },
+  };
+}
+
 // ─── Pipeline orchestration (called via window API) ───
-async function runAnnotationPipeline(schema: Schema, requestId: string) {
+async function runAnnotationPipeline(schema: Schema, requestId: string, snapshotIndex?: number) {
   console.log('[drawer] Starting annotation pipeline:', requestId);
+  ownedRequestIds.add(requestId);
+  runNames.set(requestId, runName());
+  if (snapshotIndex !== undefined) runSnapshotIndices.set(requestId, snapshotIndex);
 
   // Reset ML highlights for the new run (state change re-syncs the viewer).
   setMlHighlightsFn?.([]);
@@ -157,6 +224,9 @@ async function runAnnotationPipeline(schema: Schema, requestId: string) {
   // complete message to the offscreen document. The active provider's secret
   // travels inside modelConfig — offscreen can't read chrome.storage itself.
   const modelConfig = await loadModelConfig();
+  // Record what ran, for the history card. Set before dispatching so it's present
+  // by the time results broadcast back. Credential-free (see modelSnapshot).
+  runModels.set(requestId, modelSnapshot(modelConfig));
 
   chrome.runtime
     .sendMessage({
@@ -192,9 +262,13 @@ declare global {
       dispatch: (action: SchemaAction) => void;
       getActiveSchema: () => Schema | null;
       getInstance: (schemaId: string, classId: string, instanceId: string) => Instance | null;
-      runAnnotationPipeline: (schema: Schema, requestId: string) => Promise<void>;
+      runAnnotationPipeline: (
+        schema: Schema,
+        requestId: string,
+        snapshotIndex?: number,
+      ) => Promise<void>;
       runSegmentationPipeline: () => Promise<void>;
-      loadCachedAnnotations: (schemaId: string, pdfUrl: string) => Promise<void>;
+      loadCachedAnnotations: (schemaId: string, pdfUrl: string, runId?: string) => Promise<void>;
       cancelAnnotationPipeline: (requestId: string) => void;
     };
   }

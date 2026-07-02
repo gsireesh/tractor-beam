@@ -5,10 +5,13 @@ import type {
   MlAnnotationRun,
   Schema,
   SchemaAction,
+  SchemaActionRef,
   SchemaSnapshot,
   SchemaUpdate,
+  SnapshotKind,
 } from '@/lib/definitions.ts';
 import { schemasReducer } from '@/lib/schema-reducer.ts';
+import { schemaName } from '@/lib/friendly-name.ts';
 import { produce } from 'immer';
 
 let dbPromise: Promise<IDBDatabase> | null = null;
@@ -116,13 +119,18 @@ export async function getLatestSnapshotBySchema(
 export async function createSnapshot(
   indexedDBConfig: IndexedDBConfig,
   schema: Schema,
-): Promise<void> {
+  kind: SnapshotKind = 'manual',
+  label: string = schemaName(),
+): Promise<number> {
   const db = await getDB(indexedDBConfig);
   const tx = db.transaction(
     [indexedDBConfig.snapshotObjectStoreName, indexedDBConfig.updatesObjectStoreName],
     'readwrite',
   );
   const maxReq = tx.objectStore(indexedDBConfig.updatesObjectStoreName).openKeyCursor(null, 'prev'); // first hit = highest updateIndex
+  // Captured from the add request's generated key so callers (e.g. an ML run) can
+  // reference the snapshot by id.
+  let snapshotIndex = 0;
   maxReq.onsuccess = () => {
     const lastAppliedUpdateIndex = maxReq.result ? Number(maxReq.result.key) : 0;
     const snapshot: Omit<SchemaSnapshot, 'snapshotIndex'> = {
@@ -130,12 +138,50 @@ export async function createSnapshot(
       schema,
       createdAt: Date.now(),
       lastAppliedUpdateIndex: lastAppliedUpdateIndex,
+      kind,
+      label,
     };
-    tx.objectStore(indexedDBConfig.snapshotObjectStoreName).add(snapshot);
+    const addReq = tx.objectStore(indexedDBConfig.snapshotObjectStoreName).add(snapshot);
+    addReq.onsuccess = () => {
+      snapshotIndex = Number(addReq.result);
+    };
   };
 
-  return new Promise((resolve, reject) => {
-    tx.oncomplete = () => resolve();
+  return new Promise<number>((resolve, reject) => {
+    tx.oncomplete = () => resolve(snapshotIndex);
+    tx.onerror = () => reject(tx.error as Error);
+  });
+}
+
+/**
+ * Store a snapshot anchored at an *explicit* update index (vs `createSnapshot`,
+ * which anchors at the current head). Used to version a past point — e.g. naming
+ * a restore target. Returns the new snapshotIndex.
+ */
+export async function createSnapshotAt(
+  indexedDBConfig: IndexedDBConfig,
+  schema: Schema,
+  anchor: SchemaActionRef,
+  kind: SnapshotKind = 'manual',
+  label: string = schemaName(),
+): Promise<number> {
+  const db = await getDB(indexedDBConfig);
+  const tx = db.transaction(indexedDBConfig.snapshotObjectStoreName, 'readwrite');
+  const snapshot: Omit<SchemaSnapshot, 'snapshotIndex'> = {
+    schemaId: schema.id,
+    schema,
+    createdAt: Date.now(),
+    lastAppliedUpdateIndex: anchor,
+    kind,
+    label,
+  };
+  let snapshotIndex = 0;
+  const addReq = tx.objectStore(indexedDBConfig.snapshotObjectStoreName).add(snapshot);
+  addReq.onsuccess = () => {
+    snapshotIndex = Number(addReq.result);
+  };
+  return new Promise<number>((resolve, reject) => {
+    tx.oncomplete = () => resolve(snapshotIndex);
     tx.onerror = () => reject(tx.error as Error);
   });
 }
@@ -162,6 +208,22 @@ export async function getUpdates(
     updateRequest.onerror = () => {
       reject(updateRequest.error as Error);
     };
+  });
+}
+
+/** All snapshots recorded for a schema (every version), via the schemaId index. */
+export async function getSnapshots(
+  indexedDBConfig: IndexedDBConfig,
+  schemaId: string,
+): Promise<SchemaSnapshot[]> {
+  const db = await getDB(indexedDBConfig);
+  const snapshotStore = db
+    .transaction(indexedDBConfig.snapshotObjectStoreName, 'readonly')
+    .objectStore(indexedDBConfig.snapshotObjectStoreName);
+  return new Promise<SchemaSnapshot[]>((resolve, reject) => {
+    const request = snapshotStore.index('schemaId').getAll(schemaId);
+    request.onsuccess = () => resolve(request.result as SchemaSnapshot[]);
+    request.onerror = () => reject(request.error as Error);
   });
 }
 
@@ -207,15 +269,41 @@ function normalizeSchemas(schemas: Schema[]): Schema[] {
   }));
 }
 
+/** Replay an ordered list of updates over a base state (the event-sourcing core). */
+export function applyUpdates(schemas: Schema[], updates: SchemaUpdate[]): Schema[] {
+  return updates.reduce(
+    (acc, update) => produce(acc, (draft) => schemasReducer(draft, update.action)),
+    schemas,
+  );
+}
+
+/**
+ * Materialize a schema as it was at update index `T` — bounded replay (doc 06):
+ * take the newest snapshot anchored ≤ T, replay updates in (anchor, T]. Snapshots
+ * accelerate this; when T lands on a snapshot the replay range is empty.
+ */
+export async function schemaAsOf(
+  indexedDBConfig: IndexedDBConfig,
+  schemaId: string,
+  asOfUpdateIndex: SchemaActionRef,
+): Promise<Schema | null> {
+  const snapshots = await getSnapshots(indexedDBConfig, schemaId);
+  const base = snapshots
+    .filter((s) => s.lastAppliedUpdateIndex <= asOfUpdateIndex)
+    .sort((a, b) => b.lastAppliedUpdateIndex - a.lastAppliedUpdateIndex)[0];
+  if (!base) return null; // no snapshot at/before T (baseline should always exist)
+  const updates = (await getUpdates(indexedDBConfig, schemaId, base.lastAppliedUpdateIndex)).filter(
+    (u) => u.updateIndex <= asOfUpdateIndex,
+  );
+  return normalizeSchemas(applyUpdates([base.schema], updates))[0] ?? null;
+}
+
 export async function rebuildState(indexedDBConfig: IndexedDBConfig): Promise<Schema[]> {
   const snapshotsById = await getLatestSnapshotBySchema(indexedDBConfig);
   let allSchemas = Object.values(snapshotsById).map((s) => s.schema);
   for (const [schemaId, snapshot] of Object.entries(snapshotsById)) {
     const updates = await getUpdates(indexedDBConfig, schemaId, snapshot.lastAppliedUpdateIndex);
-    allSchemas = updates.reduce(
-      (schemas, update) => produce(schemas, (draft) => schemasReducer(draft, update.action)),
-      allSchemas,
-    );
+    allSchemas = applyUpdates(allSchemas, updates);
   }
   // Seeding otherwise lives only in onupgradeneeded, which fires once per DB
   // lifetime. If the store is empty for any other reason (cleared data, a failed

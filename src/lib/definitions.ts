@@ -59,12 +59,35 @@ export interface MlAnnotation {
   createdAt: number;
 }
 
+/**
+ * Secret-stripped snapshot of the model config a run was produced with, recorded
+ * at run time for provenance/display. Deliberately omits credentials (the
+ * provider apiKey) — this is persisted to IndexedDB. `params` is provider-shaped
+ * (e.g. effort/maxTokens), kept generic so it survives provider changes.
+ */
+export interface MlRunModel {
+  provider: string;
+  model: string;
+  baseUrl?: string;
+  params?: Record<string, number | string | undefined>;
+}
+
 export interface MlAnnotationRun {
   id: string; // requestId
   pdfUrl: string;
   schemaId: string;
   annotations: MlAnnotation[];
   createdAt: number;
+  /** Model used for this run; absent on runs recorded before this was captured. */
+  model?: MlRunModel;
+  /** Friendly `adverb-verb` nickname; absent on runs recorded before naming. */
+  name?: string;
+  /**
+   * References the mlRun SchemaSnapshot this run was based on (doc 02: run →
+   * snapshot). The version's display label is derived from that snapshot, not
+   * stored here. Absent on runs recorded before this link existed.
+   */
+  snapshotIndex?: SchemaActionRef;
 }
 
 export interface SchemaClass {
@@ -80,12 +103,26 @@ export interface Schema {
   classes: SchemaClass[];
 }
 
+/** Why a snapshot (schema version) was recorded — see docs/architecture/02. */
+export type SnapshotKind = 'manual' | 'export' | 'mlRun';
+
+/**
+ * A reference to a point in a schema's op-log — a snapshotIndex or updateIndex.
+ * Doc 06 calls this `OpRef`: a swappable *sequencing* value, kept out of domain
+ * identity so the eventual monotonic-int → replica-safe-id swap stays mechanical.
+ */
+export type SchemaActionRef = number;
+
 export interface SchemaSnapshot {
   snapshotIndex: number;
   schemaId: string;
   schema: Schema;
   createdAt: number;
-  lastAppliedUpdateIndex: number;
+  lastAppliedUpdateIndex: SchemaActionRef;
+  /** Absent on legacy/seed snapshots — treat as 'manual' on read. */
+  kind?: SnapshotKind;
+  /** Friendly `adjective-noun` version nickname; absent on legacy snapshots. */
+  label?: string;
 }
 
 export interface SchemaUpdate {
@@ -156,6 +193,18 @@ interface UpdateInstance {
   };
 }
 
+/**
+ * Restore the schema to an earlier version. A forward-appended op (doc 06), NOT a
+ * rewind — `schema` is the materialized target state and `restoredFrom` records
+ * the version it descends from (the one lineage edge not derivable from ordering).
+ */
+interface Restore {
+  actionType: 'restore';
+  schemaId: string;
+  restoredFrom: SchemaActionRef;
+  schema: Schema;
+}
+
 export type SchemaAction =
   | AddSchema
   | UpdateSchema
@@ -165,4 +214,5 @@ export type SchemaAction =
   | DeleteClass
   | AddInstance
   | DeleteInstance
-  | UpdateInstance;
+  | UpdateInstance
+  | Restore;

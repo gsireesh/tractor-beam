@@ -5,6 +5,8 @@ import { ListPlus } from 'lucide-react';
 import { createNewClass } from '@/lib/utils.ts';
 import { IconButton } from '@/components/ui/IconButton.tsx';
 import { Separator } from '@/components/ui/separator.tsx';
+import { SchemaHistory } from '@/components/sidebar/SchemaHistory.tsx';
+import { SchemaBookmarkButton } from '@/components/sidebar/SchemaBookmarkButton.tsx';
 
 interface SchemaViewerProps {
   schema: Schema;
@@ -19,7 +21,7 @@ export function SchemaViewer({ schema, dispatch }: SchemaViewerProps) {
   return (
     <div>
       <div className="sticky top-0 z-10 bg-card">
-        <div className="flex justify-end">
+        <div className="flex justify-end gap-1">
           <IconButton
             title="Add New Highlighted"
             icon={ListPlus}
@@ -37,6 +39,8 @@ export function SchemaViewer({ schema, dispatch }: SchemaViewerProps) {
               });
             }}
           />
+          <SchemaBookmarkButton schema={schema} />
+          <SchemaHistory schema={schema} />
         </div>
         <Separator />
       </div>
