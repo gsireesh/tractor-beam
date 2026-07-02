@@ -217,3 +217,52 @@
 .tractor-beam-toggle-tab.drawer-open .chevron {
   transform: rotate(180deg);
 }
+
+/* ─── Suggested-annotation minimap ─── */
+
+/* A thin vertical strip in the drawer tab's 28px band, over the scrollbar. Sits below
+   the tab (z 10001) so the chevron stays clickable, above the PDF highlight overlay
+   (z 5). `right` is set inline (0 ↔ drawer width) and animates in step with the tab. */
+.tractor-beam-minimap {
+  position: fixed;
+  top: 0;
+  width: 28px;
+  height: 100vh;
+  z-index: 9999;
+  cursor: pointer;
+  background: hsl(var(--muted) / 0.85);
+  border-left: 1px solid hsl(var(--border));
+  transition: right 0.25s ease-in-out;
+}
+
+.tractor-beam-minimap-viewport {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  min-height: 2px;
+  background: hsl(var(--primary) / 0.12);
+  border-top: 1px solid hsl(var(--primary) / 0.45);
+  border-bottom: 1px solid hsl(var(--primary) / 0.45);
+  pointer-events: none;
+}
+
+.tractor-beam-minimap-rect {
+  position: absolute;
+  min-height: 2px;
+  border-radius: 1px;
+  pointer-events: none;
+}
+
+/* Hover preview: a rendered page slice floating left of the strip, centered on the
+   cursor. Above the strip and drawer edge; never intercepts pointer events. */
+.tractor-beam-minimap-preview {
+  position: fixed;
+  transform: translateY(-50%);
+  z-index: 10002;
+  background: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
+  border-radius: 6px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+  overflow: hidden;
+  pointer-events: none;
+}

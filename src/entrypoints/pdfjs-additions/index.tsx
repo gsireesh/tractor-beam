@@ -1,11 +1,11 @@
 import { initPopover } from './popover';
 import { initHighlights } from './highlights';
-import { initTextExtraction } from './text-extraction';
+import { initPdfApi } from './pdf-api';
 import { initDrawer } from './drawer';
 
 initPopover();
 initHighlights();
-initTextExtraction();
+initPdfApi();
 initDrawer();
 
 export default defineUnlistedScript(() => {

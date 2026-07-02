@@ -6,7 +6,7 @@
  * Owns the module-level refs that the drawer components publish into (via
  * registerDrawerContent), the annotation/segmentation pipeline functions, and
  * the assembly of the window API. Kept JSX-free so it can be reasoned about and
- * tested without mounting React. Mirrors how highlights.tsx / text-extraction.ts
+ * tested without mounting React. Mirrors how highlights.tsx / pdf-api.ts
  * each own a single window.TractorBeam* API.
  */
 
@@ -56,14 +56,14 @@ export function clearDrawerContent(): void {
 
 async function runSegmentationPipeline() {
   console.log('[drawer] Drawing segmentation boxes');
-  if (!window.TractorBeamTextExtraction) {
-    console.error('[drawer] TractorBeamTextExtraction not available');
+  if (!window.TractorBeamPdf) {
+    console.error('[drawer] TractorBeamPdf not available');
     return;
   }
 
   console.log('[drawer] Extracting visual blocks...');
   const PDFViewerApplication = window.PDFViewerApplication;
-  const blocks = await window.TractorBeamTextExtraction.extractVisualBlocks(PDFViewerApplication);
+  const blocks = await window.TractorBeamPdf.extractVisualBlocks(PDFViewerApplication);
   console.log(`[drawer] Extracted ${blocks.length} visual blocks`);
 
   window.TractorBeamHighlights.setHighlights(
@@ -201,8 +201,8 @@ async function runAnnotationPipeline(schema: Schema, requestId: string, snapshot
   setMlHighlightsFn?.([]);
 
   // 1. Extract visual blocks directly from the in-page API
-  if (!window.TractorBeamTextExtraction) {
-    console.error('[drawer] TractorBeamTextExtraction not available');
+  if (!window.TractorBeamPdf) {
+    console.error('[drawer] TractorBeamPdf not available');
     return;
   }
   const PDFViewerApplication = window.PDFViewerApplication;
@@ -212,7 +212,7 @@ async function runAnnotationPipeline(schema: Schema, requestId: string, snapshot
   }
 
   console.log('[drawer] Extracting visual blocks...');
-  const blocks = await window.TractorBeamTextExtraction.extractVisualBlocks(PDFViewerApplication);
+  const blocks = await window.TractorBeamPdf.extractVisualBlocks(PDFViewerApplication);
   console.log(`[drawer] Extracted ${blocks.length} visual blocks`);
 
   // 2. Ensure the offscreen document is ready

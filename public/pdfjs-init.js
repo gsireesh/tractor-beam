@@ -181,8 +181,8 @@
       }
 
       if (message.type === 'extractPdfText') {
-        if (window.TractorBeamTextExtraction) {
-          window.TractorBeamTextExtraction.extractFullText(PDFViewerApplication)
+        if (window.TractorBeamPdf) {
+          window.TractorBeamPdf.extractFullText(PDFViewerApplication)
             .then(function (pages) {
               sendResponse({ type: 'pdfTextExtracted', pages: pages });
             })

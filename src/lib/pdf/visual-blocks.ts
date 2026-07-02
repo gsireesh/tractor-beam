@@ -1,81 +1,19 @@
 /**
- * PDF text extraction logic extracted from pdfjs-init.js.
- * Exposes window.TractorBeamTextExtraction API.
+ * Visual-block segmentation: group PDF text items into spatial blocks via a recursive
+ * XY-cut, font-size stratification, and line grouping. Pure functions moved out of the
+ * pdf.js entrypoint so they're unit-testable in isolation (the entrypoint only feeds
+ * them normalized items pulled from the vendored viewer).
  */
-
-import type { VisualBlock, VisualBlockItem, PdfBox } from '@/lib/definitions';
+import type { VisualBlock, VisualBlockItem } from '@/lib/definitions';
 
 const VERTICAL_PROXIMITY_THRESHOLD = 1.5;
 const MAX_XY_CUT_DEPTH = 8;
 const HEADER_FOOTER_MARGIN = 0.04;
 const HEADER_FOOTER_MAX_CHARS = 30;
 
-declare global {
-  interface Window {
-    TractorBeamTextExtraction: {
-      extractFullText: (
-        PDFViewerApplication: any,
-      ) => Promise<{ pageNumber: number; text: string }[]>;
-      extractVisualBlocks: (PDFViewerApplication: any) => Promise<VisualBlock[]>;
-    };
-  }
-}
-
-async function extractFullText(
-  PDFViewerApplication: any,
-): Promise<{ pageNumber: number; text: string }[]> {
-  const pdfDoc = PDFViewerApplication.pdfDocument;
-  if (!pdfDoc) throw new Error('No PDF document loaded');
-
-  const numPages = pdfDoc.numPages;
-  const pages: { pageNumber: number; text: string }[] = [];
-
-  for (let i = 1; i <= numPages; i++) {
-    const page = await pdfDoc.getPage(i);
-    const textContent = await page.getTextContent();
-    const text = textContent.items
-      .filter((item: any) => item.str !== undefined)
-      .map((item: any) => item.str)
-      .join('');
-    pages.push({ pageNumber: i, text });
-  }
-
-  return pages;
-}
-
-interface PdfTextItem {
-  str: string;
-  transform: number[]; // [scaleX, skewX, skewY, scaleY, translateX, translateY]
-  width: number;
-  height: number;
-}
-
-function itemToNormalizedBox(
-  item: PdfTextItem,
-  viewportHeight: number,
-  viewportWidth: number,
-): PdfBox {
-  const [, , , scaleY, tx, ty] = item.transform;
-  const itemHeight = Math.abs(scaleY);
-  const normalizedHeight = itemHeight / viewportHeight;
-  // PDF coordinate system has Y=0 at bottom; ty is the text baseline.
-  // Flip to top-down and subtract height to get the top edge of the text.
-  return {
-    pageNumber: 0, // filled in by caller
-    left: tx / viewportWidth,
-    top: (viewportHeight - ty) / viewportHeight - normalizedHeight,
-    width: item.width / viewportWidth,
-    height: normalizedHeight,
-  };
-}
-
 /**
- * Groups text items into visual blocks based on vertical proximity,
- * then builds VisualBlock objects with concatenated text and item offsets.
- *
- * @param items - Text items from a single page, each with normalized box coords
- * @param pageNumber - The 1-based page number
- * @returns Array of VisualBlocks for this page
+ * Groups text items into a VisualBlock: concatenated text plus the char offset where
+ * each item starts (so callers can map a text span back to its item boxes).
  */
 function buildVisualBlock(
   blockItems: VisualBlockItem[],
@@ -234,7 +172,7 @@ function stratifyByFontSize(items: VisualBlockItem[], medianHeight: number): Vis
 
 // ─── Line/paragraph grouping (enhanced from original) ───────────────────────
 
-function groupIntoLines(items: VisualBlockItem[], medianHeight: number): VisualBlockItem[][] {
+function groupIntoLines(items: VisualBlockItem[]): VisualBlockItem[][] {
   if (items.length === 0) return [];
 
   const sorted = [...items].sort((a, b) => a.box.top - b.box.top || a.box.left - b.box.left);
@@ -258,7 +196,12 @@ function groupIntoLines(items: VisualBlockItem[], medianHeight: number): VisualB
 
 // ─── Orchestration ──────────────────────────────────────────────────────────
 
-function groupItemsIntoBlocks(items: VisualBlockItem[], pageNumber: number): VisualBlock[] {
+/**
+ * Segment a page's normalized text items into visual blocks: strip small
+ * header/footer runs, XY-cut into regions, stratify by font size, then group into
+ * lines/paragraphs. Pure — accepts items already mapped to normalized boxes.
+ */
+export function groupItemsIntoBlocks(items: VisualBlockItem[], pageNumber: number): VisualBlock[] {
   if (items.length === 0) return [];
 
   // Phase 0: Strip header/footer items
@@ -293,7 +236,7 @@ function groupItemsIntoBlocks(items: VisualBlockItem[], pageNumber: number): Vis
   for (const region of regions) {
     const subgroups = stratifyByFontSize(region, medianH);
     for (const subgroup of subgroups) {
-      const paragraphs = groupIntoLines(subgroup, medianH);
+      const paragraphs = groupIntoLines(subgroup);
       allGroups.push(...paragraphs);
     }
   }
@@ -304,42 +247,4 @@ function groupItemsIntoBlocks(items: VisualBlockItem[], pageNumber: number): Vis
   }
 
   return allGroups.map((group, idx) => buildVisualBlock(group, pageNumber, idx));
-}
-
-async function extractVisualBlocks(PDFViewerApplication: any): Promise<VisualBlock[]> {
-  const pdfDoc = PDFViewerApplication.pdfDocument;
-  if (!pdfDoc) throw new Error('No PDF document loaded');
-
-  const numPages = pdfDoc.numPages;
-  const allBlocks: VisualBlock[] = [];
-
-  for (let i = 1; i <= numPages; i++) {
-    const page = await pdfDoc.getPage(i);
-    const textContent = await page.getTextContent();
-    const viewport = page.getViewport({ scale: 1.0 });
-
-    const items: { str: string; box: PdfBox }[] = textContent.items
-      .filter((item: any) => item.str !== undefined && item.str.trim() !== '')
-      .filter((item: any) => item.transform[1] === 0 && item.transform[2] === 0)
-      .map((item: PdfTextItem) => ({
-        str: item.str,
-        box: { ...itemToNormalizedBox(item, viewport.height, viewport.width), pageNumber: i },
-      }));
-
-    const pageBlocks = groupItemsIntoBlocks(items, i);
-    allBlocks.push(...pageBlocks);
-  }
-
-  console.log(
-    `[text-extraction] Extracted ${allBlocks.length} visual blocks from ${numPages} pages`,
-  );
-  return allBlocks;
-}
-
-export function initTextExtraction() {
-  window.TractorBeamTextExtraction = {
-    extractFullText,
-    extractVisualBlocks,
-  };
-  console.log('[pdfjs-additions] Text extraction initialized');
 }

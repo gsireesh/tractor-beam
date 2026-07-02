@@ -9,7 +9,15 @@
  * publishes its handle into it via registerDrawerContent while mounted.
  */
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  type Dispatch,
+  type SetStateAction,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { Layers2Icon, SignpostIcon } from 'lucide-react';
 import { SchemaViewer } from '@/components/sidebar/SchemaViewer.tsx';
 import { rebuildState, storeMlAnnotationRun } from '@/lib/schema-storage';
@@ -41,6 +49,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { InstanceNavigator } from '@/components/navigation/InstanceNavigator.tsx';
 import { SchemaHeader } from '@/components/sidebar/SchemaHeader.tsx';
 import { DrawerVisibilityToggle } from '@/components/sidebar/DrawerVisibilityToggle.tsx';
+import { AnnotationMinimap } from '@/components/minimap/AnnotationMinimap.tsx';
 import {
   clearDrawerContent,
   getRunModel,
@@ -61,6 +70,12 @@ export function DrawerContainer() {
   // Open by default during hydration; reconciled from storage once it loads.
   const [isOpen, setIsOpen] = useState(true);
   const hydrated = useRef(false);
+  // Suggested (ML) highlights live here, one level above DrawerContent, so the
+  // minimap — a sibling of DrawerVisibilityToggle — can read them. DrawerContent still
+  // owns all the writes; it receives state + setter as props. This moves ML state
+  // toward the root-level `ml` store slice (docs/architecture/02); the minimap is a
+  // read-only consumer, so it maps onto the future `useMlHighlights()` with no setter.
+  const [mlHighlights, setMlHighlights] = useState<Highlight[]>([]);
 
   // Load schema state (IndexedDB) and UI state (chrome.storage) together so the
   // drawer's saved position is ready when its content first renders.
@@ -102,6 +117,7 @@ export function DrawerContainer() {
     return (
       <>
         <DrawerVisibilityToggle isOpen={isOpen} onToggle={toggle} />
+        <AnnotationMinimap mlHighlights={mlHighlights} isOpen={isOpen} />
         <div className={`tractor-beam-drawer ${isOpen ? 'open' : ''}`}>
           <div className="p-4 text-sm text-muted-foreground">Loading...</div>
         </div>
@@ -112,8 +128,14 @@ export function DrawerContainer() {
   return (
     <>
       <DrawerVisibilityToggle isOpen={isOpen} onToggle={toggle} />
+      <AnnotationMinimap mlHighlights={mlHighlights} isOpen={isOpen} />
       <div className={`tractor-beam-drawer ${isOpen ? 'open' : ''}`}>
-        <DrawerContent initialSchemas={initialState} initialUiState={initialUiState} />
+        <DrawerContent
+          initialSchemas={initialState}
+          initialUiState={initialUiState}
+          mlHighlights={mlHighlights}
+          setMlHighlights={setMlHighlights}
+        />
       </div>
     </>
   );
@@ -151,9 +173,13 @@ function resolveInitialSchemaId(
 function DrawerContent({
   initialSchemas,
   initialUiState,
+  mlHighlights,
+  setMlHighlights,
 }: {
   initialSchemas: Schema[];
   initialUiState: UiState;
+  mlHighlights: Highlight[];
+  setMlHighlights: Dispatch<SetStateAction<Highlight[]>>;
 }) {
   const [schemas, dispatch] = usePersistedSchemaReducer(
     schemasReducer,
@@ -184,9 +210,9 @@ function DrawerContent({
   const handleExport = useCallback(
     (opts: ExportOptions) => {
       if (!activeSchema) return;
-      void schemaRepo.snapshot(activeSchema, 'export').catch((e) =>
-        console.error('[export] snapshot failed', e),
-      );
+      void schemaRepo
+        .snapshot(activeSchema, 'export')
+        .catch((e) => console.error('[export] snapshot failed', e));
       exportSchema(activeSchema, opts);
     },
     [activeSchema],
@@ -224,7 +250,6 @@ function DrawerContent({
     () => (activeSchema ? getSignpostsFromHighlights(confirmedHighlights, activeSchema) : []),
     [confirmedHighlights, activeSchema],
   );
-  const [mlHighlights, setMlHighlights] = useState<Highlight[]>([]);
   const mlSignposts = useMemo<Signpost[]>(
     () => (activeSchema ? getSignpostsFromHighlights(mlHighlights, activeSchema) : []),
     [mlHighlights, activeSchema],
