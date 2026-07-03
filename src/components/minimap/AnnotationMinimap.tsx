@@ -2,8 +2,11 @@ import { useEffect, useMemo, useRef, useState, type MouseEvent } from 'react';
 import type { Highlight } from '@/lib/definitions';
 import { scrollToAnnotation } from '@/lib/pdf-navigation';
 import { bodyToBorderColor } from '@/lib/utils';
+import { wavyBoxFromHeight } from '@/components/highlights/wavy-mask';
 import { fractionToLocation, usePdfPageLayout, type PdfLayout } from './usePdfPageLayout';
-import { MinimapPreview } from './MinimapPreview';
+import { MinimapPreview, type PreviewOverlay } from './MinimapPreview';
+
+const clamp01 = (n: number) => Math.min(Math.max(n, 0), 1);
 
 // Keep in sync with DRAWER_WIDTH in DrawerContainer.tsx — the strip rides the drawer
 // tab's band, so it shifts left by the drawer's width when the drawer is open.
@@ -88,9 +91,12 @@ export function AnnotationMinimap({
 
   // Hover preview: a rendered slice + the viewport-Y to center it on. `hoverReq`
   // tags each render request so a slower earlier render can't clobber a newer one.
-  const [preview, setPreview] = useState<{ src: string; topPx: number; width: number } | null>(
-    null,
-  );
+  const [preview, setPreview] = useState<{
+    src: string;
+    topPx: number;
+    width: number;
+    overlays: PreviewOverlay[];
+  } | null>(null);
   const hoverReq = useRef(0);
   const hoverTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
@@ -137,6 +143,39 @@ export function AnnotationMinimap({
       PREVIEW_MIN_WIDTH,
       Math.min(page?.width ?? availableWidth, availableWidth),
     );
+
+    // The slice band, clamped exactly as renderRegion clamps it, so overlay boxes map
+    // into the same region the raster shows.
+    const regionTop = clamp01(loc.normalizedTop - PREVIEW_BAND / 2);
+    const regionHeight = Math.min(PREVIEW_BAND, 1 - regionTop);
+    // Full page height at the preview's display width — the basis for each box's
+    // rendered pixel height (and thus its squiggle wavelength).
+    const pageAspect = page && page.width > 0 ? page.height / page.width : 0;
+    const pageHeightPx = displayWidth * pageAspect;
+
+    // Suggested annotations on this page, as the same wavy overlays used on the page.
+    const overlays: PreviewOverlay[] = mlHighlights.flatMap((h) =>
+      h.coords
+        .filter(
+          (b) =>
+            b.pageNumber === loc.pageNumber &&
+            b.top + b.height >= regionTop &&
+            b.top <= regionTop + regionHeight,
+        )
+        .map((b, i) => {
+          const { style, extraHeightPx } = wavyBoxFromHeight(b.height * pageHeightPx);
+          return {
+            key: `${h.id}-${i}`,
+            left: `${b.left * 100}%`,
+            top: `${((b.top - regionTop) / regionHeight) * 100}%`,
+            width: `${b.width * 100}%`,
+            height: `calc(${(b.height / regionHeight) * 100}% + ${extraHeightPx}px)`,
+            color: h.color || FALLBACK_COLOR,
+            maskStyle: style,
+          };
+        }),
+    );
+
     const req = ++hoverReq.current;
     clearTimeout(hoverTimer.current);
     hoverTimer.current = setTimeout(() => {
@@ -153,7 +192,7 @@ export function AnnotationMinimap({
         })
         .then((res) => {
           if (req !== hoverReq.current) return; // a newer hover superseded this one
-          setPreview({ src: res.dataUrl, topPx, width: displayWidth });
+          setPreview({ src: res.dataUrl, topPx, width: displayWidth, overlays });
         })
         .catch(() => {});
     }, HOVER_DEBOUNCE_MS);
@@ -203,6 +242,7 @@ export function AnnotationMinimap({
           topPx={preview.topPx}
           rightPx={stripRight + STRIP_WIDTH + PREVIEW_GAP}
           width={preview.width}
+          overlays={preview.overlays}
         />
       )}
     </>

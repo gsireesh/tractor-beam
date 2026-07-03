@@ -1,6 +1,7 @@
 import { useRef, useLayoutEffect, useState, memo, MouseEvent } from 'react';
 import type { HighlightOverlayProps } from './types';
 import type { Highlight } from '@/lib/definitions';
+import { wavyBoxFromHeight } from './wavy-mask';
 
 export const ProvisionalHighlight = memo(function ProvisionalHighlight({
   classId,
@@ -23,24 +24,6 @@ export const ProvisionalHighlight = memo(function ProvisionalHighlight({
   }, []);
 
   if (allCoords == null || allCoords.length === 0) return <></>;
-
-  // Tunable wave parameters (as fraction of rendered highlight height)
-  const waveLengthFrac = 1.8; // wavelength as fraction of height
-  const waveDepthFrac = 0.07; // wave depth as fraction of height
-
-  function buildWavyMask(w: number, d: number): string {
-    const r = d / 2 + (w * w) / (32 * d);
-    const outerOffset = r + d * 0.1;
-    const innerOffset = outerOffset - d;
-    const halfWave = w / 2;
-    const quarterWave = w / 4; // offset between top and bottom scallop rows
-    return `
-    radial-gradient(${r}px at 50% ${outerOffset}px,#000 99%,#0000 101%) calc(50% - ${halfWave}px) 0/${w}px 51% repeat-x,
-    radial-gradient(${r}px at 50% -${innerOffset}px,#0000 99%,#000 101%) 50% ${d}px/${w}px calc(51% - ${d}px) repeat-x,
-    radial-gradient(${r}px at 50% calc(100% - ${outerOffset}px),#000 99%,#0000 101%) calc(50% - ${halfWave}px + ${quarterWave}px) 100%/${w}px 51% repeat-x,
-    radial-gradient(${r}px at 50% calc(100% + ${innerOffset}px),#0000 99%,#000 101%) calc(50% + ${quarterWave}px) calc(100% - ${d}px)/${w}px calc(51% - ${d}px) repeat-x
-    `.trim();
-  }
 
   // Read parent height once from the first box's parent — all boxes share the same parent
   // (the page's overlay container), so per-iteration reads were redundant and made the
@@ -72,16 +55,7 @@ export const ProvisionalHighlight = memo(function ProvisionalHighlight({
     <>
       {allCoords.map((box, index) => {
         const baseHeight = parentHeight * box.height;
-        const waveLength = waveLengthFrac * baseHeight;
-        const waveDepth = waveDepthFrac * baseHeight;
-        const wavyMask = baseHeight > 0 ? buildWavyMask(waveLength, waveDepth) : '';
-        const wavyStyle =
-          baseHeight > 0
-            ? {
-                WebkitMask: wavyMask,
-                mask: wavyMask,
-              }
-            : {};
+        const { style: wavyStyle, extraHeightPx } = wavyBoxFromHeight(baseHeight);
 
         return (
           <div
@@ -95,7 +69,7 @@ export const ProvisionalHighlight = memo(function ProvisionalHighlight({
               left: `${box.left * 100}%`,
               top: `${box.top * 100}%`,
               width: `${box.width * 100}%`,
-              height: `calc(${box.height * 100}% + ${Math.ceil(1.5 * waveDepth)}px)`,
+              height: `calc(${box.height * 100}% + ${extraHeightPx}px)`,
               pointerEvents: 'auto',
               // Flash ring color (consumed by the .tractor-beam-flash animation).
               ['--tb-flash-color' as string]: hoverColor,
