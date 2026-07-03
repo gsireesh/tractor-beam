@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { MlProgressMessage } from '@/lib/messaging/message_definitions.ts';
-import type { Highlight } from '@/lib/definitions.ts';
+import type { Highlight, MlRunScope, OutlineEntry } from '@/lib/definitions.ts';
 import { Progress } from '@/components/ui/progress.tsx';
 import {
   ChevronDown,
@@ -24,6 +24,16 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu.tsx';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog.tsx';
+import { Input } from '@/components/ui/input.tsx';
+import { Button } from '@/components/ui/button.tsx';
 import { loadModelConfig, saveModelConfig } from '@/lib/config-storage.ts';
 import {
   type ModelConfig,
@@ -62,6 +72,17 @@ const PROVIDER_MODELS: { provider: ModelProvider; models: readonly string[] }[] 
   { provider: 'webllm', models: WEBLLM_MODELS },
 ];
 
+// The pdf.js viewer lives in the same page as the drawer. drawer-host.ts declares
+// window.PDFViewerApplication only as { pdfDocument }, so narrow to the fields we
+// read for scoping (current page + page count) here.
+function readViewer(): { page?: number; pdfDocument?: { numPages?: number } } | undefined {
+  return window.PDFViewerApplication as
+    | { page?: number; pdfDocument?: { numPages?: number } }
+    | undefined;
+}
+const currentViewerPage = () => readViewer()?.page ?? 1;
+const viewerPageCount = () => readViewer()?.pdfDocument?.numPages ?? 1;
+
 export function ModelControls({ status, progress, message, setMlHighlights }: ModelControlsProps) {
   const { activeSchema, pdfUrl } = useDrawerContext();
   const [currentRequestId, setCurrentRequestId] = useState<string | null>(null);
@@ -71,6 +92,13 @@ export function ModelControls({ status, progress, message, setMlHighlights }: Mo
   // snapshotIndex → version label, to derive each run's schema-version name.
   const [versionLabels, setVersionLabels] = useState<Map<number, string>>(new Map());
   const [runsLoaded, setRunsLoaded] = useState(false);
+  // PDF outline, fetched lazily when the scope menu first opens. null = not loaded
+  // yet; [] = loaded and this PDF has no table of contents.
+  const [outline, setOutline] = useState<OutlineEntry[] | null>(null);
+  // Page-range dialog state (inputs are strings so partial edits don't fight React).
+  const [rangeOpen, setRangeOpen] = useState(false);
+  const [rangeFrom, setRangeFrom] = useState('1');
+  const [rangeTo, setRangeTo] = useState('1');
   const drawerRoot = useMemo(() => document.getElementById('tractor-beam-drawer-root'), []);
 
   const isRunning = status === 'running' && progress < 1;
@@ -106,6 +134,85 @@ export function ModelControls({ status, progress, message, setMlHighlights }: Mo
     window.TractorBeamDrawer.cancelAnnotationPipeline(currentRequestId);
     setCurrentRequestId(null);
   }
+
+  // The scoped twin of sendRunMessage: same run dispatch, plus a scope descriptor
+  // that drawer-host uses to filter blocks and to tag the stored run.
+  function runScoped(scope: MlRunScope) {
+    const requestId = crypto.randomUUID();
+    setCurrentRequestId(requestId);
+    void window.TractorBeamDrawer.runAnnotationPipeline(activeSchema, requestId, scope);
+  }
+
+  // Fetch the outline once, the first time the scope menu opens (same lazy pattern
+  // as refreshRuns). On failure treat the PDF as having no TOC rather than retrying.
+  async function loadOutline() {
+    if (outline !== null) return;
+    try {
+      const entries = await window.TractorBeamTextExtraction.extractOutline(
+        window.PDFViewerApplication,
+      );
+      setOutline(entries);
+    } catch (err) {
+      console.warn('[model-controls] Failed to read PDF outline:', err);
+      setOutline([]);
+    }
+  }
+
+  function runThisPage() {
+    const n = currentViewerPage();
+    runScoped({ kind: 'page', startPage: n, endPage: n, label: `Page ${n}` });
+  }
+
+  function openRangeDialog() {
+    const p = String(currentViewerPage());
+    setRangeFrom(p);
+    setRangeTo(p);
+    setRangeOpen(true);
+  }
+
+  function submitRange() {
+    const total = viewerPageCount();
+    const clamp = (v: string) => Math.min(Math.max(1, Math.trunc(Number(v))), total);
+    const a = clamp(rangeFrom);
+    const b = clamp(rangeTo);
+    const [lo, hi] = a <= b ? [a, b] : [b, a];
+    const label = lo === hi ? `Page ${lo}` : `Pages ${lo}–${hi}`;
+    runScoped({ kind: 'range', startPage: lo, endPage: hi, label });
+    setRangeOpen(false);
+  }
+
+  // A TOC section runs from its own start page until the next entry at the same or
+  // a shallower level (its next non-descendant heading), in document order — so
+  // picking a chapter includes its subsections. Falls back to the last page.
+  function runTocEntry(index: number) {
+    const list = outline ?? [];
+    const entry = list[index];
+    if (!entry) return;
+    let endPage = viewerPageCount();
+    for (let j = index + 1; j < list.length; j++) {
+      if (list[j].level <= entry.level) {
+        endPage = Math.max(entry.pageNumber, list[j].pageNumber - 1);
+        break;
+      }
+    }
+    runScoped({ kind: 'toc', startPage: entry.pageNumber, endPage, label: entry.title });
+  }
+
+  // Range is valid only when both inputs are whole pages within bounds. `from > to`
+  // is tolerated (submitRange swaps them), so it isn't a validity failure.
+  const pageTotal = viewerPageCount();
+  const rangeValid = (() => {
+    const a = Number(rangeFrom);
+    const b = Number(rangeTo);
+    return (
+      Number.isInteger(a) &&
+      Number.isInteger(b) &&
+      a >= 1 &&
+      b >= 1 &&
+      a <= pageTotal &&
+      b <= pageTotal
+    );
+  })();
 
   // Refetch the run archive each time the history menu opens, newest first, so the
   // list reflects runs completed since it was last viewed. We show a brief loading
@@ -208,6 +315,59 @@ export function ModelControls({ status, progress, message, setMlHighlights }: Mo
             onClick={sendRunMessage}
             disabled={isRunning}
           />
+          {/* Caret: scoped-run options (this page / range / TOC section). Mirrors the
+              DropdownMenu + portal-into-drawerRoot pattern used elsewhere in this file. */}
+          <DropdownMenu
+            onOpenChange={(open) => {
+              if (open) void loadOutline();
+            }}
+          >
+            <DropdownMenuTrigger disabled={isRunning}>
+              <IconButton
+                title="Highlight options"
+                variant="outline"
+                className="border-[green]"
+                icon={ChevronDown}
+                color={'green'}
+                size={'icon'}
+                disabled={isRunning}
+              />
+            </DropdownMenuTrigger>
+            <DropdownMenuPortal container={drawerRoot}>
+              <DropdownMenuContent align="start" className="z-[10001] w-56">
+                <DropdownMenuItem onClick={runThisPage}>
+                  Highlight this page ({currentViewerPage()})
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={openRangeDialog}>
+                  Highlight a page range…
+                </DropdownMenuItem>
+                <DropdownMenuSub>
+                  <DropdownMenuSubTrigger disabled={!outline || outline.length === 0}>
+                    From table of contents
+                  </DropdownMenuSubTrigger>
+                  <DropdownMenuPortal container={drawerRoot}>
+                    <DropdownMenuSubContent className="z-[10002] max-h-80 overflow-y-auto">
+                      {outline === null ? (
+                        <DropdownMenuItem disabled>Reading…</DropdownMenuItem>
+                      ) : outline.length === 0 ? (
+                        <DropdownMenuItem disabled>No table of contents</DropdownMenuItem>
+                      ) : (
+                        outline.map((entry, i) => (
+                          <DropdownMenuItem
+                            key={`${i}-${entry.pageNumber}`}
+                            style={{ paddingLeft: `${0.5 + entry.level * 0.75}rem` }}
+                            onClick={() => runTocEntry(i)}
+                          >
+                            <span className="truncate">{entry.title}</span>
+                          </DropdownMenuItem>
+                        ))
+                      )}
+                    </DropdownMenuSubContent>
+                  </DropdownMenuPortal>
+                </DropdownMenuSub>
+              </DropdownMenuContent>
+            </DropdownMenuPortal>
+          </DropdownMenu>
           {isRunning && (
             <IconButton
               title={'Stop Annotation'}
@@ -281,6 +441,52 @@ export function ModelControls({ status, progress, message, setMlHighlights }: Mo
           </DropdownMenu>
         </div>
       </div>
+
+      {/* Page-range picker. Portals into the themed drawer root like the menus above. */}
+      <Dialog open={rangeOpen} onOpenChange={setRangeOpen}>
+        <DialogContent container={drawerRoot} className="z-[100000] w-80">
+          <DialogHeader>
+            <DialogTitle>Highlight a page range</DialogTitle>
+            <DialogDescription>
+              Annotate only these pages (1–{pageTotal}).
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex items-center gap-2">
+            <label className="text-sm" htmlFor="range-from">
+              From
+            </label>
+            <Input
+              id="range-from"
+              type="number"
+              min={1}
+              max={pageTotal}
+              value={rangeFrom}
+              onChange={(e) => setRangeFrom(e.target.value)}
+              aria-invalid={!rangeValid}
+            />
+            <label className="text-sm" htmlFor="range-to">
+              To
+            </label>
+            <Input
+              id="range-to"
+              type="number"
+              min={1}
+              max={pageTotal}
+              value={rangeTo}
+              onChange={(e) => setRangeTo(e.target.value)}
+              aria-invalid={!rangeValid}
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setRangeOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={submitRange} disabled={!rangeValid}>
+              Highlight
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

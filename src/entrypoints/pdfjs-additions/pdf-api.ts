@@ -8,7 +8,7 @@
 
 import type { VisualBlock } from '@/lib/definitions';
 import { normalizedItemsFromTextContent } from '@/lib/pdf/coords';
-import { groupItemsIntoBlocks } from '@/lib/pdf/visual-blocks';
+import { groupItemsIntoBlocks, extractOutline } from '@/lib/pdf/visual-blocks';
 
 export interface PageMetric {
   pageNumber: number;
@@ -204,6 +204,7 @@ export function initPdfApi() {
     extractVisualBlocks,
     getPageMetrics,
     renderRegion,
+    extractOutline,
   };
   console.log('[pdfjs-additions] PDF API initialized');
 }

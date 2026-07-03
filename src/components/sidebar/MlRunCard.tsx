@@ -51,6 +51,7 @@ export function MlRunCard({ run, schemaVersion }: MlRunCardProps) {
       <span className="text-xs text-muted-foreground">
         {count} highlight{count === 1 ? '' : 's'}
       </span>
+      {run.scope && <span className="text-xs text-muted-foreground">Scope: {run.scope.label}</span>}
       <span className="text-xs text-muted-foreground">
         Schema version: {schemaVersion ?? 'not recorded'}
       </span>
