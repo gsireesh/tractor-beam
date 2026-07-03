@@ -1,4 +1,4 @@
-import type { PdfBox } from '@/lib/definitions';
+import type { PdfBox, VisualBlockItem } from '@/lib/definitions';
 
 /**
  * A pdf.js text item as returned by `page.getTextContent()`.
@@ -35,4 +35,29 @@ export function itemToNormalizedBox(
     width: item.width / viewportWidth,
     height: normalizedHeight,
   };
+}
+
+/**
+ * Turn a page's raw pdf.js text items into normalized `VisualBlockItem`s ready for
+ * segmentation: drop empty strings and skewed/rotated glyphs (only axis-aligned text,
+ * `transform[1] === 0 && transform[2] === 0`), map each box via `itemToNormalizedBox`,
+ * and stamp the page number.
+ *
+ * Pure (given already-extracted items) so both the in-viewer extractor
+ * (`extractVisualBlocks`) and the offline fixture-generation script produce identical
+ * input for `groupItemsIntoBlocks`.
+ */
+export function normalizedItemsFromTextContent(
+  items: PdfTextItem[],
+  viewportWidth: number,
+  viewportHeight: number,
+  pageNumber: number,
+): VisualBlockItem[] {
+  return items
+    .filter((item) => item.str !== undefined && item.str.trim() !== '')
+    .filter((item) => item.transform[1] === 0 && item.transform[2] === 0)
+    .map((item) => ({
+      str: item.str,
+      box: { ...itemToNormalizedBox(item, viewportHeight, viewportWidth), pageNumber },
+    }));
 }

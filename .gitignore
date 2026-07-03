@@ -25,3 +25,8 @@ src/learning-opportunities/
 
 .wxt/chrome-data
 
+# Full source documents used to produce the committed, trimmed fixture PDFs. Only the
+# staging dir is ignored; the trimmed test/fixtures/pdf/original/*.pdf ARE committed.
+# Rebuild the trimmed sources with `pnpm run fixtures:trim` (needs the full docs here).
+test/fixtures/pdf/original/_sources/
+

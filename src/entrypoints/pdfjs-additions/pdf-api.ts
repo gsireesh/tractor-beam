@@ -7,7 +7,7 @@
  */
 
 import type { VisualBlock } from '@/lib/definitions';
-import { itemToNormalizedBox, type PdfTextItem } from '@/lib/pdf/coords';
+import { normalizedItemsFromTextContent } from '@/lib/pdf/coords';
 import { groupItemsIntoBlocks } from '@/lib/pdf/visual-blocks';
 
 export interface PageMetric {
@@ -90,16 +90,14 @@ async function extractVisualBlocks(PDFViewerApplication: any): Promise<VisualBlo
     const textContent = await page.getTextContent();
     const viewport = page.getViewport({ scale: 1.0 });
 
-    // Impure: pull items from pdf.js and map to normalized boxes. Segmentation is pure
-    // (@/lib/pdf/visual-blocks).
-    const items = textContent.items
-      .filter((item: any) => item.str !== undefined && item.str.trim() !== '')
-      .filter((item: any) => item.transform[1] === 0 && item.transform[2] === 0)
-      .map((item: PdfTextItem) => ({
-        str: item.str,
-        box: { ...itemToNormalizedBox(item, viewport.height, viewport.width), pageNumber: i },
-      }));
-
+    // Impure: pull items from pdf.js. Normalization + segmentation are pure
+    // (@/lib/pdf/*) and shared with the offline fixture-generation script.
+    const items = normalizedItemsFromTextContent(
+      textContent.items,
+      viewport.width,
+      viewport.height,
+      i,
+    );
     allBlocks.push(...groupItemsIntoBlocks(items, i));
   }
 
