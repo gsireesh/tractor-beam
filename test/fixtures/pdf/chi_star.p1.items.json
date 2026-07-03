@@ -1,0 +1,1302 @@
+[
+  {
+    "str": "Collaborative Annotation as an Interface Metaphor for",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.15098039215686276,
+      "top": 0.0990020202020202,
+      "width": 0.6986301869281044,
+      "height": 0.02173661616161616
+    }
+  },
+  {
+    "str": "Personalizable AI Reading Support",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.2770849673202615,
+      "top": 0.12415984848484841,
+      "width": 0.4458282264705882,
+      "height": 0.02173661616161616
+    }
+  },
+  {
+    "str": "Sireesh Gururaja",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.2324901960784314,
+      "top": 0.1608747474747474,
+      "width": 0.13432018823529415,
+      "height": 0.015094949494949494
+    }
+  },
+  {
+    "str": "sgururaj@cs.cmu.edu",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.22787745098039217,
+      "top": 0.17848535353535352,
+      "width": 0.14354608954248363,
+      "height": 0.012579040404040405
+    }
+  },
+  {
+    "str": "Carnegie Mellon University",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.20775653594771246,
+      "top": 0.19358005050505053,
+      "width": 0.18421042745098035,
+      "height": 0.012579040404040405
+    }
+  },
+  {
+    "str": "Pitsburgh, Pennsylvania, USA",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.20065032679738565,
+      "top": 0.20867474747474757,
+      "width": 0.19856829215686272,
+      "height": 0.012579040404040405
+    }
+  },
+  {
+    "str": "Emma Strubell",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.6431192810457517,
+      "top": 0.16087474747474753,
+      "width": 0.11771574379084968,
+      "height": 0.015094949494949494
+    }
+  },
+  {
+    "str": "strubell@cmu.edu",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.6414035947712418,
+      "top": 0.17848535353535366,
+      "width": 0.12114651830065364,
+      "height": 0.012579040404040405
+    }
+  },
+  {
+    "str": "Carnegie Mellon University",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.6100833333333333,
+      "top": 0.19358005050505067,
+      "width": 0.18421042745098043,
+      "height": 0.012579040404040405
+    }
+  },
+  {
+    "str": "Pitsburgh, Pennsylvania, USA",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.6029771241830065,
+      "top": 0.2086747474747477,
+      "width": 0.19856829215686284,
+      "height": 0.012579040404040405
+    }
+  },
+  {
+    "str": "Abstract",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.08790522875816993,
+      "top": 0.2327132575757578,
+      "width": 0.06800362173202616,
+      "height": 0.013774116161616163
+    }
+  },
+  {
+    "str": "In this position paper, we argue that collaborative annotation is",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.08790522875816993,
+      "top": 0.2524628787878788,
+      "width": 0.3925639360000002,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "a compelling interface metaphor through which to empower end-",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.08790522875816993,
+      "top": 0.2663,
+      "width": 0.3950316299294119,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "users to develop personalized AI reading support in the form of",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.08790522875816993,
+      "top": 0.28013712121212125,
+      "width": 0.392563936,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "in-document highlights. Collaborative annotation confers many of",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.08790522875816993,
+      "top": 0.2939729797979798,
+      "width": 0.3925596725647059,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "the same benefits of traditional data annotation tools for specifying",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.08790522875816993,
+      "top": 0.307810101010101,
+      "width": 0.39256100580392156,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "model behavior while not removing users from the context of the",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.08790522875816993,
+      "top": 0.32164722222222225,
+      "width": 0.3925546765803922,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "original document. This paradigm preserves the benefits of existing",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.08790522875816993,
+      "top": 0.33548434343434336,
+      "width": 0.39256100580392167,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "inline document markup tools, as well as the contextual, interpre-",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.08790522875816993,
+      "top": 0.3493214646464647,
+      "width": 0.39504059632941196,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "tive character of reading, while incorporating the flexibility and",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.08790522875816993,
+      "top": 0.3631585858585859,
+      "width": 0.392563936,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "power of LLM-based annotation. Through what we call",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.08790522875816993,
+      "top": 0.3769957070707071,
+      "width": 0.31705249003921576,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "collaborative",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.4075277937777778,
+      "top": 0.3769957070707071,
+      "width": 0.0729384407843138,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "machine annotation",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.08790522875816993,
+      "top": 0.3908328282828282,
+      "width": 0.11834494967843136,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": ", users can iteratively develop models as they",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.2062501784366013,
+      "top": 0.3908328282828282,
+      "width": 0.27459551651764696,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "refine their own mental models, and use the deep understanding of",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.08790522875816993,
+      "top": 0.40466994949494944,
+      "width": 0.3925610058039216,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "that model’s behavior for wider corpus analysis.",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.08790522875816993,
+      "top": 0.41850707070707066,
+      "width": 0.2881994352941177,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "CCS Concepts",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.08790522875816993,
+      "top": 0.445117297979798,
+      "width": 0.11319082516339872,
+      "height": 0.013774116161616163
+    }
+  },
+  {
+    "str": "•",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.08790522875816993,
+      "top": 0.4648669191919192,
+      "width": 0.00519391905882353,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "Human-centered computing",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.09678372287581699,
+      "top": 0.4648669191919192,
+      "width": 0.19001457160784319,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "→",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.29048366013071897,
+      "top": 0.4648669191919192,
+      "width": 0.015002603921568628,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "Collaborative interaction",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.30916503267973855,
+      "top": 0.4648669191919192,
+      "width": 0.16885416062745107,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": ";",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.4780191933071895,
+      "top": 0.4648669191919192,
+      "width": 0.0034922076862745105,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "Web-based interaction",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.08790522875816993,
+      "top": 0.4787040404040404,
+      "width": 0.12601982180392154,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": ";",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.2139537664836601,
+      "top": 0.4787040404040404,
+      "width": 0.00338847874509804,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "•",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.22067329213071893,
+      "top": 0.4787040404040404,
+      "width": 0.005039644235294118,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "Computing methodologies",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.22902962530718945,
+      "top": 0.4787040404040404,
+      "width": 0.1732287968627451,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "→",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.40558169934640526,
+      "top": 0.4787040404040404,
+      "width": 0.015002603921568628,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "Informa-",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.42390522875816994,
+      "top": 0.4787040404040404,
+      "width": 0.059183514352941176,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "tion extraction",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.08790522875816993,
+      "top": 0.49253989898989897,
+      "width": 0.09867435294117649,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": ".",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.18657958169934646,
+      "top": 0.49253989898989897,
+      "width": 0.00322321568627451,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "Keywords",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.08790522875816993,
+      "top": 0.5191513888888889,
+      "width": 0.08019614526143794,
+      "height": 0.013774116161616163
+    }
+  },
+  {
+    "str": "Collaborative Annotation, Personalized Reading Support, Informa-",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.08790522875816993,
+      "top": 0.5388997474747474,
+      "width": 0.3950292564705884,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "tion Extraction",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.08790522875816993,
+      "top": 0.5527368686868686,
+      "width": 0.08989841568627452,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "1",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.08790522875816993,
+      "top": 0.5853054292929293,
+      "width": 0.009162217973856211,
+      "height": 0.013774116161616163
+    }
+  },
+  {
+    "str": "Introduction",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.11489277352941177,
+      "top": 0.5853054292929293,
+      "width": 0.1030482142156863,
+      "height": 0.013774116161616163
+    }
+  },
+  {
+    "str": "Reading assistance tools have long made use of AI methods to pro-",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.08790522875816993,
+      "top": 0.6050537878787878,
+      "width": 0.3950324210823529,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "vide in-context augmentation of document content. Tools like Scim",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.08753921568627451,
+      "top": 0.6188909090909092,
+      "width": 0.39291995482352954,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "[",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.08790522875816993,
+      "top": 0.6327280303030303,
+      "width": 0.005293985254901961,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "9",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.09319934640522876,
+      "top": 0.6327280303030303,
+      "width": 0.006812705882352942,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "] and PaperPlain [",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.10001307189542484,
+      "top": 0.6327280303030303,
+      "width": 0.10983532329411762,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "3",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.20984640522875814,
+      "top": 0.6327280303030303,
+      "width": 0.006812705882352942,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "] make use of machine learning to augment",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.21666013071895426,
+      "top": 0.6327280303030303,
+      "width": 0.2638070180392158,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "paper content to demonstrate a paper’s rhetorical structure, direct",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.08790522875816993,
+      "top": 0.6465651515151516,
+      "width": 0.39256011209411795,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "a reader’s focus, provide definitions, and more. These types of tools",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.08790522875816993,
+      "top": 0.6604022727272727,
+      "width": 0.39256100580392167,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "that provide in-context augmentation of paper contents are typ-",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.08790522875816993,
+      "top": 0.6742393939393938,
+      "width": 0.3950296960000001,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "ically tightly scoped to an intended context of use and audience,",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.08790522875816993,
+      "top": 0.6880765151515151,
+      "width": 0.39417788800000014,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "and are therefore able to make assumptions about those contexts to",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.08790522875816993,
+      "top": 0.7019136363636365,
+      "width": 0.39256100580392167,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "deliver specific and reliable information; because the information",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.08790522875816993,
+      "top": 0.7157507575757576,
+      "width": 0.39256211927843143,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "is in-context on the document, it is also typically easily verifiable.",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.08790522875816993,
+      "top": 0.7295878787878787,
+      "width": 0.3948127442823531,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "However, assumptions about usage context and audience come at",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.08790522875816993,
+      "top": 0.7434237373737373,
+      "width": 0.3925604490666669,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "the cost of generality, even in the domains in which the tools are",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.08790522875816993,
+      "top": 0.7572608585858587,
+      "width": 0.3925576653803921,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "deployed. Scim highlights, for instance, generalize poorly outside",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.08790522875816993,
+      "top": 0.7710979797979798,
+      "width": 0.39255321148235295,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "of the experimental sciences, even as the Semantic Reader[",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.08790522875816993,
+      "top": 0.7849351010101009,
+      "width": 0.3547437926588236,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "18",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.44264379084967326,
+      "top": 0.7849351010101009,
+      "width": 0.013625411764705884,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "], in",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.45626797385620915,
+      "top": 0.7849351010101009,
+      "width": 0.024199507796078434,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "which Scim is deployed, makes them available on a much wider",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.08736437908496732,
+      "top": 0.7987722222222222,
+      "width": 0.39338585600000003,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "range of academic papers. Further, because these tools are based on",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.08790522875816993,
+      "top": 0.8126093434343433,
+      "width": 0.3925610058039217,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "models that rely on static schemas, they cannot account for readers’",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.08790522875816993,
+      "top": 0.8264464646464647,
+      "width": 0.3941260235294119,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "preferences and idiosyncrasies in reading support; readers often",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.08790522875816993,
+      "top": 0.8402835858585858,
+      "width": 0.39256393600000017,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "rely on individually specific cues to make sense of papers [12].",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.08790522875816993,
+      "top": 0.8541207070707071,
+      "width": 0.37379046274509825,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "By contrast, tools based on large language models (LLMs), whose",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.10418464052287582,
+      "top": 0.8679578282828282,
+      "width": 0.37627907827451,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "behavior can be specified by users at inference time has led to the",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.08790522875816993,
+      "top": 0.8817936868686869,
+      "width": 0.3925609911529412,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "proliferation of systems like SemanticScholar’s \"ask this PDF\" fea-",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5195343137254902,
+      "top": 0.23516616161616158,
+      "width": 0.39503453082352935,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "ture, or modes in popular LLM-based chatbots that allow uploaded",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5195343137254902,
+      "top": 0.24900328282828288,
+      "width": 0.3925673643294119,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "documents that allow users to \"chat\" with the contents of a doc-",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5195343137254902,
+      "top": 0.262840404040404,
+      "width": 0.39502969600000015,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "ument. These systems are extremely flexible, and allow users to",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5195343137254902,
+      "top": 0.2766775252525253,
+      "width": 0.39256393600000006,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "express complex and idiosyncratic information needs in natural",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5195343137254902,
+      "top": 0.2905146464646464,
+      "width": 0.39256393599999984,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "language, and will sometimes anchor their responses to specific loca-",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5195343137254902,
+      "top": 0.3043517676767677,
+      "width": 0.39503057505882366,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "tions within documents. However, these chat-based tools introduce",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5195343137254902,
+      "top": 0.31818888888888885,
+      "width": 0.3925610058039217,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "their own issues. While they allow end-user behavior specification",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5195343137254902,
+      "top": 0.3320247474747474,
+      "width": 0.3925630569411767,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "and therefore personalized responses, verifying the reliability of the",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5195343137254902,
+      "top": 0.3458618686868687,
+      "width": 0.39256100580392184,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "generated responses can be challenging. LLMs often exhibit a jagged",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5195343137254902,
+      "top": 0.3596989898989899,
+      "width": 0.3925610058039217,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "capability frontier, where estimating where a model might succeed",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5195343137254902,
+      "top": 0.3735361111111111,
+      "width": 0.3925564640000003,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "and fail is not always intuitive, and validating generated text is",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5195343137254902,
+      "top": 0.38737323232323234,
+      "width": 0.3925639360000002,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "significantly more difficult to verify than in-context highlights. Ad-",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5195343137254902,
+      "top": 0.40121035353535356,
+      "width": 0.39503123435294135,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "ditionally, these tools allow the specification of their behavior only",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5195343137254902,
+      "top": 0.4150474747474748,
+      "width": 0.3929472056470588,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "in text, and keep no record of user preferences or reading focuses",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5195343137254902,
+      "top": 0.42888459595959594,
+      "width": 0.3925628371764709,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "in between documents.",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5195343137254902,
+      "top": 0.44272171717171716,
+      "width": 0.13833455686274526,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "This paper argues that collaborative annotation—as exemplified",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5358137254901961,
+      "top": 0.4565588383838384,
+      "width": 0.37627712969411775,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "by tools like Hypothesis [",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5195343137254902,
+      "top": 0.4703959595959596,
+      "width": 0.15484093741176463,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "1",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.6743692810457517,
+      "top": 0.4703959595959596,
+      "width": 0.006812705882352942,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "] and Margin [",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.6811830065359478,
+      "top": 0.4703959595959596,
+      "width": 0.08794148423529405,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "2",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.7691290849673202,
+      "top": 0.4703959595959596,
+      "width": 0.006812705882352942,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "]—can provide an intu-",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.7759411764705882,
+      "top": 0.4703959595959596,
+      "width": 0.13862288815686277,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "itive interface metaphor that allows for the flexibility of dynamic,",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5195343137254902,
+      "top": 0.4842318181818182,
+      "width": 0.3941702548392159,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "user-specified LLM-based reading assistance, while emphasizing",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5195343137254902,
+      "top": 0.4980689393939394,
+      "width": 0.392563936,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "the user agency in evaluation, verifiability and context-awareness",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5195343137254902,
+      "top": 0.5119060606060606,
+      "width": 0.39256282252549013,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "that inline highlighting tools can provide. Collaborative annotation",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5195343137254902,
+      "top": 0.5257431818181819,
+      "width": 0.39256100580392184,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "between humans, in addition to its studied benefits for document",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5195343137254902,
+      "top": 0.539580303030303,
+      "width": 0.3925582953725491,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "comprehension, can provide in-context views of data to be anno-",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5195343137254902,
+      "top": 0.5534174242424243,
+      "width": 0.39503069226666687,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "tated for granular specification of model behavior, and treating",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5195343137254902,
+      "top": 0.5672545454545455,
+      "width": 0.392563936,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "model suggestions as another collaborator can reduce the overhead",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5195343137254902,
+      "top": 0.5810916666666666,
+      "width": 0.39256100580392156,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "for evaluating model performance and improving it with techniques",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5195343137254902,
+      "top": 0.5949287878787879,
+      "width": 0.3925610058039216,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "like active learning. In-context experience with model suggestions",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5195343137254902,
+      "top": 0.608765909090909,
+      "width": 0.3925581928156862,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "also allows for deep, qualitative understanding of model perfor-",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5195343137254902,
+      "top": 0.6226017676767677,
+      "width": 0.3950296960000002,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "mance such that users can make informed choices about model",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5195343137254902,
+      "top": 0.636438888888889,
+      "width": 0.3925639360000005,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "utility, differential use of model functions, and deploying the model",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5195343137254902,
+      "top": 0.6502760101010101,
+      "width": 0.3925610058039215,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "to wider contexts, such as corpus-level annotation.",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5195343137254902,
+      "top": 0.6641131313131312,
+      "width": 0.3032752941176472,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "2",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5195343137254902,
+      "top": 0.7073218434343433,
+      "width": 0.009162217973856211,
+      "height": 0.013774116161616163
+    }
+  },
+  {
+    "str": "Collaborative Annotation as an Interface",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5465218584967321,
+      "top": 0.7073218434343433,
+      "width": 0.33028548022875837,
+      "height": 0.013774116161616163
+    }
+  },
+  {
+    "str": "Metaphor",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5465228758169934,
+      "top": 0.7236753787878787,
+      "width": 0.07898402303921569,
+      "height": 0.013774116161616163
+    }
+  },
+  {
+    "str": "Collaborative annotation is a highly overloaded term in computing.",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5195343137254902,
+      "top": 0.7434237373737373,
+      "width": 0.39481520564705924,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "It can refer to a variety of different processes, from the reconcil-",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5195343137254902,
+      "top": 0.7572608585858587,
+      "width": 0.395029696,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "iation of annotations in interfaces purpose-built for annotation",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5195343137254902,
+      "top": 0.7710979797979798,
+      "width": 0.3925639360000001,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "such as Inception [",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5195343137254902,
+      "top": 0.7849351010101009,
+      "width": 0.11663792000000005,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "17",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.6361683006535948,
+      "top": 0.7849351010101009,
+      "width": 0.013625411764705884,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "] or BRAT [",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.6497941176470587,
+      "top": 0.7849351010101009,
+      "width": 0.07235884800000005,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "24",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.7221503267973857,
+      "top": 0.7849351010101009,
+      "width": 0.013625411764705884,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "], to collaborative markup of",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.7357761437908497,
+      "top": 0.7849351010101009,
+      "width": 0.17632425600000012,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "educational materials as part of classroom assignments [",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5195343137254902,
+      "top": 0.7987722222222222,
+      "width": 0.3343091179921572,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "20",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.8538480392156862,
+      "top": 0.7987722222222222,
+      "width": 0.013625411764705884,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": ",",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.8674738562091503,
+      "top": 0.7987722222222222,
+      "width": 0.0031877603137254905,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "27",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.8743137254901961,
+      "top": 0.7987722222222222,
+      "width": 0.013625411764705884,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "]. In",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.8879395424836601,
+      "top": 0.7987722222222222,
+      "width": 0.024154529286274463,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "this paper, we focus primarily on the latter kind of collaborative",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5195343137254902,
+      "top": 0.8126093434343433,
+      "width": 0.39256393600000045,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "annotation, and specifically tools like Hypothesis that enable col-",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5195343137254902,
+      "top": 0.8264464646464647,
+      "width": 0.39503469198431373,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "laborative annotation on any web content. We argue that this focus",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5195343137254902,
+      "top": 0.8402835858585858,
+      "width": 0.39256100580392156,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "on in-context annotation allows for workflows similar to those",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5195343137254902,
+      "top": 0.8541207070707071,
+      "width": 0.39256393600000056,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "in dedicated annotation tools, while presenting significantly less",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5195343137254902,
+      "top": 0.8679578282828282,
+      "width": 0.3925639359999998,
+      "height": 0.01132121212121212
+    }
+  },
+  {
+    "str": "overhead than standalone annotation tools for web data.",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5195343137254902,
+      "top": 0.8817936868686869,
+      "width": 0.33752928627451,
+      "height": 0.01132121212121212
+    }
+  }
+]

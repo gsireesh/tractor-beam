@@ -1,0 +1,402 @@
+[
+  {
+    "str": "Effective, Efficient, and Informed Research, Development, and Demonstration for the Electricity System: Issue Paper",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.016339869281045753,
+      "top": 0.002525252525252524,
+      "width": 0.6742091503267968,
+      "height": 0.010101010101010102
+    }
+  },
+  {
+    "str": "Copyright National Academy of Sciences. All rights reserved.",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.27941176470588236,
+      "top": 0.9747474747474747,
+      "width": 0.44042483660130705,
+      "height": 0.012626262626262626
+    }
+  },
+  {
+    "str": "1",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.9318955882352942,
+      "top": 0.9353723484848484,
+      "width": 0.009281045751633988,
+      "height": 0.012626262626262626
+    }
+  },
+  {
+    "str": "EFFECTIVE, EFFICIENT, AND INFORMED RESEARCH, DEVELOPMENT,",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.05890506535947713,
+      "top": 0.030808080808080784,
+      "width": 0.44828104575163374,
+      "height": 0.012626262626262626
+    }
+  },
+  {
+    "str": "AND DEMONSTRATION FOR THE ELECTRICITY SYSTEM",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.05890506535947713,
+      "top": 0.05101010101010098,
+      "width": 0.3768921568627448,
+      "height": 0.012626262626262626
+    }
+  },
+  {
+    "str": "Summary",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.058823529411764705,
+      "top": 0.13636363636363635,
+      "width": 0.1425588235294118,
+      "height": 0.022727272727272728
+    }
+  },
+  {
+    "str": "The electricity system is undergoing a period of immense change in its technologies and operation. The U.S.",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.058823529411764705,
+      "top": 0.1856060606060606,
+      "width": 0.7873529411764717,
+      "height": 0.011363636363636364
+    }
+  },
+  {
+    "str": "Department of Energy’s (DOE’s) Office of Electricity requested an Issue Paper from the National Academies of",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.058823529411764705,
+      "top": 0.20454545454545456,
+      "width": 0.7983161764705892,
+      "height": 0.011363636363636364
+    }
+  },
+  {
+    "str": "Sciences, Engineering, and Medicine that elevates and synthesizes insights for creating effective and efficient",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.058823529411764705,
+      "top": 0.2234848484848485,
+      "width": 0.7971544117647069,
+      "height": 0.011363636363636364
+    }
+  },
+  {
+    "str": "research, development, and demonstration (RD&D) in the electricity system. The authors present promising",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.058823529411764705,
+      "top": 0.24242424242424243,
+      "width": 0.7863308823529422,
+      "height": 0.011363636363636364
+    }
+  },
+  {
+    "str": "specific areas for innovation and the structural elements needed to enhance the effectiveness and efficiency",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.058823529411764705,
+      "top": 0.26136363636363635,
+      "width": 0.7833308823529418,
+      "height": 0.011363636363636364
+    }
+  },
+  {
+    "str": "of the electricity RD&D system. The discussion of these elements is structured into four categories: the locus",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.058823529411764705,
+      "top": 0.28030303030303033,
+      "width": 0.7893823529411779,
+      "height": 0.011363636363636364
+    }
+  },
+  {
+    "str": "of electricity innovation and which actors are producing these advances, the connectivity and integration",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.058823529411764705,
+      "top": 0.29924242424242425,
+      "width": 0.7632647058823543,
+      "height": 0.011363636363636364
+    }
+  },
+  {
+    "str": "of the innovation system and how to overcome its gaps, opportunities for partnerships and collaborations,",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.058823529411764705,
+      "top": 0.3181818181818182,
+      "width": 0.7740000000000015,
+      "height": 0.011363636363636364
+    }
+  },
+  {
+    "str": "and how to attain leverage for creating the largest innovation impacts with a set amount of resources. The",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.058823529411764705,
+      "top": 0.33712121212121215,
+      "width": 0.7751691176470598,
+      "height": 0.011363636363636364
+    }
+  },
+  {
+    "str": "U.S. electricity system is at a pivotal point in its evolution. DOE can engage with its innovation partners in",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.058823529411764705,
+      "top": 0.3560606060606061,
+      "width": 0.7751470588235307,
+      "height": 0.011363636363636364
+    }
+  },
+  {
+    "str": "different ways throughout the technology life cycle to create an electricity system that is future-ready and",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.058823529411764705,
+      "top": 0.375,
+      "width": 0.7745735294117655,
+      "height": 0.011363636363636364
+    }
+  },
+  {
+    "str": "serves the public interest.",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.058823529411764705,
+      "top": 0.3939393939393939,
+      "width": 0.18755882352941178,
+      "height": 0.011363636363636364
+    }
+  },
+  {
+    "str": "Introduction",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.058823529411764705,
+      "top": 0.4393939393939394,
+      "width": 0.1857941176470588,
+      "height": 0.022727272727272728
+    }
+  },
+  {
+    "str": "RD&D efforts are essential underpinnings for the electricity system’s ability to support the livelihoods of its",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.058823529411764705,
+      "top": 0.48863636363636365,
+      "width": 0.7834117647058836,
+      "height": 0.011363636363636364
+    }
+  },
+  {
+    "str": "users and enable the growth and strength of the U.S. economy. RD&D endeavors produce new technologies,",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.058823529411764705,
+      "top": 0.5075757575757576,
+      "width": 0.782860294117648,
+      "height": 0.011363636363636364
+    }
+  },
+  {
+    "str": "services, and operational capabilities that enter into use throughout the system with the rate of diffusion",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.058823529411764705,
+      "top": 0.5265151515151515,
+      "width": 0.7641911764705891,
+      "height": 0.011363636363636364
+    }
+  },
+  {
+    "str": "affecting how quickly the electric sector can change.",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.058823529411764705,
+      "top": 0.5454545454545454,
+      "width": 0.3811029411764706,
+      "height": 0.011363636363636364
+    }
+  },
+  {
+    "str": "Often, the RD&D process is characterized as being top-down (driven by organizational leadership) or bottom-",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.058823529411764705,
+      "top": 0.5833333333333334,
+      "width": 0.7997132352941189,
+      "height": 0.011363636363636364
+    }
+  },
+  {
+    "str": "up (coming from researchers and employees). There is an increasing recognition over the past two decades",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.058823529411764705,
+      "top": 0.6022727272727273,
+      "width": 0.7786102941176484,
+      "height": 0.011363636363636364
+    }
+  },
+  {
+    "str": "that the top-down and bottom-up processes are intertwined (Li 2023; Owen 2009). In this Issue Paper",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.058823529411764705,
+      "top": 0.6212121212121212,
+      "width": 0.7483970588235306,
+      "height": 0.011363636363636364
+    }
+  },
+  {
+    "str": "the authors recognize the role and value of both. Top-down processes set the architectural and directional",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.058823529411764705,
+      "top": 0.6401515151515151,
+      "width": 0.7726985294117655,
+      "height": 0.011363636363636364
+    }
+  },
+  {
+    "str": "dimensions of the ecosystem and bottom-up processes leverage diverse capital, knowledge, and resource",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.058823529411764705,
+      "top": 0.6590909090909091,
+      "width": 0.7642058823529423,
+      "height": 0.011363636363636364
+    }
+  },
+  {
+    "str": "bases that give shape and context to top-down RD&D aspirations.",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.058823529411764705,
+      "top": 0.6780303030303031,
+      "width": 0.4790882352941178,
+      "height": 0.011363636363636364
+    }
+  },
+  {
+    "str": "Supporting an efficient and effective innovation ecosystem for electric power will be important for unlocking",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.058823529411764705,
+      "top": 0.7159090909090909,
+      "width": 0.7934632352941192,
+      "height": 0.011363636363636364
+    }
+  },
+  {
+    "str": "the capabilities to address the challenges and opportunities facing this system. At the time of writing, these",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.058823529411764705,
+      "top": 0.7348484848484849,
+      "width": 0.7848235294117656,
+      "height": 0.011363636363636364
+    }
+  },
+  {
+    "str": "include strains on system reliability (DOE 2025a; NERC 2025), challenges to grid resilience (Costello 2019;",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.058823529411764705,
+      "top": 0.7537878787878788,
+      "width": 0.768330882352942,
+      "height": 0.011363636363636364
+    }
+  },
+  {
+    "str": "Gibson 2020; NASEM 2017), accelerating demand growth (ACP 2025; ICF 2025), concerns over electricity",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.058823529411764705,
+      "top": 0.7727272727272727,
+      "width": 0.7571691176470601,
+      "height": 0.011363636363636364
+    }
+  },
+  {
+    "str": "prices (McGee and Tyndall 2025; Wiser et al. 2025), regulatory paradigms that may unnecessarily constrain",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.058823529411764705,
+      "top": 0.7916666666666666,
+      "width": 0.7811397058823542,
+      "height": 0.011363636363636364
+    }
+  },
+  {
+    "str": "innovation (Kiesling et al. 2025; Schwartz 2022), and increasingly complex supply chain considerations",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.058823529411764705,
+      "top": 0.8106060606060607,
+      "width": 0.752058823529413,
+      "height": 0.011363636363636364
+    }
+  },
+  {
+    "str": "(Howard 2025). The U.S. federal government has a strong history of supporting RD&D endeavors for",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.058823529411764705,
+      "top": 0.8295454545454546,
+      "width": 0.7304779411764717,
+      "height": 0.011363636363636364
+    }
+  },
+  {
+    "str": "critical technologies and systems, with DOE’s efforts specifically enabling improvements in reliability and",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.058823529411764705,
+      "top": 0.8484848484848485,
+      "width": 0.7710588235294129,
+      "height": 0.011363636363636364
+    }
+  },
+  {
+    "str": "affordability for the U.S. energy systems (Urecki and Das 2025). These outcomes result not just from DOE’s",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.058823529411764705,
+      "top": 0.8674242424242424,
+      "width": 0.7810808823529425,
+      "height": 0.011363636363636364
+    }
+  },
+  {
+    "str": "direct research work but also from its engagement of a broad network of innovation partners including",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.058823529411764705,
+      "top": 0.8863636363636364,
+      "width": 0.7505882352941197,
+      "height": 0.011363636363636364
+    }
+  },
+  {
+    "str": "national laboratories, universities, and the private sector (NASEM 2021a).",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.058823529411764705,
+      "top": 0.9053030303030303,
+      "width": 0.532904411764706,
+      "height": 0.011363636363636364
+    }
+  }
+]

@@ -1,0 +1,1052 @@
+[
+  {
+    "str": "Contents lists available at ScienceDirect",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.38342886324998826,
+      "top": 0.07545902046236551,
+      "width": 0.23808838799145288,
+      "height": 0.010041690762642356
+    }
+  },
+  {
+    "str": "Journal of the European Ceramic Society",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.28752377048629546,
+      "top": 0.10564242706006424,
+      "width": 0.4298805461668202,
+      "height": 0.017572738348572068
+    }
+  },
+  {
+    "str": "journal homepage: www.elsevier.com/locate/jeurceramsoc",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.2986665009172216,
+      "top": 0.14581548971212088,
+      "width": 0.4076282069493819,
+      "height": 0.010041690762642356
+    }
+  },
+  {
+    "str": "Small scale fracture and strength of high-entropy carbide grains during",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.06314281106579134,
+      "top": 0.2045549898513421,
+      "width": 0.7198517740510284,
+      "height": 0.01694529804044596
+    }
+  },
+  {
+    "str": "microcantilever bending experiments",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.06314281106579134,
+      "top": 0.22626869476036957,
+      "width": 0.3742085079022169,
+      "height": 0.01694529804044596
+    }
+  },
+  {
+    "str": "Tamás Csanádi",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.06314281106579134,
+      "top": 0.25755240323497136,
+      "width": 0.11844339533258523,
+      "height": 0.013305262309106326
+    }
+  },
+  {
+    "str": "a,",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.18161827454827678,
+      "top": 0.2560592716904728,
+      "width": 0.010497715009508198,
+      "height": 0.008869208933842845
+    }
+  },
+  {
+    "str": "*, Marek Vojtko",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.1920957673415357,
+      "top": 0.25755240323497136,
+      "width": 0.12713438902290697,
+      "height": 0.013305262309106326
+    }
+  },
+  {
+    "str": "a",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.31923847089417345,
+      "top": 0.2560592716904728,
+      "width": 0.0067722901645623215,
+      "height": 0.008869208933842845
+    }
+  },
+  {
+    "str": ", Zoltán Dankházi",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.3260000403174326,
+      "top": 0.25755240323497136,
+      "width": 0.1407394575289446,
+      "height": 0.013305262309106326
+    }
+  },
+  {
+    "str": "b",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.46666588271658865,
+      "top": 0.2560592716904728,
+      "width": 0.007384324246232001,
+      "height": 0.008869208933842845
+    }
+  },
+  {
+    "str": ", Michael J. Reece",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.4740943696705394,
+      "top": 0.25755240323497136,
+      "width": 0.14452347254046863,
+      "height": 0.013305262309106326
+    }
+  },
+  {
+    "str": "c",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.6185702094490624,
+      "top": 0.2560592716904728,
+      "width": 0.006200171349088492,
+      "height": 0.008869208933842845
+    }
+  },
+  {
+    "str": ", Ján Dusza",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.6247622951370457,
+      "top": 0.25755240323497136,
+      "width": 0.09120309973860863,
+      "height": 0.013305262309106326
+    }
+  },
+  {
+    "str": "a,d",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.715998965185897,
+      "top": 0.2560592716904728,
+      "width": 0.018001785054327743,
+      "height": 0.008869208933842845
+    }
+  },
+  {
+    "str": "a",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.06314281106579134,
+      "top": 0.28071666786359106,
+      "width": 0.004088666937689408,
+      "height": 0.005354535272098687
+    }
+  },
+  {
+    "str": "Institute of Materials Research, Slovak Academy of Sciences, Watsonova 47, 04353 Košice, Slovak Republic",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.06942846679523448,
+      "top": 0.28160995135447725,
+      "width": 0.4894892123317586,
+      "height": 0.008033125824460344
+    }
+  },
+  {
+    "str": "b",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.06314281106579134,
+      "top": 0.29157466098694595,
+      "width": 0.0044581731835316735,
+      "height": 0.005354535272098687
+    }
+  },
+  {
+    "str": "Department of Materials Physics, Eötvös Loránd University, Pázmány P. sétány 1/A, 1117 Budapest, Hungary",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.069714216598687,
+      "top": 0.29246668455753494,
+      "width": 0.49946527933261203,
+      "height": 0.008033125824460344
+    }
+  },
+  {
+    "str": "c",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.06314281106579134,
+      "top": 0.3023595787330494,
+      "width": 0.0037432589252716394,
+      "height": 0.005354535272098687
+    }
+  },
+  {
+    "str": "School of Engineering and Material Science, Queen Mary University of London, Mile End Road, London, E1 4NS, UK",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.06904746705729779,
+      "top": 0.30325286222393566,
+      "width": 0.5321161733044842,
+      "height": 0.008033125824460344
+    }
+  },
+  {
+    "str": "d",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.06314281106579134,
+      "top": 0.31314575639945014,
+      "width": 0.004530467883805159,
+      "height": 0.005354535272098687
+    }
+  },
+  {
+    "str": "Donát Bánki Faculty of Mechanical and Safety Engineering, Óbuda University, Népszínház utca 8, 1081 Budapest, Hungary",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.06980946653317117,
+      "top": 0.31403903989033655,
+      "width": 0.56136959202118,
+      "height": 0.008033125824460344
+    }
+  },
+  {
+    "str": "A R T I C L E",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.06314281106579134,
+      "top": 0.3547145587570131,
+      "width": 0.07489373950570825,
+      "height": 0.008786306178271162
+    }
+  },
+  {
+    "str": "I N F O",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.14666458246426867,
+      "top": 0.3547145587570131,
+      "width": 0.04127184010274223,
+      "height": 0.008786306178271162
+    }
+  },
+  {
+    "str": "Keywords:",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.06314281106579134,
+      "top": 0.38082363509684375,
+      "width": 0.046538556064749804,
+      "height": 0.008033125824460344
+    }
+  },
+  {
+    "str": "Fracture strength",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.06314281106579134,
+      "top": 0.39160890982876423,
+      "width": 0.08206423679100115,
+      "height": 0.008033125824460344
+    }
+  },
+  {
+    "str": "fracture surface",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.06314281106579134,
+      "top": 0.4023941845606847,
+      "width": 0.0745848642478447,
+      "height": 0.008033125824460344
+    }
+  },
+  {
+    "str": "microcantilever bending",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.06314281106579134,
+      "top": 0.41318026260518764,
+      "width": 0.11615145305706935,
+      "height": 0.008033125824460344
+    }
+  },
+  {
+    "str": "high-entropy carbide",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.06314281106579134,
+      "top": 0.4239655373371081,
+      "width": 0.09996631794327339,
+      "height": 0.008033125824460344
+    }
+  },
+  {
+    "str": "fracture toughness",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.06314281106579134,
+      "top": 0.4347508120690286,
+      "width": 0.08803766664538804,
+      "height": 0.008033125824460344
+    }
+  },
+  {
+    "str": "A B S T R A C T",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.34123834994187574,
+      "top": 0.3547145587570131,
+      "width": 0.09076754218379382,
+      "height": 0.008786306178271162
+    }
+  },
+  {
+    "str": "The fracture behaviour of (Hf-Ta-Zr-Nb)C high-entropy carbide grains was investigated by microcantilever",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.34123834994187574,
+      "top": 0.37974879709109605,
+      "width": 0.5955721863471737,
+      "height": 0.00903740829355135
+    }
+  },
+  {
+    "str": "bending experiments, and fracture related properties (e.g. strength, toughness) were determined using linear",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.34123834994187574,
+      "top": 0.39182006334879255,
+      "width": 0.5955673663981077,
+      "height": 0.00903740829355135
+    }
+  },
+  {
+    "str": "beam theory. Microcantilevers were FIB-milled from large grains with {001} and {101} orientations and were",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.34123834994187574,
+      "top": 0.4038913296064891,
+      "width": 0.5955673663981079,
+      "height": 0.00903740829355135
+    }
+  },
+  {
+    "str": "subjected to micro-bending experiments. SEM based fractographic analysis of the broken cantilevers revealed",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.34123834994187574,
+      "top": 0.4159625958641856,
+      "width": 0.5955866461943706,
+      "height": 0.00903740829355135
+    }
+  },
+  {
+    "str": "that approximately half of them fractured at the fixing position at FIB-induced surface cracks, while the rest of",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.34123834994187574,
+      "top": 0.42796246659636306,
+      "width": 0.5955239868565174,
+      "height": 0.00903740829355135
+    }
+  },
+  {
+    "str": "the beams failed at small cracks located at submicron size pores or inclusions. In all cases, fracture occurred on",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.34123834994187574,
+      "top": 0.4400337328540596,
+      "width": 0.595570981359907,
+      "height": 0.00903740829355135
+    }
+  },
+  {
+    "str": "the {001} cleavage plane. The fracture strength of beams fractured at the fixing position was 11.8 ± 0.2 GPa,",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.34123834994187574,
+      "top": 0.4521049991117561,
+      "width": 0.5956143609014981,
+      "height": 0.00903740829355135
+    }
+  },
+  {
+    "str": "while the strength of the beams that failed at submicron defects was in the range of 3.8-8.9 GPa. The calculation",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.34123834994187574,
+      "top": 0.46410486984393357,
+      "width": 0.5955926711307026,
+      "height": 0.00903740829355135
+    }
+  },
+  {
+    "str": "of stress concentration in the vicinity of pores revealed that local stress field exceeded the value that induced",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.34123834994187574,
+      "top": 0.4761761361016301,
+      "width": 0.5955878511816374,
+      "height": 0.00903740829355135
+    }
+  },
+  {
+    "str": "cracking in ‘defect free’ beams.",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.34123834994187574,
+      "top": 0.4882474023593266,
+      "width": 0.16770771776453275,
+      "height": 0.00903740829355135
+    }
+  },
+  {
+    "str": "1. Introduction",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.06314281106579134,
+      "top": 0.5426009290652274,
+      "width": 0.09949838585798858,
+      "height": 0.010041690762642356
+    }
+  },
+  {
+    "str": "High-entropy ultra-high temperature ceramics are a novel group of",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.08409378587411555,
+      "top": 0.5689573548099347,
+      "width": 0.4007878100746545,
+      "height": 0.010041690762642356
+    }
+  },
+  {
+    "str": "materials, which are being developed to broaden the limited set of",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.06314281106579134,
+      "top": 0.582099919680081,
+      "width": 0.42173878488297867,
+      "height": 0.010041690762642356
+    }
+  },
+  {
+    "str": "ultra-high temperature ceramics (UHTCs), comprising about 15 mate-",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.06314281106579134,
+      "top": 0.5953137805546421,
+      "width": 0.4217789516291602,
+      "height": 0.010041690762642356
+    }
+  },
+  {
+    "str": "rials [1], and improve their mechanical properties to meet the con-",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.06314281106579134,
+      "top": 0.6084573495938647,
+      "width": 0.4217749349545421,
+      "height": 0.010041690762642356
+    }
+  },
+  {
+    "str": "tinuously",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.06314281106579134,
+      "top": 0.6216712104684258,
+      "width": 0.05512216467655341,
+      "height": 0.010041690762642356
+    }
+  },
+  {
+    "str": "growing",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.12666518126045734,
+      "top": 0.6216712104684258,
+      "width": 0.04870887420289076,
+      "height": 0.010041690762642356
+    }
+  },
+  {
+    "str": "demands",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.1838077332699454,
+      "top": 0.6216712104684258,
+      "width": 0.05277910448262655,
+      "height": 0.010041690762642356
+    }
+  },
+  {
+    "str": "of",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.24494955430758175,
+      "top": 0.6216712104684258,
+      "width": 0.011648356392664918,
+      "height": 0.010041690762642356
+    }
+  },
+  {
+    "str": "ultra-high",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.2649499161229414,
+      "top": 0.6216712104684258,
+      "width": 0.0589380055638057,
+      "height": 0.010041690762642356
+    }
+  },
+  {
+    "str": "temperature",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.3322827716387022,
+      "top": 0.6216712104684258,
+      "width": 0.07255453251936918,
+      "height": 0.010041690762642356
+    }
+  },
+  {
+    "str": "applications",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.4132334930015658,
+      "top": 0.6216712104684258,
+      "width": 0.07168425301876777,
+      "height": 0.010041690762642356
+    }
+  },
+  {
+    "str": "[2,3]. In general, UTHCs are defined as materials with melting tem-",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.06314281106579134,
+      "top": 0.6348137753385721,
+      "width": 0.4218204572668815,
+      "height": 0.010041690762642356
+    }
+  },
+  {
+    "str": "perature above 3000 °C that can withstand extreme environments for",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.06314281106579134,
+      "top": 0.6480276362131332,
+      "width": 0.4217361070998999,
+      "height": 0.010041690762642356
+    }
+  },
+  {
+    "str": "applications above 1500 °C in oxidizing and aggressive environments,",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.06314281106579134,
+      "top": 0.6611712052523556,
+      "width": 0.421799035002251,
+      "height": 0.010041690762642356
+    }
+  },
+  {
+    "str": "such as rocket propulsions, hypersonic and re-usable atmospheric re-",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.06314281106579134,
+      "top": 0.6743850661269168,
+      "width": 0.42178966276147534,
+      "height": 0.010041690762642356
+    }
+  },
+  {
+    "str": "entry vehicles. UHTCs are usually based on the refractory borides,",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.06314281106579134,
+      "top": 0.687527630997063,
+      "width": 0.4217628849306876,
+      "height": 0.010041690762642356
+    }
+  },
+  {
+    "str": "carbides and nitrides of the group of IV and V transition metals. Due to",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.06314281106579134,
+      "top": 0.7007414918716242,
+      "width": 0.42183116839919627,
+      "height": 0.010041690762642356
+    }
+  },
+  {
+    "str": "the nature of their chemical bonds, these materials exhibit high hard-",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.06314281106579134,
+      "top": 0.7138840567417705,
+      "width": 0.4217575293645301,
+      "height": 0.010041690762642356
+    }
+  },
+  {
+    "str": "ness (>20 GPa) and strength (>500 MPa) with excellent oxidation and",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.06314281106579134,
+      "top": 0.7270989217854079,
+      "width": 0.4217628849306878,
+      "height": 0.010041690762642356
+    }
+  },
+  {
+    "str": "ablation resistance at elevated temperatures [4–6].",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.06314281106579134,
+      "top": 0.7402414866555541,
+      "width": 0.3048428423621983,
+      "height": 0.010041690762642356
+    }
+  },
+  {
+    "str": "Based on the discovery of high-entropy alloys [7,8] and entropy-",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.08409378587411555,
+      "top": 0.7534553475301153,
+      "width": 0.4008467213023875,
+      "height": 0.010041690762642356
+    }
+  },
+  {
+    "str": "stabilized oxides [9], bulk high-entropy UHTCs have been successfully",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.06314281106579134,
+      "top": 0.7665979124002615,
+      "width": 0.4217669016053059,
+      "height": 0.010041690762642356
+    }
+  },
+  {
+    "str": "synthesized both from metal diborides by Gild el al. [2] and from metal",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.06314281106579134,
+      "top": 0.779812777443899,
+      "width": 0.4217561904729908,
+      "height": 0.010041690762642356
+    }
+  },
+  {
+    "str": "carbides by the present authors [3]. These novel high-entropy ceramics",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.06314281106579134,
+      "top": 0.7929553423140452,
+      "width": 0.42175619047299073,
+      "height": 0.010041690762642356
+    }
+  },
+  {
+    "str": "are composed of four or more different transition metal elements of",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.06314281106579134,
+      "top": 0.8061692031886063,
+      "width": 0.4217387848829786,
+      "height": 0.010041690762642356
+    }
+  },
+  {
+    "str": "equimolar proportions and boron or carbon atoms, and form hexagonal",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.06314281106579134,
+      "top": 0.8193830640631674,
+      "width": 0.42181911837534203,
+      "height": 0.010041690762642356
+    }
+  },
+  {
+    "str": "or cubic solid solution structures, respectively. Experimental and the-",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5150428056565359,
+      "top": 0.5426009290652274,
+      "width": 0.42174547934067547,
+      "height": 0.010041690762642356
+    }
+  },
+  {
+    "str": "oretical studies on these materials suggest that high-entropy ultra-high",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5150428056565359,
+      "top": 0.5557434939353737,
+      "width": 0.42179100165301475,
+      "height": 0.010041690762642356
+    }
+  },
+  {
+    "str": "temperature ceramics could broaden the limited set of UHTCs and their",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5150428056565359,
+      "top": 0.5689573548099347,
+      "width": 0.42170531259449406,
+      "height": 0.010041690762642356
+    }
+  },
+  {
+    "str": "mechanical properties could go beyond those of the base borides [2]",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5150428056565359,
+      "top": 0.582099919680081,
+      "width": 0.4217173626183485,
+      "height": 0.010041690762642356
+    }
+  },
+  {
+    "str": "and carbides [3,10–13]. Regarding high-entropy carbides, Castle et al.",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5150428056565359,
+      "top": 0.5953137805546421,
+      "width": 0.42177359606300296,
+      "height": 0.010041690762642356
+    }
+  },
+  {
+    "str": "[3] have recently reported that the lattice parameter mismatch of the",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5150428056565359,
+      "top": 0.6084573495938647,
+      "width": 0.4217454793406757,
+      "height": 0.010041690762642356
+    }
+  },
+  {
+    "str": "component monocarbides is a key predictive factor for determining",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5150428056565359,
+      "top": 0.6216712104684258,
+      "width": 0.4217816294122389,
+      "height": 0.010041690762642356
+    }
+  },
+  {
+    "str": "solid solution formation, and hence the (Hf-Ta-Zr-Nb)C composition",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5150428056565359,
+      "top": 0.6348137753385721,
+      "width": 0.4217749349545421,
+      "height": 0.010041690762642356
+    }
+  },
+  {
+    "str": "formed a single phase solid solution more readily than the (Hf-Ta-Zr-",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5150428056565359,
+      "top": 0.6480276362131332,
+      "width": 0.42177493495454216,
+      "height": 0.010041690762642356
+    }
+  },
+  {
+    "str": "Ti)C composition. The high resolution microstructural analysis ex-",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5150428056565359,
+      "top": 0.6611712052523556,
+      "width": 0.421764223822227,
+      "height": 0.010041690762642356
+    }
+  },
+  {
+    "str": "hibited a random arrangement of transition metal elements in (Hf-Ta-",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5150428056565359,
+      "top": 0.6743850661269168,
+      "width": 0.42179367943609364,
+      "height": 0.010041690762642356
+    }
+  },
+  {
+    "str": "Zr-Nb)C at the atomic scale using energy dispersive X-ray spectroscopy",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5150428056565359,
+      "top": 0.687527630997063,
+      "width": 0.42173075153374234,
+      "height": 0.010041690762642356
+    }
+  },
+  {
+    "str": "and high angle annular dark field scanning transmission electron mi-",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5150428056565359,
+      "top": 0.7007414918716242,
+      "width": 0.42171736261834863,
+      "height": 0.010041690762642356
+    }
+  },
+  {
+    "str": "croscopy [14]. Micromechanical testing of (Hf-Ta-Zr-Nb)C grains re-",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5150428056565359,
+      "top": 0.7138840567417705,
+      "width": 0.42178966276147556,
+      "height": 0.010041690762642356
+    }
+  },
+  {
+    "str": "vealed higher nano-hardness [3] and significantly enhanced yield and",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5150428056565359,
+      "top": 0.7270989217854079,
+      "width": 0.42176288493068775,
+      "height": 0.010041690762642356
+    }
+  },
+  {
+    "str": "fracture strength during micropillar compression compared to the cor-",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5150428056565359,
+      "top": 0.7402414866555541,
+      "width": 0.4218003738937905,
+      "height": 0.010041690762642356
+    }
+  },
+  {
+    "str": "responding base monocarbides [12]. Additionally, the plasticity of (Hf-",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5150428056565359,
+      "top": 0.7534553475301153,
+      "width": 0.42172271818450624,
+      "height": 0.010041690762642356
+    }
+  },
+  {
+    "str": "Ta-Zr-Nb)C grains was observed during micropillar compression due to",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5150428056565359,
+      "top": 0.7665979124002615,
+      "width": 0.4217361070998999,
+      "height": 0.010041690762642356
+    }
+  },
+  {
+    "str": "the operation of",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5150428056565359,
+      "top": 0.779812777443899,
+      "width": 0.09755163755972023,
+      "height": 0.010041690762642356
+    }
+  },
+  {
+    "str": "{))H} ))H",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.6175118579952829,
+      "top": 0.7796716026208863,
+      "width": 0.06460800643063044,
+      "height": 0.010080204258278623
+    }
+  },
+  {
+    "str": "slip systems [12]. High-temperature creep",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.68209536416721,
+      "top": 0.7798149429067118,
+      "width": 0.2547441987414242,
+      "height": 0.010041690762642356
+    }
+  },
+  {
+    "str": "testing of (Hf-Ta-Zr-Nb)C samples exhibited approximately ten times",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5150499001471587,
+      "top": 0.792957507776858,
+      "width": 0.4217789516291603,
+      "height": 0.010041690762642356
+    }
+  },
+  {
+    "str": "lower creep rate than that of the corresponding monocarbides con-",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5150499001471587,
+      "top": 0.806171368651419,
+      "width": 0.42177493495454216,
+      "height": 0.010041690762642356
+    }
+  },
+  {
+    "str": "trolled by dislocation glide on the",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5150499001471587,
+      "top": 0.8193852295259803,
+      "width": 0.20698593753149808,
+      "height": 0.010041690762642356
+    }
+  },
+  {
+    "str": "{)))} ))H",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.726940089605494,
+      "top": 0.819243179322944,
+      "width": 0.059675379353442796,
+      "height": 0.010080204258278623
+    }
+  },
+  {
+    "str": "slip systems, dislocation",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.791617669786788,
+      "top": 0.8193865196087695,
+      "width": 0.14520948190419242,
+      "height": 0.010041690762642356
+    }
+  },
+  {
+    "str": "https://doi.org/10.1016/j.jeurceramsoc.2020.04.023",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.06314281106579134,
+      "top": 0.8935340890335277,
+      "width": 0.28462642723711357,
+      "height": 0.00903740829355135
+    }
+  },
+  {
+    "str": "Received 31 January 2020; Received in revised form 12 April 2020; Accepted 15 April 2020",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.06314281106579134,
+      "top": 0.9056053552912242,
+      "width": 0.500368552402583,
+      "height": 0.00903740829355135
+    }
+  },
+  {
+    "str": "⁎",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.07390470974808325,
+      "top": 0.8596191764908951,
+      "width": 0.00451849226241273,
+      "height": 0.006024182910189101
+    }
+  },
+  {
+    "str": "Corresponding author.",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.08095219696409733,
+      "top": 0.860676753588568,
+      "width": 0.12054692613174396,
+      "height": 0.00903740829355135
+    }
+  },
+  {
+    "str": "E-mail address:",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.08228491288074775,
+      "top": 0.8726766243207454,
+      "width": 0.07755298046620393,
+      "height": 0.00903740829355135
+    }
+  },
+  {
+    "str": "tcsanadi@saske.sk (T. Csanádi).",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.16390352038382197,
+      "top": 0.8726766243207454,
+      "width": 0.1709431085748461,
+      "height": 0.00903740829355135
+    }
+  },
+  {
+    "str": "Journal of the European Ceramic Society 40 (2020) 4774–4782",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.32972342241246083,
+      "top": 0.043785027359169275,
+      "width": 0.3405532895665202,
+      "height": 0.009071426141582283
+    }
+  },
+  {
+    "str": "Available online 20 April 2020",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.06314716198872457,
+      "top": 0.9175145174316273,
+      "width": 0.16576512407689883,
+      "height": 0.009071426141582283
+    }
+  },
+  {
+    "str": "0955-2219/ © 2020 Elsevier Ltd. All rights reserved.",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.06314716198872457,
+      "top": 0.9296349632922221,
+      "width": 0.28389923329682376,
+      "height": 0.009071426141582283
+    }
+  },
+  {
+    "str": "T",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.8508742163299041,
+      "top": 0.21722414360067582,
+      "width": 0.010062559216229111,
+      "height": 0.012599202974419839
+    }
+  }
+]

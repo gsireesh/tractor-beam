@@ -1,0 +1,1232 @@
+[
+  {
+    "str": "Proceedings of the 2023 Conference on Empirical Methods in Natural Language Processing",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.15731358227108097,
+      "top": 0.9455791143073429,
+      "width": 0.556939369300963,
+      "height": 0.010650322362181256
+    }
+  },
+  {
+    "str": ", pages 13310–13325",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.7142468367614351,
+      "top": 0.9455791143073429,
+      "width": 0.12843872892574207,
+      "height": 0.010650322362181256
+    }
+  },
+  {
+    "str": "December 6-10, 2023 ©2023 Association for Computational Linguistics",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.2817449384823174,
+      "top": 0.958596254159139,
+      "width": 0.4365139397523167,
+      "height": 0.010650322362181256
+    }
+  },
+  {
+    "str": "To Build Our Future, We Must Know Our Past:",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.25523218969016054,
+      "top": 0.08199903356734205,
+      "width": 0.4927507986260992,
+      "height": 0.01704132029075865
+    }
+  },
+  {
+    "str": "Contextualizing Paradigm Shifts in Natural Language Processing",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.16425135424576162,
+      "top": 0.10093356992084976,
+      "width": 0.6715100391939535,
+      "height": 0.01704132029075865
+    }
+  },
+  {
+    "str": "Sireesh Gururaja",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.2744578466963224,
+      "top": 0.13091879584127605,
+      "width": 0.14970957421942094,
+      "height": 0.014201139837732487
+    }
+  },
+  {
+    "str": "1",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.4241656387961215,
+      "top": 0.1304995989856204,
+      "width": 0.0071138862914035105,
+      "height": 0.009467386963054712
+    }
+  },
+  {
+    "str": "∗",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.4321152900503297,
+      "top": 0.1304995989856204,
+      "width": 0.0071138862914035105,
+      "height": 0.009467386963054712
+    }
+  },
+  {
+    "str": "Amanda Bertsch",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.45722086662321365,
+      "top": 0.13091879584127605,
+      "width": 0.1444876142922611,
+      "height": 0.014201139837732487
+    }
+  },
+  {
+    "str": "1",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.6017072901477636,
+      "top": 0.1304995989856204,
+      "width": 0.0071138862914035105,
+      "height": 0.009467386963054712
+    }
+  },
+  {
+    "str": "∗",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.6088203128464781,
+      "top": 0.1304995989856204,
+      "width": 0.0071138862914035105,
+      "height": 0.009467386963054712
+    }
+  },
+  {
+    "str": "Clara Na",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.64187554067357,
+      "top": 0.13091879584127605,
+      "width": 0.0786507502875305,
+      "height": 0.014201139837732487
+    }
+  },
+  {
+    "str": "1",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.7205270247750626,
+      "top": 0.1304995989856204,
+      "width": 0.0071138862914035105,
+      "height": 0.009467386963054712
+    }
+  },
+  {
+    "str": "∗",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.727640047473777,
+      "top": 0.1304995989856204,
+      "width": 0.0071138862914035105,
+      "height": 0.009467386963054712
+    }
+  },
+  {
+    "str": "David Gray Widder",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.325435069362783,
+      "top": 0.14748710908209953,
+      "width": 0.1709790186919682,
+      "height": 0.014201139837732487
+    }
+  },
+  {
+    "str": "2",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.4964113705239252,
+      "top": 0.1470679122264439,
+      "width": 0.0071138862914035105,
+      "height": 0.009467386963054712
+    }
+  },
+  {
+    "str": "Emma Strubell",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5294665983510171,
+      "top": 0.14748710908209953,
+      "width": 0.13111136309422866,
+      "height": 0.014201139837732487
+    }
+  },
+  {
+    "str": "1",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.6605770448497842,
+      "top": 0.1470679122264439,
+      "width": 0.0071138862914035105,
+      "height": 0.009467386963054712
+    }
+  },
+  {
+    "str": ",",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.6676900675484986,
+      "top": 0.1470679122264439,
+      "width": 0.00395126662007285,
+      "height": 0.009467386963054712
+    }
+  },
+  {
+    "str": "3",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.6716413734973358,
+      "top": 0.1470679122264439,
+      "width": 0.0071138862914035105,
+      "height": 0.009467386963054712
+    }
+  },
+  {
+    "str": "1",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.16313080957404624,
+      "top": 0.163635037604259,
+      "width": 0.0071138862914035105,
+      "height": 0.009467386963054712
+    }
+  },
+  {
+    "str": "Language Technologies Institute, Carnegie Mellon University, Pittsburgh, PA, USA",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.17108214080527342,
+      "top": 0.16405542232292317,
+      "width": 0.6708210060274565,
+      "height": 0.014201139837732487
+    }
+  },
+  {
+    "str": "2",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.1687352129096418,
+      "top": 0.18020335084508246,
+      "width": 0.0071138862914035105,
+      "height": 0.009467386963054712
+    }
+  },
+  {
+    "str": "Digital Life Initiative, Cornell Tech, Cornell University, New York City, NY, USA",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.17668486416384996,
+      "top": 0.18062373556374678,
+      "width": 0.6596138766453211,
+      "height": 0.014201139837732487
+    }
+  },
+  {
+    "str": "3",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.2598790061248899,
+      "top": 0.19677166408590607,
+      "width": 0.0071138862914035105,
+      "height": 0.009467386963054712
+    }
+  },
+  {
+    "str": "Allen Institute for Artificial Intelligence, Seattle, WA, USA",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.267828657379098,
+      "top": 0.19719086094156185,
+      "width": 0.47732730626492625,
+      "height": 0.014201139837732487
+    }
+  },
+  {
+    "str": "{sgururaj, abertsch, csna, estrubel}@cs.cmu.edu, david.g.widder@gmail.com",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.13597230108386688,
+      "top": 0.21375917418238521,
+      "width": 0.7330828359282078,
+      "height": 0.014201139837732487
+    }
+  },
+  {
+    "str": "Abstract",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.26500797596409054,
+      "top": 0.2513514748084493,
+      "width": 0.07473428034216063,
+      "height": 0.014201139837732487
+    }
+  },
+  {
+    "str": "NLP is in a period of disruptive change that is",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.14760446196386215,
+      "top": 0.28250270705789693,
+      "width": 0.3095423569526895,
+      "height": 0.011834204007243181
+    }
+  },
+  {
+    "str": "impacting our methodologies, funding sources,",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.14760446196386215,
+      "top": 0.2967036093230278,
+      "width": 0.31162272500274146,
+      "height": 0.011834204007243181
+    }
+  },
+  {
+    "str": "and public perception. In this work, we seek to",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.14760446196386215,
+      "top": 0.3109045115881585,
+      "width": 0.3095376371358771,
+      "height": 0.011834204007243181
+    }
+  },
+  {
+    "str": "understand how to shape our future by better",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.14760446196386215,
+      "top": 0.32510541385328934,
+      "width": 0.30981680927923333,
+      "height": 0.011834204007243181
+    }
+  },
+  {
+    "str": "understanding our past. We study factors that",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.14760446196386215,
+      "top": 0.3393075039814286,
+      "width": 0.3095436624339354,
+      "height": 0.011834204007243181
+    }
+  },
+  {
+    "str": "shape NLP as a field, including culture, incen-",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.14760446196386215,
+      "top": 0.35350840624655944,
+      "width": 0.3123128894214123,
+      "height": 0.011834204007243181
+    }
+  },
+  {
+    "str": "tives, and infrastructure by conducting long-",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.14760446196386215,
+      "top": 0.3677093085116902,
+      "width": 0.3123092742425773,
+      "height": 0.011834204007243181
+    }
+  },
+  {
+    "str": "form interviews with 26 NLP researchers of",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.14760446196386215,
+      "top": 0.38191021077682097,
+      "width": 0.30954366243393533,
+      "height": 0.011834204007243181
+    }
+  },
+  {
+    "str": "varying seniority, research area, institution, and",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.14718614768611538,
+      "top": 0.39611111304195173,
+      "width": 0.30995237848553947,
+      "height": 0.011834204007243181
+    }
+  },
+  {
+    "str": "social identity. Our interviewees identify cycli-",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.14760446196386215,
+      "top": 0.41031201530708256,
+      "width": 0.3123198185141791,
+      "height": 0.011834204007243181
+    }
+  },
+  {
+    "str": "cal patterns in the field, as well as new shifts",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.14760446196386215,
+      "top": 0.4245141054352218,
+      "width": 0.3095436624339355,
+      "height": 0.011834204007243181
+    }
+  },
+  {
+    "str": "without historical parallel, including changes in",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.14700303019103744,
+      "top": 0.4387150077003526,
+      "width": 0.3101328026884997,
+      "height": 0.011834204007243181
+    }
+  },
+  {
+    "str": "benchmark culture and software infrastructure.",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.14760446196386215,
+      "top": 0.4529159099654834,
+      "width": 0.31246231681325176,
+      "height": 0.011834204007243181
+    }
+  },
+  {
+    "str": "We complement this discussion with quantita-",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.14681823271894048,
+      "top": 0.46711681223061424,
+      "width": 0.3131057014872774,
+      "height": 0.011834204007243181
+    }
+  },
+  {
+    "str": "tive analysis of citation, authorship, and lan-",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.14760446196386215,
+      "top": 0.481317714495745,
+      "width": 0.3123092742425774,
+      "height": 0.011834204007243181
+    }
+  },
+  {
+    "str": "guage use in the ACL Anthology over time.",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.14760446196386215,
+      "top": 0.4955186167608758,
+      "width": 0.3124629193430574,
+      "height": 0.011834204007243181
+    }
+  },
+  {
+    "str": "We conclude by discussing shared visions, con-",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.14681823271894048,
+      "top": 0.509720706889015,
+      "width": 0.31310160093721007,
+      "height": 0.011834204007243181
+    }
+  },
+  {
+    "str": "cerns, and hopes for the future of NLP. We hope",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.14760446196386215,
+      "top": 0.5239216091541458,
+      "width": 0.30954232347881144,
+      "height": 0.011834204007243181
+    }
+  },
+  {
+    "str": "that this study of our field’s past and present",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.14760446196386215,
+      "top": 0.5381225114192767,
+      "width": 0.3095436624339354,
+      "height": 0.011834204007243181
+    }
+  },
+  {
+    "str": "can prompt informed discussion of our com-",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.14760446196386215,
+      "top": 0.5523234136844074,
+      "width": 0.3123092742425775,
+      "height": 0.011834204007243181
+    }
+  },
+  {
+    "str": "munity’s implicit norms and more deliberate",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.14760446196386215,
+      "top": 0.5665243159495382,
+      "width": 0.3095436624339354,
+      "height": 0.011834204007243181
+    }
+  },
+  {
+    "str": "action to consciously shape the future.",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.14760446196386215,
+      "top": 0.580725218214669,
+      "width": 0.2565940125774097,
+      "height": 0.011834204007243181
+    }
+  },
+  {
+    "str": "1",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.1190314128236314,
+      "top": 0.609509989778831,
+      "width": 0.010042230629153538,
+      "height": 0.014201139837732487
+    }
+  },
+  {
+    "str": "Introduction",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.14915810471109203,
+      "top": 0.609509989778831,
+      "width": 0.10899837124883247,
+      "height": 0.014201139837732487
+    }
+  },
+  {
+    "str": "Natural language processing (NLP) is in a period",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.1190314128236314,
+      "top": 0.6371089177017316,
+      "width": 0.3666932269236215,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "of flux.",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.1190314128236314,
+      "top": 0.6532032736022131,
+      "width": 0.0558564111973787,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "The successes of deep neural networks",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.18642176167455185,
+      "top": 0.6532032736022131,
+      "width": 0.29930287807270106,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "and large language models (LLMs) in NLP coin-",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.1190314128236314,
+      "top": 0.6692976295026947,
+      "width": 0.36972158656685283,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "cides with a shift not only in the nature of our",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.1190314128236314,
+      "top": 0.6853931732661847,
+      "width": 0.3669923241723356,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "research questions and methodology, but also in",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.1190314128236314,
+      "top": 0.7014875291666662,
+      "width": 0.36669322692362155,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "the size and visibility of our field. Since the mid-",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.1190314128236314,
+      "top": 0.7175818850671478,
+      "width": 0.36972158656685283,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "2010s, the number of first-time authors publishing",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.1190314128236314,
+      "top": 0.7336762409676294,
+      "width": 0.36668091115455687,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "in the ACL Anthology has been increasing expo-",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.1190314128236314,
+      "top": 0.7497705968681111,
+      "width": 0.36972158656685294,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "nentially (Figure 1). Recent publicity around NLP",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.1190314128236314,
+      "top": 0.7658649527685927,
+      "width": 0.36668091115455687,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "technology, most notably ChatGPT, has brought",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.1190314128236314,
+      "top": 0.7819604965320825,
+      "width": 0.36669322692362155,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "our field into the public spotlight, with correspond-",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.1190314128236314,
+      "top": 0.7980548524325641,
+      "width": 0.3697215865668528,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "ing (over-)excitement and scrutiny.",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.1190314128236314,
+      "top": 0.8141492083330458,
+      "width": 0.2559004218012569,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "In the 2022 NLP Community Metasurvey, many",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.13735828212459433,
+      "top": 0.8308553136828407,
+      "width": 0.34900186291366087,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "NLP practicioners expressed fears that private firms",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.1190314128236314,
+      "top": 0.8469496695833225,
+      "width": 0.36668149761975033,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "exert excessive influence on the field, that “a ma-",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.1190314128236314,
+      "top": 0.8630440254838041,
+      "width": 0.3697215865668528,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "jority of the research being published in NLP is",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.1190314128236314,
+      "top": 0.8791383813842856,
+      "width": 0.3666932269236214,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "∗",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.14614624191131512,
+      "top": 0.9042420842717922,
+      "width": 0.006415981349810807,
+      "height": 0.007100569918866244
+    }
+  },
+  {
+    "str": "Denotes equal contribution.",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.15090729678334086,
+      "top": 0.9052163695112618,
+      "width": 0.16663073282954474,
+      "height": 0.010650854878299365
+    }
+  },
+  {
+    "str": "1980",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5512824409518351,
+      "top": 0.4376965356274036,
+      "width": 0.02273480758013801,
+      "height": 0.006318837273054233
+    }
+  },
+  {
+    "str": "1985",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5875489417963469,
+      "top": 0.4376965356274036,
+      "width": 0.02273480758013801,
+      "height": 0.006318837273054233
+    }
+  },
+  {
+    "str": "1990",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.6238154426408586,
+      "top": 0.4376965356274036,
+      "width": 0.02273480758013801,
+      "height": 0.006318837273054233
+    }
+  },
+  {
+    "str": "1995",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.6600819434853704,
+      "top": 0.4376965356274036,
+      "width": 0.02273480758013801,
+      "height": 0.006318837273054233
+    }
+  },
+  {
+    "str": "2000",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.6963484443298822,
+      "top": 0.4376965356274036,
+      "width": 0.02273480758013801,
+      "height": 0.006318837273054233
+    }
+  },
+  {
+    "str": "2005",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.7326149451744834,
+      "top": 0.4376965356274036,
+      "width": 0.02273480758013801,
+      "height": 0.006318837273054233
+    }
+  },
+  {
+    "str": "2010",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.7688814460189952,
+      "top": 0.4376965356274036,
+      "width": 0.02273480758013801,
+      "height": 0.006318837273054233
+    }
+  },
+  {
+    "str": "2015",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.805147946863507,
+      "top": 0.4376965356274036,
+      "width": 0.02273480758013801,
+      "height": 0.006318837273054233
+    }
+  },
+  {
+    "str": "2020",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.8414144477080189,
+      "top": 0.4376965356274036,
+      "width": 0.02273480758013801,
+      "height": 0.006318837273054233
+    }
+  },
+  {
+    "str": "0",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5434566374268512,
+      "top": 0.43087416600915296,
+      "width": 0.0056837018950345024,
+      "height": 0.006318837273054233
+    }
+  },
+  {
+    "str": "2500",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5264072082138816,
+      "top": 0.4084197896983897,
+      "width": 0.02273480758013801,
+      "height": 0.006318837273054233
+    }
+  },
+  {
+    "str": "5000",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5264072082138816,
+      "top": 0.38596541338762635,
+      "width": 0.02273480758013801,
+      "height": 0.006318837273054233
+    }
+  },
+  {
+    "str": "7500",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5264072082138816,
+      "top": 0.3635110370769263,
+      "width": 0.02273480758013801,
+      "height": 0.006318837273054233
+    }
+  },
+  {
+    "str": "10000",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5207240651428918,
+      "top": 0.34105666076616314,
+      "width": 0.02841850947517251,
+      "height": 0.006318837273054233
+    }
+  },
+  {
+    "str": "12500",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5207240651428918,
+      "top": 0.31860228445539973,
+      "width": 0.02841850947517251,
+      "height": 0.006318837273054233
+    }
+  },
+  {
+    "str": "15000",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5207240651428918,
+      "top": 0.2961479081446365,
+      "width": 0.02841850947517251,
+      "height": 0.006318837273054233
+    }
+  },
+  {
+    "str": "17500",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5207240651428918,
+      "top": 0.27369353183387324,
+      "width": 0.02841850947517251,
+      "height": 0.006318837273054233
+    }
+  },
+  {
+    "str": "Unique authors publishing in *CL venues",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.6057106523632566,
+      "top": 0.255268070222896,
+      "width": 0.21850080398363783,
+      "height": 0.00758260472766508
+    }
+  },
+  {
+    "str": "1+ papers",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5884609866106358,
+      "top": 0.2708084606413137,
+      "width": 0.046667124679041085,
+      "height": 0.006318837273054233
+    }
+  },
+  {
+    "str": "2+ papers",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5884609866106358,
+      "top": 0.2800793797028729,
+      "width": 0.046667124679041085,
+      "height": 0.006318837273054233
+    }
+  },
+  {
+    "str": "3+ papers",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5884609866106358,
+      "top": 0.2893502987644322,
+      "width": 0.046667124679041085,
+      "height": 0.006318837273054233
+    }
+  },
+  {
+    "str": "5+ papers",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5884609866106358,
+      "top": 0.2986212178259915,
+      "width": 0.046667124679041085,
+      "height": 0.006318837273054233
+    }
+  },
+  {
+    "str": "Figure 1: The number of unique researchers publishing",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5142896859607982,
+      "top": 0.44632683385802374,
+      "width": 0.36669006628340106,
+      "height": 0.011834204007243181
+    }
+  },
+  {
+    "str": "in ACL venues has increased dramatically, from 715",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5142896859607982,
+      "top": 0.4605289239861629,
+      "width": 0.3666825681347064,
+      "height": 0.011834204007243181
+    }
+  },
+  {
+    "str": "unique authors in 1980 to 17,829 in 2022.",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5142896859607982,
+      "top": 0.47472982625129373,
+      "width": 0.280343729089532,
+      "height": 0.011834204007243181
+    }
+  },
+  {
+    "str": "of dubious scientific value,” and that AI technol-",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5142896859607982,
+      "top": 0.49850668615844473,
+      "width": 0.3697215865668527,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "ogy could lead to a catastrophic event this century",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5142896859607982,
+      "top": 0.5146010420589263,
+      "width": 0.3673289185393633,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "(Michael et al., 2022). More recently, there has",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5136848942339353,
+      "top": 0.5306965858224163,
+      "width": 0.3672914214210496,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "been discussion of the increasing prevalence of",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5142896859607982,
+      "top": 0.5467909417228979,
+      "width": 0.36669322692362144,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "closed-source models in NLP and how that will",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5142896859607982,
+      "top": 0.5628852976233796,
+      "width": 0.3666932269236211,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "shape the field and its innovations (Rogers, 2023;",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5142896859607982,
+      "top": 0.578979653523861,
+      "width": 0.36820740674523716,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "Solaiman, 2023; Liao and Vaughan, 2023). In order",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5142896859607982,
+      "top": 0.5950740094243426,
+      "width": 0.36700478655769886,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "to tackle these big challenges, we must understand",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5142896859607982,
+      "top": 0.6111695531878327,
+      "width": 0.36667764894191773,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "the factors — norms, incentives, technology and",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5142896859607982,
+      "top": 0.6272639090883143,
+      "width": 0.3666932269236215,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "culture — that led to our current crossroads.",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5142896859607982,
+      "top": 0.6433582649887959,
+      "width": 0.3237104598063172,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "We present a study of the community in its cur-",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.532616555261761,
+      "top": 0.6614898059486417,
+      "width": 0.35140928420617573,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "rent state, informed by a series of long-form ret-",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5142896859607982,
+      "top": 0.6775841618491232,
+      "width": 0.3697215865668528,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "rospective interviews with NLP researchers. Our",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5142896859607982,
+      "top": 0.6936785177496048,
+      "width": 0.36699232417233557,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "interviewees identify patterns throughout the his-",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5142896859607982,
+      "top": 0.7097740615130947,
+      "width": 0.369721586566853,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "tory of NLP, describing periods of research pro-",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5142896859607982,
+      "top": 0.7258684174135763,
+      "width": 0.3697215865668529,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "ductivity and stagnation that recur over decades",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5142896859607982,
+      "top": 0.7419627733140579,
+      "width": 0.36669322692362105,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "and appear at smaller scale around prominent meth-",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5142896859607982,
+      "top": 0.7580571292145396,
+      "width": 0.36973478203370796,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "ods (§3). Interviewees also point out unparalleled",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5142896859607982,
+      "top": 0.7741514851150212,
+      "width": 0.36667748399858174,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "shifts in the community’s norms and incentives.",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5142896859607982,
+      "top": 0.7902458410155028,
+      "width": 0.36988982876925475,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "Aggregating trends across interviews, we identify",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5136294549923063,
+      "top": 0.8063413847789926,
+      "width": 0.3679825889786941,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "key factors shaping these shifts, including the rise",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5142896859607982,
+      "top": 0.8224357406794742,
+      "width": 0.366693483502144,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "and persistence of benchmarking culture (§4) and",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5142896859607982,
+      "top": 0.8385300965799558,
+      "width": 0.36668919497541597,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "the maturation and centralization of software in-",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5142896859607982,
+      "top": 0.8546244524804374,
+      "width": 0.36972158656685267,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "frastructure (§5). Our quantitative analysis of cita-",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5142896859607982,
+      "top": 0.870718808380919,
+      "width": 0.3697324728270081,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "tion patterns, authorship, and language use in the",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5142896859607982,
+      "top": 0.886814352144409,
+      "width": 0.36669322692362144,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "ACL Anthology over time provides a complemen-",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5136294549923063,
+      "top": 0.9029087080448905,
+      "width": 0.3703805535199638,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "13310",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.4789962975157742,
+      "top": 0.9269654001476987,
+      "width": 0.045815302481537985,
+      "height": 0.012957868451248163
+    }
+  }
+]

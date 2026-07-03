@@ -1,0 +1,1402 @@
+[
+  {
+    "str": "tary view of the shifts described by interviewees,",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.1190314128236314,
+      "top": 0.08420976665942366,
+      "width": 0.36897384344506723,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "grounding their narratives and our interpretation in",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.1190314128236314,
+      "top": 0.10030412255990537,
+      "width": 0.366692952018062,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "measurable trends. Through our characterization",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.1190314128236314,
+      "top": 0.11639966632339534,
+      "width": 0.3666932269236214,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "of the current state of the NLP research community",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.1190314128236314,
+      "top": 0.13249402222387677,
+      "width": 0.3673280754956472,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "and the factors that have led us here, we aim to",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.1190314128236314,
+      "top": 0.14858837812435832,
+      "width": 0.36669322692362133,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "offer a foundation for informed reflection on the",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.1190314128236314,
+      "top": 0.16468273402484004,
+      "width": 0.36669322692362144,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "future that we as a community might wish to see.",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.1190314128236314,
+      "top": 0.18077708992532163,
+      "width": 0.3604011884782439,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "2",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.1190314128236314,
+      "top": 0.2093320099973629,
+      "width": 0.010042230629153538,
+      "height": 0.014201139837732487
+    }
+  },
+  {
+    "str": "Methods",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.14915810471109203,
+      "top": 0.2093320099973629,
+      "width": 0.07475436480341893,
+      "height": 0.014201139837732487
+    }
+  },
+  {
+    "str": "2.1",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.1190314128236314,
+      "top": 0.23653775526449114,
+      "width": 0.022908796623331035,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "Qualitative methods",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.16026724674562726,
+      "top": 0.23653775526449114,
+      "width": 0.1579607344771921,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "We recruited 26 researchers to participate in inter-",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.11816958461285186,
+      "top": 0.2581948736331958,
+      "width": 0.3705948698941343,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "views using",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.11857277909742708,
+      "top": 0.2742904173966857,
+      "width": 0.08624887023124651,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "purposive",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.20939065677097687,
+      "top": 0.2742904173966857,
+      "width": 0.07199270776551032,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "(Campbell et al., 2020) and",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.2859505694837353,
+      "top": 0.2742904173966857,
+      "width": 0.19976881181180153,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "snowball",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.1190314128236314,
+      "top": 0.2903847732971674,
+      "width": 0.06752120389723289,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "sampling (Parker et al., 2019): asking",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.19307975989289006,
+      "top": 0.2903847732971674,
+      "width": 0.29262927071076533,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "participants to recommend other candidates, and",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.1190314128236314,
+      "top": 0.30647912919764897,
+      "width": 0.36669322692362133,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "purposively selecting for diversity in affiliation, ca-",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.1190314128236314,
+      "top": 0.3225734850981305,
+      "width": 0.3697290639980705,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "reer stage, geographic position, and research area",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.1190314128236314,
+      "top": 0.3386678409986121,
+      "width": 0.36668897505096815,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "(see participant demographics in Appendix A.1).",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.11842662109676858,
+      "top": 0.35476338476210206,
+      "width": 0.370488023266683,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "Our sample had a 69-31% academia-industry split,",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.1190314128236314,
+      "top": 0.37085774066258365,
+      "width": 0.3689811009518375,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "was 19% women, and 27% of participants identi-",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.11837118185513948,
+      "top": 0.38695209656306523,
+      "width": 0.3703945553764597,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "fied as part of a minoritized group in the field. Of",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.1190314128236314,
+      "top": 0.4030464524635467,
+      "width": 0.3666814976197502,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "our academic participants, we had a near-even split",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.1190314128236314,
+      "top": 0.41914080836402834,
+      "width": 0.36668149761975033,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "of early-, mid-, and late-career researchers; indus-",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.1190314128236314,
+      "top": 0.4352363521275183,
+      "width": 0.3697248854335667,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "try researchers were 75% individual contributors",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.1190314128236314,
+      "top": 0.4513307080279999,
+      "width": 0.36669322692362144,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "and 25% managers.",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.1190314128236314,
+      "top": 0.4674250639284815,
+      "width": 0.14403218613020688,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "Interviews were semi-structured (Weiss, 1995),",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.13735828212459433,
+      "top": 0.4839719956351542,
+      "width": 0.35065424692354563,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "including a dedicated notetaker, and recorded with",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.1190314128236314,
+      "top": 0.5000663515356358,
+      "width": 0.366685529567956,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "participant consent, lasting between 45-73 minutes",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.1190314128236314,
+      "top": 0.5161607074361173,
+      "width": 0.3666870323850145,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "(mean: 58 minutes).",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.11842662109676858,
+      "top": 0.5322562511996074,
+      "width": 0.15665218401406752,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "Interviews followed an in-",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.2864631941400207,
+      "top": 0.5322562511996074,
+      "width": 0.20230190159907374,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "terview guide (see Appendix A.3) and began by",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.1190314128236314,
+      "top": 0.5483506071000889,
+      "width": 0.3673288085771391,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "contrasting the participant’s experience of the NLP",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.1190314128236314,
+      "top": 0.5644449630005706,
+      "width": 0.3666781071178499,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "community at the start of their career and the cur-",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.1190314128236314,
+      "top": 0.580539318901052,
+      "width": 0.36973261944330654,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "rent moment, then moved to discussion of shifts in",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.1190314128236314,
+      "top": 0.5966336748015336,
+      "width": 0.3666871423472383,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "the community during their career. Interviews were",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.1190314128236314,
+      "top": 0.6127292185650236,
+      "width": 0.36668149761975005,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "conducted between November 2022 and May 2023;",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.1190314128236314,
+      "top": 0.6288235744655052,
+      "width": 0.3682081398267291,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "these interviews were coincidentally contempora-",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.1190314128236314,
+      "top": 0.6449179303659869,
+      "width": 0.3697338473548056,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "neous with the release of ChatGPT in November",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.1190314128236314,
+      "top": 0.6610122862664684,
+      "width": 0.36699232417233557,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "2022 and GPT-4 in March 2023, which frequently",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.1190314128236314,
+      "top": 0.67710664216695,
+      "width": 0.367329230098997,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "provided points of reflection for our participants.",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.1190314128236314,
+      "top": 0.69320218593044,
+      "width": 0.35756049769695086,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "Following",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.13735828212459433,
+      "top": 0.7097491176371127,
+      "width": 0.07613894337581108,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "procedures",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.232994627400963,
+      "top": 0.7097491176371127,
+      "width": 0.08200872688182743,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "of",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.33450075618334796,
+      "top": 0.7097491176371127,
+      "width": 0.015571750511183558,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "grounded",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.3695886021731337,
+      "top": 0.7097491176371127,
+      "width": 0.07060564427459819,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "the-",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.45969164834828946,
+      "top": 0.7097491176371127,
+      "width": 0.029068513859412278,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "ory (Strauss and Corbin, 1990), the authors present",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.1190314128236314,
+      "top": 0.7258434735375943,
+      "width": 0.36668149761975033,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "for the interview produced analytical memos",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.1190314128236314,
+      "top": 0.7419378294380758,
+      "width": 0.36669322692362144,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "for early interviews (Glaser et al., 2004).",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.1190314128236314,
+      "top": 0.7580321853385574,
+      "width": 0.3280536011053544,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "As",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.46495607453966004,
+      "top": 0.7580321853385574,
+      "width": 0.020768565207592952,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "interviews proceeded, authors began a process of",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.1190314128236314,
+      "top": 0.774126541239039,
+      "width": 0.3666932269236214,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "independently",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.1190314128236314,
+      "top": 0.7902208971395206,
+      "width": 0.10591781320091959,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "open coding",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.23065244592424355,
+      "top": 0.7902208971395206,
+      "width": 0.09292577645989612,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "the data, an",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.3292838967134573,
+      "top": 0.7902208971395206,
+      "width": 0.08799067185611162,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "interpre-",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.42298293497470085,
+      "top": 0.7902208971395206,
+      "width": 0.06578270113908152,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "tive",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.1190314128236314,
+      "top": 0.8063164409030107,
+      "width": 0.026120206715101478,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "(Lincoln et al., 2011) analytical process where",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.1497430727091299,
+      "top": 0.8063164409030107,
+      "width": 0.3359811077051903,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "researchers assign conceptual labels to segments",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.1190314128236314,
+      "top": 0.8224107968034923,
+      "width": 0.36669322692362133,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "of data (Strauss and Corbin, 1990).",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.1190314128236314,
+      "top": 0.8385051527039737,
+      "width": 0.27610414771930514,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "After this,",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.4094174541690399,
+      "top": 0.8385051527039737,
+      "width": 0.07858780209965871,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "authors convened to discuss their open codes,",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.1190314128236314,
+      "top": 0.8545995086044553,
+      "width": 0.3689738434450673,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "systematizing recurring themes and contrasts to",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.1190314128236314,
+      "top": 0.8706938645049369,
+      "width": 0.3666932269236213,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "construct a preliminary closed coding frame (Miles",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.1190314128236314,
+      "top": 0.8867894082684269,
+      "width": 0.36668149761975005,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "and Huberman, 1994). After this, an author who",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.1190314128236314,
+      "top": 0.9028837641689085,
+      "width": 0.3666932269236214,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "was not present in the interview applied the closed",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5136294549923063,
+      "top": 0.08420976665942366,
+      "width": 0.36733540631056666,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "coding frame to the data.",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5142896859607982,
+      "top": 0.10030412255990537,
+      "width": 0.20202149792840426,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "In weekly analysis",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.7340140022974749,
+      "top": 0.10030412255990537,
+      "width": 0.14696891058694483,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "meetings, new codes arose to capture new themes",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5142896859607982,
+      "top": 0.11639966632339534,
+      "width": 0.36668919497541586,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "or provide greater specificity, in which case the",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5142896859607982,
+      "top": 0.13249402222387677,
+      "width": 0.3666932269236215,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "closed coding scheme was revised, categories",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5142896859607982,
+      "top": 0.14858837812435832,
+      "width": 0.3666932269236212,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "refined, and data re-coded in an iterative process.",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5142896859607982,
+      "top": 0.16468273402484004,
+      "width": 0.3698898287692548,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "Analysis reported here emerged first from this",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5136294549923063,
+      "top": 0.18077708992532163,
+      "width": 0.36734750215518364,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "coded data, was refined by subsequent review of",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5142896859607982,
+      "top": 0.19687263368881158,
+      "width": 0.3666932269236216,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "raw transcripts to check context, and developed in",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5142896859607982,
+      "top": 0.21296698958929317,
+      "width": 0.3666871423472383,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "discussion between all authors.",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5142896859607982,
+      "top": 0.22906134548977486,
+      "width": 0.2280433251072863,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "2.2",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5142896859607982,
+      "top": 0.2554699158919821,
+      "width": 0.022908796623331035,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "Quantitative Methods",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5555255198827941,
+      "top": 0.2554699158919821,
+      "width": 0.17119285540682835,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "We use quantitative methods primarily as a coher-",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5134278577500186,
+      "top": 0.27623019768936324,
+      "width": 0.37058684265179703,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "ence check on our qualitative results. While our",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5142896859607982,
+      "top": 0.29232455358984466,
+      "width": 0.36699232417233596,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "work is largely concerned with the",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5136294549923063,
+      "top": 0.30841890949032624,
+      "width": 0.24763932646851083,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "causes",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.7656125680356676,
+      "top": 0.30841890949032624,
+      "width": 0.04788268380947563,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "and",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.8178363336502733,
+      "top": 0.30841890949032624,
+      "width": 0.025934957022086574,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "com-",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.8481128794878344,
+      "top": 0.30841890949032624,
+      "width": 0.03590303260883037,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "munity reception",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5142896859607982,
+      "top": 0.32451326539080794,
+      "width": 0.1209919479953697,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "of changes in the community, our",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.6398696481128082,
+      "top": 0.32451326539080794,
+      "width": 0.24140740070547279,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "quantitative analyses provide evidence that these",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5142896859607982,
+      "top": 0.3406088091542979,
+      "width": 0.36669322692362155,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "changes have occurred. This includes analyzing",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5142896859607982,
+      "top": 0.3567031650547795,
+      "width": 0.36669322692362144,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "authorship shifts (Figures 1 and 4), citation pat-",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5142896859607982,
+      "top": 0.3727975209552611,
+      "width": 0.3697215865668526,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "terns (Figure 2), terminology use (Figure 2,3) in",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5142896859607982,
+      "top": 0.38889187685574256,
+      "width": 0.3666932269236213,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "the ACL anthology over time; for more details on",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5142896859607982,
+      "top": 0.4049862327562242,
+      "width": 0.36668168089012326,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "reproducing this analysis, see Appendix B.",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5142896859607982,
+      "top": 0.4210817765197141,
+      "width": 0.31407043818721925,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "3",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5142896859607982,
+      "top": 0.4478869743804181,
+      "width": 0.010042230629153538,
+      "height": 0.014201139837732487
+    }
+  },
+  {
+    "str": "Exploit-explore cycles of work",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5444163778482587,
+      "top": 0.4478869743804181,
+      "width": 0.2588284522358033,
+      "height": 0.014201139837732487
+    }
+  },
+  {
+    "str": "Our participants described cyclical behavior in",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5142896859607982,
+      "top": 0.4737896339273582,
+      "width": 0.3666932269236213,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "NLP research following methodological shifts ev-",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5142896859607982,
+      "top": 0.48988398982783976,
+      "width": 0.3697203769823909,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "ery few years. Many participants referred to these",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5142896859607982,
+      "top": 0.5059783457283213,
+      "width": 0.366693483502144,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "methodological shifts as “paradigm shifts”, with",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5142896859607982,
+      "top": 0.5220727016288029,
+      "width": 0.3666932269236212,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "similar structure, which we characterize as",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5142896859607982,
+      "top": 0.5381670575292845,
+      "width": 0.30887113101373703,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "explore",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.8277162784993854,
+      "top": 0.5381670575292845,
+      "width": 0.053253018895028856,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "and",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5142896859607982,
+      "top": 0.5542626012927745,
+      "width": 0.026464241859272014,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "exploit",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5453356612730903,
+      "top": 0.5542626012927745,
+      "width": 0.04951965478099232,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "phases.",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5997652367137263,
+      "top": 0.5542626012927745,
+      "width": 0.053441640762906646,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "1",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.6532069856671529,
+      "top": 0.5530509810242313,
+      "width": 0.006694792419818707,
+      "height": 0.009467386963054712
+    }
+  },
+  {
+    "str": "First wave: exploit.",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5142896859607982,
+      "top": 0.5789214494836444,
+      "width": 0.1517056433390087,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "Participants suggested that",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.6843251999912647,
+      "top": 0.5789214494836444,
+      "width": 0.19665204254064142,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "after a key paper, a wave of work is published",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5142896859607982,
+      "top": 0.595015805384126,
+      "width": 0.3666932269236214,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "that demonstrates the utility of that method across",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5142896859607982,
+      "top": 0.6111101612846076,
+      "width": 0.3666861893412987,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "varying tasks or benchmarks. Interviewees vari-",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5138310522345939,
+      "top": 0.6272057050480976,
+      "width": 0.37018892601796877,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "ously describe this stage as",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5142896859607982,
+      "top": 0.6433000609485792,
+      "width": 0.20576021353733162,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "“following the band-",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.7255417561769669,
+      "top": 0.6433000609485792,
+      "width": 0.15846546108439727,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "wagon” (17)",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5142896859607982,
+      "top": 0.6593944168490609,
+      "width": 0.09700097647362711,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": ",",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.611281479179406,
+      "top": 0.6593944168490609,
+      "width": 0.0046733945111595305,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "“land grab stuff” (9)",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.6220383720324691,
+      "top": 0.6593944168490609,
+      "width": 0.1617555308202537,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": ", or",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.7838016792210674,
+      "top": 0.6593944168490609,
+      "width": 0.026320557886850473,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "“picking",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.8159144399404648,
+      "top": 0.6593944168490609,
+      "width": 0.06505365159534063,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "the low-hanging fruit” (8)",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5142896859607982,
+      "top": 0.6754887727495424,
+      "width": 0.18894632974619388,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": ". A researcher with prior",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.7032283014097664,
+      "top": 0.6754887727495424,
+      "width": 0.17806498123678297,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "experience in computer vision drew parallels be-",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5142896859607982,
+      "top": 0.691583128650024,
+      "width": 0.3697215865668526,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "tween the rise of BERT and the computer vision",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5142896859607982,
+      "top": 0.7076786724135139,
+      "width": 0.36669322692362155,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "community after AlexNet was released, where",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5142896859607982,
+      "top": 0.7237730283139956,
+      "width": 0.3416080946210739,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "“it",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.8604523106928551,
+      "top": 0.7237730283139956,
+      "width": 0.020522323134448094,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "felt like every other paper was, ‘I have fine tuned",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5142896859607982,
+      "top": 0.7398673842144772,
+      "width": 0.3666932269236214,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "ImageNet trained CNN on some new dataset’ ”",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5139772102352524,
+      "top": 0.7559617401149588,
+      "width": 0.3710675241860664,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "(17)",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5130616227598628,
+      "top": 0.7720560960154402,
+      "width": 0.031143501022367116,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": ". However, participants identified benefits of",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5442050367392607,
+      "top": 0.7720560960154402,
+      "width": 0.33676480847415574,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "this",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5142896859607982,
+      "top": 0.7881516397789302,
+      "width": 0.027012220274502088,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "“initial wave of showing things work” (17)",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5478606667327426,
+      "top": 0.7881516397789302,
+      "width": 0.3343346433283527,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "in demonstrating the value of techniques across",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5142896859607982,
+      "top": 0.8042459956794118,
+      "width": 0.3666932269236213,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "tasks or domains; in finding the seemingly obvi-",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5142896859607982,
+      "top": 0.8203403515798934,
+      "width": 0.36972158656685294,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "ous ideas which do",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5142896859607982,
+      "top": 0.836434707480375,
+      "width": 0.14459482617527575,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "not",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.6641553959003892,
+      "top": 0.836434707480375,
+      "width": 0.023890392741047522,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "work, thus exposing new",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.6936507524240858,
+      "top": 0.836434707480375,
+      "width": 0.18798262081688055,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "areas to investigate; and in developing downstream",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5142896859607982,
+      "top": 0.8525290633808565,
+      "width": 0.3666781071178505,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "applications. When one researcher was asked to",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5142896859607982,
+      "top": 0.8686246071443465,
+      "width": 0.3666932269236213,
+      "height": 0.012958516344670728
+    }
+  },
+  {
+    "str": "1",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5355447552059887,
+      "top": 0.8923824612433636,
+      "width": 0.005021115314576769,
+      "height": 0.007100569918866244
+    }
+  },
+  {
+    "str": "Inspired by the verbiage of reinforcement learning, e.g.",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5414028350714628,
+      "top": 0.8933567464828334,
+      "width": 0.34220065767593666,
+      "height": 0.010650854878299365
+    }
+  },
+  {
+    "str": "Sutton and Barto (2018).",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.5142896859607982,
+      "top": 0.9051914256352798,
+      "width": 0.14978991206445413,
+      "height": 0.010650854878299365
+    }
+  },
+  {
+    "str": "13311",
+    "box": {
+      "pageNumber": 1,
+      "left": 0.4789962975157742,
+      "top": 0.9269654001476987,
+      "width": 0.045815302481537985,
+      "height": 0.012957868451248163
+    }
+  }
+]

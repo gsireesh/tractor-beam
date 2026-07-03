@@ -1,0 +1,463 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`groupItemsIntoBlocks on real PDF fixtures > block structure snapshot: chi_star.p1.items.json 1`] = `
+[
+  {
+    "blockId": "p1_b0",
+    "text": "Collaborative Annotation as an Interface Metaphor for Personalizable AI Reading Support",
+  },
+  {
+    "blockId": "p1_b1",
+    "text": "Sireesh Gururaja sgururaj@cs.cmu.edu Carnegie Mellon University Pitsburgh, Pennsylvania, USA",
+  },
+  {
+    "blockId": "p1_b2",
+    "text": "Emma Strubell strubell@cmu.edu Carnegie Mellon University Pitsburgh, Pennsylvania, USA",
+  },
+  {
+    "blockId": "p1_b3",
+    "text": "Abstract",
+  },
+  {
+    "blockId": "p1_b4",
+    "text": "In this position paper, we argue that collaborative annotation is a compelling interface metaphor through which to empower end- users to develop personalized AI reading support in the form of in-document highlights. Collaborative annotation confers many of the same benefits of traditional data annotation tools for specifying model behavior while not removing users from the context of the original document. This paradigm preserves the benefits of existing inline document markup tools, as well as the contextual, interpre- tive character of reading, while incorporating the flexibility and power of LLM-based annotation. Through what we call collaborative machine annotation , users can iteratively develop models as they refine their own mental models, and use the deep understanding of that model’s behavior for wider corpus analysis.",
+  },
+  {
+    "blockId": "p1_b5",
+    "text": "CCS Concepts",
+  },
+  {
+    "blockId": "p1_b6",
+    "text": "• Human-centered computing → Collaborative interaction ; Web-based interaction ; • Computing methodologies → Informa- tion extraction .",
+  },
+  {
+    "blockId": "p1_b7",
+    "text": "Keywords",
+  },
+  {
+    "blockId": "p1_b8",
+    "text": "Collaborative Annotation, Personalized Reading Support, Informa- tion Extraction",
+  },
+  {
+    "blockId": "p1_b9",
+    "text": "1 Introduction",
+  },
+  {
+    "blockId": "p1_b10",
+    "text": "Reading assistance tools have long made use of AI methods to pro- vide in-context augmentation of document content. Tools like Scim [ 9 ] and PaperPlain [ 3 ] make use of machine learning to augment paper content to demonstrate a paper’s rhetorical structure, direct a reader’s focus, provide definitions, and more. These types of tools that provide in-context augmentation of paper contents are typ- ically tightly scoped to an intended context of use and audience, and are therefore able to make assumptions about those contexts to deliver specific and reliable information; because the information is in-context on the document, it is also typically easily verifiable. However, assumptions about usage context and audience come at the cost of generality, even in the domains in which the tools are deployed. Scim highlights, for instance, generalize poorly outside of the experimental sciences, even as the Semantic Reader[ 18 ], in which Scim is deployed, makes them available on a much wider range of academic papers. Further, because these tools are based on models that rely on static schemas, they cannot account for readers’ preferences and idiosyncrasies in reading support; readers often rely on individually specific cues to make sense of papers [12]. By contrast, tools based on large language models (LLMs), whose behavior can be specified by users at inference time has led to the",
+  },
+  {
+    "blockId": "p1_b11",
+    "text": "proliferation of systems like SemanticScholar’s "ask this PDF" fea- ture, or modes in popular LLM-based chatbots that allow uploaded documents that allow users to "chat" with the contents of a doc- ument. These systems are extremely flexible, and allow users to express complex and idiosyncratic information needs in natural language, and will sometimes anchor their responses to specific loca- tions within documents. However, these chat-based tools introduce their own issues. While they allow end-user behavior specification and therefore personalized responses, verifying the reliability of the generated responses can be challenging. LLMs often exhibit a jagged capability frontier, where estimating where a model might succeed and fail is not always intuitive, and validating generated text is significantly more difficult to verify than in-context highlights. Ad- ditionally, these tools allow the specification of their behavior only in text, and keep no record of user preferences or reading focuses in between documents. This paper argues that collaborative annotation—as exemplified by tools like Hypothesis [ 1 ] and Margin [ 2 ]—can provide an intu- itive interface metaphor that allows for the flexibility of dynamic, user-specified LLM-based reading assistance, while emphasizing the user agency in evaluation, verifiability and context-awareness that inline highlighting tools can provide. Collaborative annotation between humans, in addition to its studied benefits for document comprehension, can provide in-context views of data to be anno- tated for granular specification of model behavior, and treating model suggestions as another collaborator can reduce the overhead for evaluating model performance and improving it with techniques like active learning. In-context experience with model suggestions also allows for deep, qualitative understanding of model perfor- mance such that users can make informed choices about model utility, differential use of model functions, and deploying the model to wider contexts, such as corpus-level annotation.",
+  },
+  {
+    "blockId": "p1_b12",
+    "text": "2 Collaborative Annotation as an Interface Metaphor",
+  },
+  {
+    "blockId": "p1_b13",
+    "text": "Collaborative annotation is a highly overloaded term in computing. It can refer to a variety of different processes, from the reconcil- iation of annotations in interfaces purpose-built for annotation such as Inception [ 17 ] or BRAT [ 24 ], to collaborative markup of educational materials as part of classroom assignments [ 20 , 27 ]. In this paper, we focus primarily on the latter kind of collaborative annotation, and specifically tools like Hypothesis that enable col- laborative annotation on any web content. We argue that this focus on in-context annotation allows for workflows similar to those in dedicated annotation tools, while presenting significantly less overhead than standalone annotation tools for web data.",
+  },
+]
+`;
+
+exports[`groupItemsIntoBlocks on real PDF fixtures > block structure snapshot: hearing_transcript.p12.items.json 1`] = `
+[
+  {
+    "blockId": "p1_b0",
+    "text": "COMMITTEE ON PARKS AND RECREATION",
+  },
+  {
+    "blockId": "p1_b1",
+    "text": "12",
+  },
+  {
+    "blockId": "p1_b2",
+    "text": "resources the City has in ensuring our neighborhoods",
+  },
+  {
+    "blockId": "p1_b3",
+    "text": "are healthy and thriving. It provides numerous",
+  },
+  {
+    "blockId": "p1_b4",
+    "text": "immeasurable benefits to everyone living in the five",
+  },
+  {
+    "blockId": "p1_b5",
+    "text": "boroughs, including improving human health and",
+  },
+  {
+    "blockId": "p1_b6",
+    "text": "well-being, and I am very proud of the work our",
+  },
+  {
+    "blockId": "p1_b7",
+    "text": "parkies do every day to grow and protect our city's",
+  },
+  {
+    "blockId": "p1_b8",
+    "text": "trees.",
+  },
+  {
+    "blockId": "p1_b9",
+    "text": "Yet the importance of our urban canopy",
+  },
+  {
+    "blockId": "p1_b10",
+    "text": "can be often overlooked and undervalued, even though",
+  },
+  {
+    "blockId": "p1_b11",
+    "text": "our city's trees are essential living infrastructure,",
+  },
+  {
+    "blockId": "p1_b12",
+    "text": "just as vital for New Yorkers as roads, subways, and",
+  },
+  {
+    "blockId": "p1_b13",
+    "text": "telecommunication lines. New York City has nearly",
+  },
+  {
+    "blockId": "p1_b14",
+    "text": "43,000 acres of tree canopy, a full 23.4 percent of",
+  },
+  {
+    "blockId": "p1_b15",
+    "text": "the city's land area, which is best defined as the",
+  },
+  {
+    "blockId": "p1_b16",
+    "text": "cover or shade provided by our city trees. This",
+  },
+  {
+    "blockId": "p1_b17",
+    "text": "robust urban forest provides an incredible array of",
+  },
+  {
+    "blockId": "p1_b18",
+    "text": "environmental, social, and economic benefits, such as",
+  },
+  {
+    "blockId": "p1_b19",
+    "text": "resourcing stormwater runoff, shading buildings, and",
+  },
+  {
+    "blockId": "p1_b20",
+    "text": "conserving energy by reducing heating and cooling",
+  },
+  {
+    "blockId": "p1_b21",
+    "text": "costs, protecting city's pavement from rain and sun,",
+  },
+  {
+    "blockId": "p1_b22",
+    "text": "noise mitigation, increasing property values, and of",
+  },
+  {
+    "blockId": "p1_b23",
+    "text": "course, cleaning and cooling the air, benefiting our",
+  },
+  {
+    "blockId": "p1_b24",
+    "text": "overall health and well-being. Though a lot of the",
+  },
+  {
+    "blockId": "p1_b25",
+    "text": "public's attention is focused on the value of",
+  },
+]
+`;
+
+exports[`groupItemsIntoBlocks on real PDF fixtures > block structure snapshot: nas_whitepaper.p7.items.json 1`] = `
+[
+  {
+    "blockId": "p1_b0",
+    "text": "Effective, Efficient, and Informed Research, Development, and Demonstration for the Electricity System: Issue Paper",
+  },
+  {
+    "blockId": "p1_b1",
+    "text": "EFFECTIVE, EFFICIENT, AND INFORMED RESEARCH, DEVELOPMENT,",
+  },
+  {
+    "blockId": "p1_b2",
+    "text": "AND DEMONSTRATION FOR THE ELECTRICITY SYSTEM",
+  },
+  {
+    "blockId": "p1_b3",
+    "text": "Summary",
+  },
+  {
+    "blockId": "p1_b4",
+    "text": "The electricity system is undergoing a period of immense change in its technologies and operation. The U.S.",
+  },
+  {
+    "blockId": "p1_b5",
+    "text": "Department of Energy’s (DOE’s) Office of Electricity requested an Issue Paper from the National Academies of",
+  },
+  {
+    "blockId": "p1_b6",
+    "text": "Sciences, Engineering, and Medicine that elevates and synthesizes insights for creating effective and efficient",
+  },
+  {
+    "blockId": "p1_b7",
+    "text": "research, development, and demonstration (RD&D) in the electricity system. The authors present promising",
+  },
+  {
+    "blockId": "p1_b8",
+    "text": "specific areas for innovation and the structural elements needed to enhance the effectiveness and efficiency",
+  },
+  {
+    "blockId": "p1_b9",
+    "text": "of the electricity RD&D system. The discussion of these elements is structured into four categories: the locus",
+  },
+  {
+    "blockId": "p1_b10",
+    "text": "of electricity innovation and which actors are producing these advances, the connectivity and integration",
+  },
+  {
+    "blockId": "p1_b11",
+    "text": "of the innovation system and how to overcome its gaps, opportunities for partnerships and collaborations,",
+  },
+  {
+    "blockId": "p1_b12",
+    "text": "and how to attain leverage for creating the largest innovation impacts with a set amount of resources. The",
+  },
+  {
+    "blockId": "p1_b13",
+    "text": "U.S. electricity system is at a pivotal point in its evolution. DOE can engage with its innovation partners in",
+  },
+  {
+    "blockId": "p1_b14",
+    "text": "different ways throughout the technology life cycle to create an electricity system that is future-ready and",
+  },
+  {
+    "blockId": "p1_b15",
+    "text": "serves the public interest.",
+  },
+  {
+    "blockId": "p1_b16",
+    "text": "Introduction",
+  },
+  {
+    "blockId": "p1_b17",
+    "text": "RD&D efforts are essential underpinnings for the electricity system’s ability to support the livelihoods of its",
+  },
+  {
+    "blockId": "p1_b18",
+    "text": "users and enable the growth and strength of the U.S. economy. RD&D endeavors produce new technologies,",
+  },
+  {
+    "blockId": "p1_b19",
+    "text": "services, and operational capabilities that enter into use throughout the system with the rate of diffusion",
+  },
+  {
+    "blockId": "p1_b20",
+    "text": "affecting how quickly the electric sector can change.",
+  },
+  {
+    "blockId": "p1_b21",
+    "text": "Often, the RD&D process is characterized as being top-down (driven by organizational leadership) or bottom-",
+  },
+  {
+    "blockId": "p1_b22",
+    "text": "up (coming from researchers and employees). There is an increasing recognition over the past two decades",
+  },
+  {
+    "blockId": "p1_b23",
+    "text": "that the top-down and bottom-up processes are intertwined (Li 2023; Owen 2009). In this Issue Paper",
+  },
+  {
+    "blockId": "p1_b24",
+    "text": "the authors recognize the role and value of both. Top-down processes set the architectural and directional",
+  },
+  {
+    "blockId": "p1_b25",
+    "text": "dimensions of the ecosystem and bottom-up processes leverage diverse capital, knowledge, and resource",
+  },
+  {
+    "blockId": "p1_b26",
+    "text": "bases that give shape and context to top-down RD&D aspirations.",
+  },
+  {
+    "blockId": "p1_b27",
+    "text": "Supporting an efficient and effective innovation ecosystem for electric power will be important for unlocking",
+  },
+  {
+    "blockId": "p1_b28",
+    "text": "the capabilities to address the challenges and opportunities facing this system. At the time of writing, these",
+  },
+  {
+    "blockId": "p1_b29",
+    "text": "include strains on system reliability (DOE 2025a; NERC 2025), challenges to grid resilience (Costello 2019;",
+  },
+  {
+    "blockId": "p1_b30",
+    "text": "Gibson 2020; NASEM 2017), accelerating demand growth (ACP 2025; ICF 2025), concerns over electricity",
+  },
+  {
+    "blockId": "p1_b31",
+    "text": "prices (McGee and Tyndall 2025; Wiser et al. 2025), regulatory paradigms that may unnecessarily constrain",
+  },
+  {
+    "blockId": "p1_b32",
+    "text": "innovation (Kiesling et al. 2025; Schwartz 2022), and increasingly complex supply chain considerations",
+  },
+  {
+    "blockId": "p1_b33",
+    "text": "(Howard 2025). The U.S. federal government has a strong history of supporting RD&D endeavors for",
+  },
+  {
+    "blockId": "p1_b34",
+    "text": "critical technologies and systems, with DOE’s efforts specifically enabling improvements in reliability and",
+  },
+  {
+    "blockId": "p1_b35",
+    "text": "affordability for the U.S. energy systems (Urecki and Das 2025). These outcomes result not just from DOE’s",
+  },
+  {
+    "blockId": "p1_b36",
+    "text": "direct research work but also from its engagement of a broad network of innovation partners including",
+  },
+  {
+    "blockId": "p1_b37",
+    "text": "national laboratories, universities, and the private sector (NASEM 2021a).",
+  },
+  {
+    "blockId": "p1_b38",
+    "text": "1",
+  },
+  {
+    "blockId": "p1_b39",
+    "text": "Copyright National Academy of Sciences. All rights reserved.",
+  },
+]
+`;
+
+exports[`groupItemsIntoBlocks on real PDF fixtures > block structure snapshot: sciencedirect.p1.items.json 1`] = `
+[
+  {
+    "blockId": "p1_b0",
+    "text": "Journal of the European Ceramic Society 40 (2020) 4774–4782",
+  },
+  {
+    "blockId": "p1_b1",
+    "text": "Contents lists available at ScienceDirect",
+  },
+  {
+    "blockId": "p1_b2",
+    "text": "Journal of the European Ceramic Society",
+  },
+  {
+    "blockId": "p1_b3",
+    "text": "journal homepage: www.elsevier.com/locate/jeurceramsoc",
+  },
+  {
+    "blockId": "p1_b4",
+    "text": "Small scale fracture and strength of high-entropy carbide grains during microcantilever bending experiments",
+  },
+  {
+    "blockId": "p1_b5",
+    "text": "T",
+  },
+  {
+    "blockId": "p1_b6",
+    "text": "a, a b c a,d Tamás Csanádi *, Marek Vojtko , Zoltán Dankházi , Michael J. Reece , Ján Dusza",
+  },
+  {
+    "blockId": "p1_b7",
+    "text": "a Institute of Materials Research, Slovak Academy of Sciences, Watsonova 47, 04353 Košice, Slovak Republic b Department of Materials Physics, Eötvös Loránd University, Pázmány P. sétány 1/A, 1117 Budapest, Hungary c School of Engineering and Material Science, Queen Mary University of London, Mile End Road, London, E1 4NS, UK d Donát Bánki Faculty of Mechanical and Safety Engineering, Óbuda University, Népszínház utca 8, 1081 Budapest, Hungary",
+  },
+  {
+    "blockId": "p1_b8",
+    "text": "A R T I C L E I N F O",
+  },
+  {
+    "blockId": "p1_b9",
+    "text": "A B S T R A C T",
+  },
+  {
+    "blockId": "p1_b10",
+    "text": "Keywords: Fracture strength fracture surface microcantilever bending high-entropy carbide fracture toughness",
+  },
+  {
+    "blockId": "p1_b11",
+    "text": "The fracture behaviour of (Hf-Ta-Zr-Nb)C high-entropy carbide grains was investigated by microcantilever bending experiments, and fracture related properties (e.g. strength, toughness) were determined using linear beam theory. Microcantilevers were FIB-milled from large grains with {001} and {101} orientations and were subjected to micro-bending experiments. SEM based fractographic analysis of the broken cantilevers revealed that approximately half of them fractured at the fixing position at FIB-induced surface cracks, while the rest of the beams failed at small cracks located at submicron size pores or inclusions. In all cases, fracture occurred on the {001} cleavage plane. The fracture strength of beams fractured at the fixing position was 11.8 ± 0.2 GPa, while the strength of the beams that failed at submicron defects was in the range of 3.8-8.9 GPa. The calculation of stress concentration in the vicinity of pores revealed that local stress field exceeded the value that induced cracking in ‘defect free’ beams.",
+  },
+  {
+    "blockId": "p1_b12",
+    "text": "1. Introduction",
+  },
+  {
+    "blockId": "p1_b13",
+    "text": "High-entropy ultra-high temperature ceramics are a novel group of materials, which are being developed to broaden the limited set of ultra-high temperature ceramics (UHTCs), comprising about 15 mate- rials [1], and improve their mechanical properties to meet the con- tinuously growing demands of ultra-high temperature applications [2,3]. In general, UTHCs are defined as materials with melting tem- perature above 3000 °C that can withstand extreme environments for applications above 1500 °C in oxidizing and aggressive environments, such as rocket propulsions, hypersonic and re-usable atmospheric re- entry vehicles. UHTCs are usually based on the refractory borides, carbides and nitrides of the group of IV and V transition metals. Due to the nature of their chemical bonds, these materials exhibit high hard- ness (>20 GPa) and strength (>500 MPa) with excellent oxidation and ablation resistance at elevated temperatures [4–6]. Based on the discovery of high-entropy alloys [7,8] and entropy- stabilized oxides [9], bulk high-entropy UHTCs have been successfully synthesized both from metal diborides by Gild el al. [2] and from metal carbides by the present authors [3]. These novel high-entropy ceramics are composed of four or more different transition metal elements of equimolar proportions and boron or carbon atoms, and form hexagonal",
+  },
+  {
+    "blockId": "p1_b14",
+    "text": "or cubic solid solution structures, respectively. Experimental and the- oretical studies on these materials suggest that high-entropy ultra-high temperature ceramics could broaden the limited set of UHTCs and their mechanical properties could go beyond those of the base borides [2] and carbides [3,10–13]. Regarding high-entropy carbides, Castle et al. [3] have recently reported that the lattice parameter mismatch of the component monocarbides is a key predictive factor for determining solid solution formation, and hence the (Hf-Ta-Zr-Nb)C composition formed a single phase solid solution more readily than the (Hf-Ta-Zr- Ti)C composition. The high resolution microstructural analysis ex- hibited a random arrangement of transition metal elements in (Hf-Ta- Zr-Nb)C at the atomic scale using energy dispersive X-ray spectroscopy and high angle annular dark field scanning transmission electron mi- croscopy [14]. Micromechanical testing of (Hf-Ta-Zr-Nb)C grains re- vealed higher nano-hardness [3] and significantly enhanced yield and fracture strength during micropillar compression compared to the cor- responding base monocarbides [12]. Additionally, the plasticity of (Hf- Ta-Zr-Nb)C grains was observed during micropillar compression due to {))H} ))H the operation of slip systems [12]. High-temperature creep testing of (Hf-Ta-Zr-Nb)C samples exhibited approximately ten times lower creep rate than that of the corresponding monocarbides con- {)))} ))H trolled by dislocation glide on the slip systems, dislocation",
+  },
+  {
+    "blockId": "p1_b15",
+    "text": "⁎ Corresponding author. E-mail address: tcsanadi@saske.sk (T. Csanádi).",
+  },
+  {
+    "blockId": "p1_b16",
+    "text": "https://doi.org/10.1016/j.jeurceramsoc.2020.04.023 Received 31 January 2020; Received in revised form 12 April 2020; Accepted 15 April 2020 Available online 20 April 2020 0955-2219/ © 2020 Elsevier Ltd. All rights reserved.",
+  },
+]
+`;
+
+exports[`groupItemsIntoBlocks on real PDF fixtures > block structure snapshot: tobuild.p1.items.json 1`] = `
+[
+  {
+    "blockId": "p1_b0",
+    "text": "To Build Our Future, We Must Know Our Past: Contextualizing Paradigm Shifts in Natural Language Processing",
+  },
+  {
+    "blockId": "p1_b1",
+    "text": "1 ∗ 1 ∗ 1 ∗ Sireesh Gururaja Amanda Bertsch Clara Na 2 1 , 3 David Gray Widder Emma Strubell 1 Language Technologies Institute, Carnegie Mellon University, Pittsburgh, PA, USA 2 Digital Life Initiative, Cornell Tech, Cornell University, New York City, NY, USA 3 Allen Institute for Artificial Intelligence, Seattle, WA, USA {sgururaj, abertsch, csna, estrubel}@cs.cmu.edu, david.g.widder@gmail.com",
+  },
+  {
+    "blockId": "p1_b2",
+    "text": "Abstract Unique authors publishing in *CL venues",
+  },
+  {
+    "blockId": "p1_b3",
+    "text": "1+ papers 17500 2+ papers NLP is in a period of disruptive change that is 3+ papers 15000 impacting our methodologies, funding sources, 5+ papers",
+  },
+  {
+    "blockId": "p1_b4",
+    "text": "and public perception. In this work, we seek to 12500 understand how to shape our future by better understanding our past. We study factors that 10000 shape NLP as a field, including culture, incen- 7500 tives, and infrastructure by conducting long- form interviews with 26 NLP researchers of 5000 varying seniority, research area, institution, and",
+  },
+  {
+    "blockId": "p1_b5",
+    "text": "2500 social identity. Our interviewees identify cycli-",
+  },
+  {
+    "blockId": "p1_b6",
+    "text": "cal patterns in the field, as well as new shifts 0 1980 1985 1990 1995 2000 2005 2010 2015 2020 without historical parallel, including changes in Figure 1: The number of unique researchers publishing benchmark culture and software infrastructure. in ACL venues has increased dramatically, from 715 We complement this discussion with quantita- unique authors in 1980 to 17,829 in 2022. tive analysis of citation, authorship, and lan- guage use in the ACL Anthology over time. of dubious scientific value,” and that AI technol- We conclude by discussing shared visions, con- ogy could lead to a catastrophic event this century cerns, and hopes for the future of NLP. We hope (Michael et al., 2022). More recently, there has that this study of our field’s past and present been discussion of the increasing prevalence of can prompt informed discussion of our com- closed-source models in NLP and how that will munity’s implicit norms and more deliberate shape the field and its innovations (Rogers, 2023; action to consciously shape the future. Solaiman, 2023; Liao and Vaughan, 2023). In order 1 Introduction to tackle these big challenges, we must understand the factors — norms, incentives, technology and Natural language processing (NLP) is in a period culture — that led to our current crossroads. of flux. The successes of deep neural networks We present a study of the community in its cur- and large language models (LLMs) in NLP coin- rent state, informed by a series of long-form ret- cides with a shift not only in the nature of our rospective interviews with NLP researchers. Our research questions and methodology, but also in interviewees identify patterns throughout the his- the size and visibility of our field. Since the mid- tory of NLP, describing periods of research pro- 2010s, the number of first-time authors publishing ductivity and stagnation that recur over decades in the ACL Anthology has been increasing expo- and appear at smaller scale around prominent meth- nentially (Figure 1). Recent publicity around NLP ods (§3). Interviewees also point out unparalleled technology, most notably ChatGPT, has brought shifts in the community’s norms and incentives. our field into the public spotlight, with correspond- Aggregating trends across interviews, we identify ing (over-)excitement and scrutiny. key factors shaping these shifts, including the rise In the 2022 NLP Community Metasurvey, many and persistence of benchmarking culture (§4) and NLP practicioners expressed fears that private firms the maturation and centralization of software in- exert excessive influence on the field, that “a ma- frastructure (§5). Our quantitative analysis of cita- jority of the research being published in NLP is tion patterns, authorship, and language use in the ACL Anthology over time provides a complemen- ∗ Denotes equal contribution.",
+  },
+  {
+    "blockId": "p1_b7",
+    "text": "13310",
+  },
+  {
+    "blockId": "p1_b8",
+    "text": "Proceedings of the 2023 Conference on Empirical Methods in Natural Language Processing , pages 13310–13325 December 6-10, 2023 ©2023 Association for Computational Linguistics",
+  },
+]
+`;
+
+exports[`groupItemsIntoBlocks on real PDF fixtures > block structure snapshot: tobuild.p2.items.json 1`] = `
+[
+  {
+    "blockId": "p1_b0",
+    "text": "tary view of the shifts described by interviewees, was not present in the interview applied the closed grounding their narratives and our interpretation in coding frame to the data. In weekly analysis measurable trends. Through our characterization meetings, new codes arose to capture new themes of the current state of the NLP research community or provide greater specificity, in which case the and the factors that have led us here, we aim to closed coding scheme was revised, categories offer a foundation for informed reflection on the refined, and data re-coded in an iterative process. future that we as a community might wish to see. Analysis reported here emerged first from this coded data, was refined by subsequent review of 2 Methods raw transcripts to check context, and developed in discussion between all authors. 2.1 Qualitative methods 2.2 Quantitative Methods We recruited 26 researchers to participate in inter- views using purposive (Campbell et al., 2020) and We use quantitative methods primarily as a coher- snowball sampling (Parker et al., 2019): asking ence check on our qualitative results. While our participants to recommend other candidates, and work is largely concerned with the causes and com- purposively selecting for diversity in affiliation, ca- munity reception of changes in the community, our reer stage, geographic position, and research area quantitative analyses provide evidence that these (see participant demographics in Appendix A.1). changes have occurred. This includes analyzing Our sample had a 69-31% academia-industry split, authorship shifts (Figures 1 and 4), citation pat- was 19% women, and 27% of participants identi- terns (Figure 2), terminology use (Figure 2,3) in fied as part of a minoritized group in the field. Of the ACL anthology over time; for more details on our academic participants, we had a near-even split reproducing this analysis, see Appendix B. of early-, mid-, and late-career researchers; indus- 3 Exploit-explore cycles of work try researchers were 75% individual contributors and 25% managers. Our participants described cyclical behavior in Interviews were semi-structured (Weiss, 1995), NLP research following methodological shifts ev- including a dedicated notetaker, and recorded with ery few years. Many participants referred to these participant consent, lasting between 45-73 minutes methodological shifts as “paradigm shifts”, with (mean: 58 minutes). Interviews followed an in- similar structure, which we characterize as explore terview guide (see Appendix A.3) and began by 1 and exploit phases. contrasting the participant’s experience of the NLP First wave: exploit. Participants suggested that community at the start of their career and the cur- after a key paper, a wave of work is published rent moment, then moved to discussion of shifts in that demonstrates the utility of that method across the community during their career. Interviews were varying tasks or benchmarks. Interviewees vari- conducted between November 2022 and May 2023; ously describe this stage as “following the band- these interviews were coincidentally contempora- wagon” (17) , “land grab stuff” (9) , or “picking neous with the release of ChatGPT in November the low-hanging fruit” (8) . A researcher with prior 2022 and GPT-4 in March 2023, which frequently experience in computer vision drew parallels be- provided points of reflection for our participants. tween the rise of BERT and the computer vision Following procedures of grounded the- community after AlexNet was released, where “it ory (Strauss and Corbin, 1990), the authors present felt like every other paper was, ‘I have fine tuned for the interview produced analytical memos ImageNet trained CNN on some new dataset’ ” for early interviews (Glaser et al., 2004). As (17) . However, participants identified benefits of interviews proceeded, authors began a process of this “initial wave of showing things work” (17) independently open coding the data, an interpre- in demonstrating the value of techniques across tive (Lincoln et al., 2011) analytical process where tasks or domains; in finding the seemingly obvi- researchers assign conceptual labels to segments ous ideas which do not work, thus exposing new of data (Strauss and Corbin, 1990). After this, areas to investigate; and in developing downstream authors convened to discuss their open codes, applications. When one researcher was asked to systematizing recurring themes and contrasts to construct a preliminary closed coding frame (Miles 1 Inspired by the verbiage of reinforcement learning, e.g. and Huberman, 1994). After this, an author who Sutton and Barto (2018).",
+  },
+  {
+    "blockId": "p1_b1",
+    "text": "13311",
+  },
+]
+`;
