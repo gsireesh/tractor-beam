@@ -95,6 +95,10 @@ export function ModelControls({ status, progress, message, setMlHighlights }: Mo
   // PDF outline, fetched lazily when the scope menu first opens. null = not loaded
   // yet; [] = loaded and this PDF has no table of contents.
   const [outline, setOutline] = useState<OutlineEntry[] | null>(null);
+  // Current 1-based viewer page for the "this page" label. Refreshed on menu open
+  // (not via a scroll subscription): the menu is modal, so the PDF can't scroll
+  // while it's shown, and pdf.js page changes otherwise don't re-render React.
+  const [currentPage, setCurrentPage] = useState(currentViewerPage);
   // Page-range dialog state (inputs are strings so partial edits don't fight React).
   const [rangeOpen, setRangeOpen] = useState(false);
   const [rangeFrom, setRangeFrom] = useState('1');
@@ -324,7 +328,10 @@ export function ModelControls({ status, progress, message, setMlHighlights }: Mo
             />
             <DropdownMenu
               onOpenChange={(open) => {
-                if (open) void loadOutline();
+                if (open) {
+                  setCurrentPage(currentViewerPage());
+                  void loadOutline();
+                }
               }}
             >
               <DropdownMenuTrigger disabled={isRunning}>
@@ -341,7 +348,7 @@ export function ModelControls({ status, progress, message, setMlHighlights }: Mo
               <DropdownMenuPortal container={drawerRoot}>
                 <DropdownMenuContent align="start" className="z-[10001] w-56">
                   <DropdownMenuItem onClick={runThisPage}>
-                    Highlight this page ({currentViewerPage()})
+                    Highlight this page ({currentPage})
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={openRangeDialog}>
                     Highlight a page range…
