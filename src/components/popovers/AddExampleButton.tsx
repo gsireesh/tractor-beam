@@ -30,13 +30,16 @@ interface AddExampleButtonProps {
  */
 export function AddExampleButton({ accentColor, disabled, onSubmit }: AddExampleButtonProps) {
   const fill = rgbaToHex(accentColor, 1.0);
+  // Rounding is set per-half (not here) so the two buttons fuse into one split
+  // button; a shared `rounded-md` would fight the per-corner overrides since these
+  // template classNames don't go through tailwind-merge.
   const buttonClasses =
-    'py-2 rounded-md text-sm font-medium cursor-pointer border-none text-white disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90';
+    'py-2 text-sm font-medium cursor-pointer text-white disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90';
 
   return (
-    <div className="flex shrink-0" style={{ gap: 4 }}>
+    <div className="flex shrink-0">
       <button
-        className={`px-3 whitespace-nowrap ${buttonClasses}`}
+        className={`px-3 whitespace-nowrap rounded-l-md rounded-r-none ${buttonClasses}`}
         style={{ backgroundColor: fill }}
         onClick={() => onSubmit(true)}
         disabled={disabled}
@@ -45,8 +48,10 @@ export function AddExampleButton({ accentColor, disabled, onSubmit }: AddExample
       </button>
       <DropdownMenu modal={false}>
         <DropdownMenuTrigger asChild>
+          {/* Fused caret half: flat left edge + a faint divider so the two click
+              targets read as distinct on the single-color fill. */}
           <button
-            className={`px-2 ${buttonClasses}`}
+            className={`px-2 rounded-r-md rounded-l-none border-l border-white/30 ${buttonClasses}`}
             style={{ backgroundColor: fill }}
             disabled={disabled}
             title="More add options"

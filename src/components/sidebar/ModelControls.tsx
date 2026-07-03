@@ -305,69 +305,75 @@ export function ModelControls({ status, progress, message, setMlHighlights }: Mo
 
       <div className="flex flex-row justify-between gap-1">
         <div className="flex flex-row items-center justify-start gap-1">
-          <IconButton
-            title="Highlight with AI"
-            label="Highlight with AI"
-            variant="outline"
-            className="border-[green]"
-            icon={Highlighter}
-            color={'green'}
-            onClick={sendRunMessage}
-            disabled={isRunning}
-          />
-          {/* Caret: scoped-run options (this page / range / TOC section). Mirrors the
-              DropdownMenu + portal-into-drawerRoot pattern used elsewhere in this file. */}
-          <DropdownMenu
-            onOpenChange={(open) => {
-              if (open) void loadOutline();
-            }}
-          >
-            <DropdownMenuTrigger disabled={isRunning}>
-              <IconButton
-                title="Highlight options"
-                variant="outline"
-                className="border-[green]"
-                icon={ChevronDown}
-                color={'green'}
-                size={'icon'}
-                disabled={isRunning}
-              />
-            </DropdownMenuTrigger>
-            <DropdownMenuPortal container={drawerRoot}>
-              <DropdownMenuContent align="start" className="z-[10001] w-56">
-                <DropdownMenuItem onClick={runThisPage}>
-                  Highlight this page ({currentViewerPage()})
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={openRangeDialog}>
-                  Highlight a page range…
-                </DropdownMenuItem>
-                <DropdownMenuSub>
-                  <DropdownMenuSubTrigger disabled={!outline || outline.length === 0}>
-                    From table of contents
-                  </DropdownMenuSubTrigger>
-                  <DropdownMenuPortal container={drawerRoot}>
-                    <DropdownMenuSubContent className="z-[10002] max-h-80 overflow-y-auto">
-                      {outline === null ? (
-                        <DropdownMenuItem disabled>Reading…</DropdownMenuItem>
-                      ) : outline.length === 0 ? (
-                        <DropdownMenuItem disabled>No table of contents</DropdownMenuItem>
-                      ) : (
-                        outline.map((entry, i) => (
-                          <DropdownMenuItem
-                            key={`${i}-${entry.pageNumber}`}
-                            style={{ paddingLeft: `${0.5 + entry.level * 0.75}rem` }}
-                            onClick={() => runTocEntry(i)}
-                          >
-                            <span className="truncate">{entry.title}</span>
-                          </DropdownMenuItem>
-                        ))
-                      )}
-                    </DropdownMenuSubContent>
-                  </DropdownMenuPortal>
-                </DropdownMenuSub>
-              </DropdownMenuContent>
-            </DropdownMenuPortal>
-          </DropdownMenu>
+          {/* Split button: the panel's one primary action, so it wears the filled
+              `default` (brand purple) tier while every sibling stays quiet outline.
+              The pair sits in its own gap-0 group so the row's gap-1 still spaces the
+              History/Hide buttons; inner corners are flattened and the caret carries a
+              hairline `border-primary-foreground/30` divider (same seam as the popover's
+              "Add example" split button). */}
+          <div className="flex flex-row items-center">
+            <IconButton
+              title="Highlight with AI"
+              label="Highlight with AI"
+              variant="default"
+              className="rounded-r-none"
+              icon={Highlighter}
+              color={null}
+              onClick={sendRunMessage}
+              disabled={isRunning}
+            />
+            <DropdownMenu
+              onOpenChange={(open) => {
+                if (open) void loadOutline();
+              }}
+            >
+              <DropdownMenuTrigger disabled={isRunning}>
+                <IconButton
+                  title="Highlight options"
+                  variant="default"
+                  className="rounded-l-none border-l border-primary-foreground/30"
+                  icon={ChevronDown}
+                  color={null}
+                  size={'icon-sm'}
+                  disabled={isRunning}
+                />
+              </DropdownMenuTrigger>
+              <DropdownMenuPortal container={drawerRoot}>
+                <DropdownMenuContent align="start" className="z-[10001] w-56">
+                  <DropdownMenuItem onClick={runThisPage}>
+                    Highlight this page ({currentViewerPage()})
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={openRangeDialog}>
+                    Highlight a page range…
+                  </DropdownMenuItem>
+                  <DropdownMenuSub>
+                    <DropdownMenuSubTrigger disabled={!outline || outline.length === 0}>
+                      From table of contents
+                    </DropdownMenuSubTrigger>
+                    <DropdownMenuPortal container={drawerRoot}>
+                      <DropdownMenuSubContent className="z-[10002] max-h-80 overflow-y-auto">
+                        {outline === null ? (
+                          <DropdownMenuItem disabled>Reading…</DropdownMenuItem>
+                        ) : outline.length === 0 ? (
+                          <DropdownMenuItem disabled>No table of contents</DropdownMenuItem>
+                        ) : (
+                          outline.map((entry, i) => (
+                            <DropdownMenuItem
+                              key={`${i}-${entry.pageNumber}`}
+                              style={{ paddingLeft: `${0.5 + entry.level * 0.75}rem` }}
+                              onClick={() => runTocEntry(i)}
+                            >
+                              <span className="truncate">{entry.title}</span>
+                            </DropdownMenuItem>
+                          ))
+                        )}
+                      </DropdownMenuSubContent>
+                    </DropdownMenuPortal>
+                  </DropdownMenuSub>
+                </DropdownMenuContent>
+              </DropdownMenuPortal>
+            </DropdownMenu>
+          </div>
           {isRunning && (
             <IconButton
               title={'Stop Annotation'}
@@ -385,7 +391,10 @@ export function ModelControls({ status, progress, message, setMlHighlights }: Mo
               <IconButton title={'Prior AI runs'} icon={History} />
             </DropdownMenuTrigger>
             <DropdownMenuPortal container={drawerRoot}>
-              <DropdownMenuContent align="start" className="z-[10001] w-72 max-h-80 overflow-y-auto">
+              <DropdownMenuContent
+                align="start"
+                className="z-[10001] w-72 max-h-80 overflow-y-auto"
+              >
                 {!runsLoaded ? (
                   <DropdownMenuItem disabled>Loading…</DropdownMenuItem>
                 ) : runs.length === 0 ? (
@@ -447,9 +456,7 @@ export function ModelControls({ status, progress, message, setMlHighlights }: Mo
         <DialogContent container={drawerRoot} className="z-[100000] w-80">
           <DialogHeader>
             <DialogTitle>Highlight a page range</DialogTitle>
-            <DialogDescription>
-              Annotate only these pages (1–{pageTotal}).
-            </DialogDescription>
+            <DialogDescription>Annotate only these pages (1–{pageTotal}).</DialogDescription>
           </DialogHeader>
           <div className="flex items-center gap-2">
             <label className="text-sm" htmlFor="range-from">
