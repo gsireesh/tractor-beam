@@ -19,21 +19,13 @@ import {
   DropdownMenuPortal,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
+  DropdownMenuSeparator,
   DropdownMenuSub,
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu.tsx';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog.tsx';
 import { Input } from '@/components/ui/input.tsx';
-import { Button } from '@/components/ui/button.tsx';
 import { loadModelConfig, saveModelConfig } from '@/lib/config-storage.ts';
 import {
   type ModelConfig,
@@ -99,8 +91,10 @@ export function ModelControls({ status, progress, message, setMlHighlights }: Mo
   // (not via a scroll subscription): the menu is modal, so the PDF can't scroll
   // while it's shown, and pdf.js page changes otherwise don't re-render React.
   const [currentPage, setCurrentPage] = useState(currentViewerPage);
-  // Page-range dialog state (inputs are strings so partial edits don't fight React).
-  const [rangeOpen, setRangeOpen] = useState(false);
+  // Scope menu is controlled so a per-row run button can close it explicitly (the
+  // rows are plain divs, not auto-closing DropdownMenuItems).
+  const [scopeMenuOpen, setScopeMenuOpen] = useState(false);
+  // Page-range inputs (strings so partial edits don't fight React).
   const [rangeFrom, setRangeFrom] = useState('1');
   const [rangeTo, setRangeTo] = useState('1');
   const drawerRoot = useMemo(() => document.getElementById('tractor-beam-drawer-root'), []);
@@ -174,16 +168,12 @@ export function ModelControls({ status, progress, message, setMlHighlights }: Mo
     }
   }
 
+  // Each run handler closes the scope menu itself (the rows are plain divs, so they
+  // don't auto-close like DropdownMenuItems would).
   function runThisPage() {
     const n = currentViewerPage();
     void runScoped({ kind: 'page', startPage: n, endPage: n, label: `Page ${n}` });
-  }
-
-  function openRangeDialog() {
-    const p = String(currentViewerPage());
-    setRangeFrom(p);
-    setRangeTo(p);
-    setRangeOpen(true);
+    setScopeMenuOpen(false);
   }
 
   function submitRange() {
@@ -194,7 +184,7 @@ export function ModelControls({ status, progress, message, setMlHighlights }: Mo
     const [lo, hi] = a <= b ? [a, b] : [b, a];
     const label = lo === hi ? `Page ${lo}` : `Pages ${lo}–${hi}`;
     void runScoped({ kind: 'range', startPage: lo, endPage: hi, label });
-    setRangeOpen(false);
+    setScopeMenuOpen(false);
   }
 
   // A TOC section runs from its own start page until the next entry at the same or
@@ -212,6 +202,7 @@ export function ModelControls({ status, progress, message, setMlHighlights }: Mo
       }
     }
     void runScoped({ kind: 'toc', startPage: entry.pageNumber, endPage, label: entry.title });
+    setScopeMenuOpen(false);
   }
 
   // Range is valid only when both inputs are whole pages within bounds. `from > to`
@@ -339,9 +330,14 @@ export function ModelControls({ status, progress, message, setMlHighlights }: Mo
               disabled={isRunning}
             />
             <DropdownMenu
+              open={scopeMenuOpen}
               onOpenChange={(open) => {
+                setScopeMenuOpen(open);
                 if (open) {
+                  const p = String(currentViewerPage());
                   setCurrentPage(currentViewerPage());
+                  setRangeFrom(p);
+                  setRangeTo(p);
                   void loadOutline();
                 }
               }}
@@ -358,37 +354,97 @@ export function ModelControls({ status, progress, message, setMlHighlights }: Mo
                 />
               </DropdownMenuTrigger>
               <DropdownMenuPortal container={drawerRoot}>
-                <DropdownMenuContent align="start" className="z-[10001] w-56">
-                  <DropdownMenuItem onClick={runThisPage}>
-                    Highlight this page ({currentPage})
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={openRangeDialog}>
-                    Highlight a page range…
-                  </DropdownMenuItem>
-                  <DropdownMenuSub>
-                    <DropdownMenuSubTrigger disabled={!outline || outline.length === 0}>
-                      From table of contents
-                    </DropdownMenuSubTrigger>
-                    <DropdownMenuPortal container={drawerRoot}>
-                      <DropdownMenuSubContent className="z-[10002] max-h-80 overflow-y-auto">
-                        {outline === null ? (
-                          <DropdownMenuItem disabled>Reading…</DropdownMenuItem>
-                        ) : outline.length === 0 ? (
-                          <DropdownMenuItem disabled>No table of contents</DropdownMenuItem>
-                        ) : (
-                          outline.map((entry, i) => (
-                            <DropdownMenuItem
-                              key={`${i}-${entry.pageNumber}`}
-                              style={{ paddingLeft: `${0.5 + entry.level * 0.75}rem` }}
-                              onClick={() => runTocEntry(i)}
-                            >
-                              <span className="truncate">{entry.title}</span>
-                            </DropdownMenuItem>
-                          ))
-                        )}
-                      </DropdownMenuSubContent>
-                    </DropdownMenuPortal>
-                  </DropdownMenuSub>
+                {/* Rows are plain divs, not DropdownMenuItems: each Highlighter button
+                    drives its own run (no whole-row click), and the range inputs accept
+                    typing without the menu's item typeahead/close-on-select firing. */}
+                <DropdownMenuContent align="start" className="z-[10001] w-64">
+                  {/* This page */}
+                  <div className="flex items-center justify-between gap-2 px-2 py-1.5">
+                    <span className="text-sm">This page ({currentPage})</span>
+                    <IconButton
+                      title={`Highlight page ${currentPage}`}
+                      variant="default"
+                      icon={Highlighter}
+                      color={null}
+                      size={'icon-sm'}
+                      onClick={runThisPage}
+                    />
+                  </div>
+
+                  {/* Page range — inputs inline under the label; run stays disabled
+                      until both ends are valid pages. */}
+                  <div className="px-2 py-1.5">
+                    <span className="text-sm">Page range</span>
+                    <div className="mt-1.5 flex items-center gap-1.5">
+                      <Input
+                        aria-label="From page"
+                        type="number"
+                        min={1}
+                        max={pageTotal}
+                        value={rangeFrom}
+                        onChange={(e) => setRangeFrom(e.target.value)}
+                        onKeyDown={(e) => e.stopPropagation()}
+                        aria-invalid={!rangeValid}
+                        className="h-7 w-14 px-2 text-sm"
+                      />
+                      <span className="text-sm text-muted-foreground">–</span>
+                      <Input
+                        aria-label="To page"
+                        type="number"
+                        min={1}
+                        max={pageTotal}
+                        value={rangeTo}
+                        onChange={(e) => setRangeTo(e.target.value)}
+                        onKeyDown={(e) => e.stopPropagation()}
+                        aria-invalid={!rangeValid}
+                        className="h-7 w-14 px-2 text-sm"
+                      />
+                      <IconButton
+                        title="Highlight page range"
+                        variant="default"
+                        className="ml-auto"
+                        icon={Highlighter}
+                        color={null}
+                        size={'icon-sm'}
+                        disabled={!rangeValid}
+                        onClick={submitRange}
+                      />
+                    </div>
+                  </div>
+
+                  <DropdownMenuSeparator />
+
+                  {/* Table of contents — inline scrollable list, one run button per section */}
+                  <div className="px-2 py-1 text-xs font-medium text-muted-foreground">
+                    Table of contents
+                  </div>
+                  <div className="max-h-56 overflow-y-auto">
+                    {outline === null ? (
+                      <div className="px-2 py-1.5 text-sm text-muted-foreground">Reading…</div>
+                    ) : outline.length === 0 ? (
+                      <div className="px-2 py-1.5 text-sm text-muted-foreground">
+                        No table of contents
+                      </div>
+                    ) : (
+                      outline.map((entry, i) => (
+                        <div
+                          key={`${i}-${entry.pageNumber}`}
+                          className="flex items-center justify-between gap-2 py-1 pr-2"
+                          style={{ paddingLeft: `${0.5 + entry.level * 0.75}rem` }}
+                        >
+                          <span className="min-w-0 truncate text-sm">{entry.title}</span>
+                          <IconButton
+                            title={`Highlight “${entry.title}”`}
+                            variant="default"
+                            icon={Highlighter}
+                            color={null}
+                            size={'icon-sm'}
+                            onClick={() => runTocEntry(i)}
+                          />
+                        </div>
+                      ))
+                    )}
+                  </div>
                 </DropdownMenuContent>
               </DropdownMenuPortal>
             </DropdownMenu>
@@ -469,50 +525,6 @@ export function ModelControls({ status, progress, message, setMlHighlights }: Mo
           </DropdownMenu>
         </div>
       </div>
-
-      {/* Page-range picker. Portals into the themed drawer root like the menus above. */}
-      <Dialog open={rangeOpen} onOpenChange={setRangeOpen}>
-        <DialogContent container={drawerRoot} className="z-[100000] w-80">
-          <DialogHeader>
-            <DialogTitle>Highlight a page range</DialogTitle>
-            <DialogDescription>Annotate only these pages (1–{pageTotal}).</DialogDescription>
-          </DialogHeader>
-          <div className="flex items-center gap-2">
-            <label className="text-sm" htmlFor="range-from">
-              From
-            </label>
-            <Input
-              id="range-from"
-              type="number"
-              min={1}
-              max={pageTotal}
-              value={rangeFrom}
-              onChange={(e) => setRangeFrom(e.target.value)}
-              aria-invalid={!rangeValid}
-            />
-            <label className="text-sm" htmlFor="range-to">
-              To
-            </label>
-            <Input
-              id="range-to"
-              type="number"
-              min={1}
-              max={pageTotal}
-              value={rangeTo}
-              onChange={(e) => setRangeTo(e.target.value)}
-              aria-invalid={!rangeValid}
-            />
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setRangeOpen(false)}>
-              Cancel
-            </Button>
-            <Button onClick={submitRange} disabled={!rangeValid}>
-              Highlight
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
