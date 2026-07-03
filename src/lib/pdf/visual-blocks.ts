@@ -13,6 +13,11 @@ const GUTTER_COVERAGE_FRACTION = 0.2;
 // A paragraph break is a vertical gap at least this multiple of the region's own median
 // line gap (so grouping adapts to each document's leading rather than a fixed height).
 const PARAGRAPH_GAP_FACTOR = 1.5;
+// A plausible line pitch is at most this multiple of the glyph height (roughly triple
+// spacing). Beyond it, an estimated "pitch" is really a structural gap from sparse data,
+// so we cap it before raising the Y-cut threshold — otherwise two far-apart items read as
+// one loosely-spaced block instead of two paragraphs.
+const MAX_LINE_PITCH_FACTOR = 3.0;
 const HEADER_FOOTER_MARGIN = 0.04;
 const HEADER_FOOTER_MAX_CHARS = 30;
 
@@ -49,6 +54,25 @@ function computeMedianHeight(items: VisualBlockItem[]): number {
   const heights = items.map((it) => it.box.height).sort((a, b) => a - b);
   const mid = Math.floor(heights.length / 2);
   return heights.length % 2 === 0 ? (heights[mid - 1] + heights[mid]) / 2 : heights[mid];
+}
+
+/**
+ * A region's dominant line pitch: the 30th-percentile positive vertical gap between
+ * consecutive items (same-line runs overlap → dropped). A LOW percentile (not the median)
+ * keeps a heading's larger gap from inflating the estimate in small regions. Falls back to
+ * `fallback` when there are no inter-line gaps. Used to make both the XY-cut Y-threshold
+ * and paragraph grouping adapt to each document's leading (e.g. single- vs double-spaced).
+ */
+function regionLinePitch(items: VisualBlockItem[], fallback: number): number {
+  const sorted = [...items].sort((a, b) => a.box.top - b.box.top || a.box.left - b.box.left);
+  const gaps: number[] = [];
+  for (let i = 1; i < sorted.length; i++) {
+    const gap = sorted[i].box.top - (sorted[i - 1].box.top + sorted[i - 1].box.height);
+    if (gap > 0) gaps.push(gap);
+  }
+  if (gaps.length === 0) return fallback;
+  gaps.sort((a, b) => a - b);
+  return gaps[Math.floor(gaps.length * 0.3)];
 }
 
 interface Gap {
@@ -137,7 +161,10 @@ function xyCut(
 ): VisualBlockItem[][] {
   if (items.length <= 1 || depth > MAX_XY_CUT_DEPTH) return [items];
 
-  // Try Y-cut (horizontal split)
+  // Try Y-cut (horizontal split). `minYGap` is the caller's page-global adaptive threshold
+  // (floored at 1×median height, raised for uniformly loose/double-spaced pages) — using a
+  // GLOBAL rather than per-region pitch so a sparse sub-region (e.g. a journal masthead)
+  // isn't given a high threshold and merged.
   const yGap = findLargestGap(
     items.map((item) => ({ start: item.box.top, end: item.box.top + item.box.height })),
   );
@@ -226,26 +253,10 @@ function groupIntoLines(items: VisualBlockItem[], medianHeight: number): VisualB
 
   const sorted = [...items].sort((a, b) => a.box.top - b.box.top || a.box.left - b.box.left);
 
-  // Whitespace between consecutive items; same-line runs overlap (≤0) and are dropped.
-  const gaps: number[] = [];
-  for (let i = 1; i < sorted.length; i++) {
-    const gap = sorted[i].box.top - (sorted[i - 1].box.top + sorted[i - 1].box.height);
-    if (gap > 0) gaps.push(gap);
-  }
-  // The region's dominant LINE pitch (median positive gap). A paragraph break is a gap
-  // notably larger than this — calibrating to each document's leading instead of a fixed
-  // fraction of height (chi_star's body runs at 0.22h, nas's at 0.67h; both need to group
-  // their own lines while splitting their own headings). Fall back to medianHeight when a
-  // region has no inter-line gaps (single line / all same-line runs).
-  // Use a LOW percentile (not the median) so the line pitch reflects the common
-  // intra-paragraph gap even in small regions: a heading-plus-two-lines region has gaps
-  // [body, heading], and the median would pick the larger (heading) gap and merge
-  // everything; the 30th percentile picks the body gap so the heading still splits.
-  const sortedGaps = [...gaps].sort((a, b) => a - b);
-  const lineGap = sortedGaps.length
-    ? sortedGaps[Math.floor(sortedGaps.length * 0.3)]
-    : medianHeight;
-  const breakThreshold = PARAGRAPH_GAP_FACTOR * lineGap;
+  // A paragraph break is a gap notably larger than the region's own line pitch — adapting
+  // to each document's leading (chi_star's body runs at 0.22h, nas's at 0.67h) instead of a
+  // fixed fraction of height, which would either shatter loose text or merge tight headings.
+  const breakThreshold = PARAGRAPH_GAP_FACTOR * regionLinePitch(items, medianHeight);
 
   const groups: VisualBlockItem[][] = [[sorted[0]]];
   for (let i = 1; i < sorted.length; i++) {
@@ -288,12 +299,18 @@ export function groupItemsIntoBlocks(items: VisualBlockItem[], pageNumber: numbe
     hfTotalChars < HEADER_FOOTER_MAX_CHARS ? bodyItems : [...bodyItems, ...headerFooterItems];
   const separateHF = hfTotalChars < HEADER_FOOTER_MAX_CHARS ? headerFooterItems : [];
 
-  // Phase 1: XY-Cut
+  // Phase 1: XY-Cut. The Y-cut threshold is adaptive: floored at 1×median height, but
+  // raised to 1.5× the page-global line pitch when the page is uniformly loose (a
+  // double-spaced transcript), so normal leading doesn't get cut as if it were a paragraph
+  // break. Single-spaced pages keep the median-height floor. Global (not per-region) pitch
+  // so sparse sub-regions like mastheads aren't over-merged.
   const medianH = computeMedianHeight(effectiveBody);
+  const pitch = Math.min(regionLinePitch(effectiveBody, medianH), MAX_LINE_PITCH_FACTOR * medianH);
+  const minYGap = Math.max(medianH, PARAGRAPH_GAP_FACTOR * pitch);
   console.log(
-    `[xy-cut] page ${pageNumber}: ${effectiveBody.length} items, medianH=${medianH.toFixed(4)}, minYGap=${(1.0 * medianH).toFixed(4)}, minXGap=${(1.2 * medianH).toFixed(4)}`,
+    `[xy-cut] page ${pageNumber}: ${effectiveBody.length} items, medianH=${medianH.toFixed(4)}, minYGap=${minYGap.toFixed(4)}, minXGap=${(1.2 * medianH).toFixed(4)}`,
   );
-  const regions = xyCut(effectiveBody, 1.0 * medianH, 1.2 * medianH, 0);
+  const regions = xyCut(effectiveBody, minYGap, 1.2 * medianH, 0);
 
   // Phase 2 & 3: Font stratification → line grouping
   const allGroups: VisualBlockItem[][] = [];

@@ -128,14 +128,18 @@ describe('groupItemsIntoBlocks on real PDF fixtures', () => {
   );
 
   describe.skipIf(!has('hearing_transcript.p12'))(
-    'characterization: hearing_transcript.p12 (transcript)',
+    'regression: hearing_transcript.p12 (double-spaced transcript)',
     () => {
-      // Numbered-transcript lines become per-line blocks. Defensible for this layout, so
-      // this pins current behavior as a plain assertion rather than an it.fails.
-      it('produces per-line blocks (each numbered line stands alone)', () => {
+      // Was characterization (one block per line); fixed by the page-global adaptive Y-cut
+      // threshold, which stops treating normal double-spaced leading as paragraph breaks.
+      // (The running header merges into the testimony — its gap is actually tighter than
+      // the body leading, so there's no whitespace signal to split it. Acceptable.)
+      it('groups the continuous testimony instead of shattering it into per-line blocks', () => {
         const blocks = blocksFor('hearing_transcript.p12');
-        expect(blocks.length).toBeGreaterThan(15);
-        expect(blocks.some((b) => b.text === 'trees.')).toBe(true);
+        expect(blocks.length).toBeLessThan(4);
+        // One coherent block spans from the first testimony line to the last.
+        const body = blockContaining(blocks, 'resources the City has in ensuring');
+        expect(body.text).toContain("public's attention is focused on the value of");
       });
     },
   );
