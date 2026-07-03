@@ -130,7 +130,13 @@ export function ModelControls({ status, progress, message, setMlHighlights }: Mo
     // it from the run by snapshotIndex — the version's label is derived from that
     // snapshot, never copied. Snapshotting is a persistence concern → repo seam.
     const snapshotIndex = await schemaRepo.snapshot(activeSchema, 'mlRun');
-    void window.TractorBeamDrawer.runAnnotationPipeline(activeSchema, requestId, snapshotIndex);
+    // Whole-document run: no scope (3rd arg), snapshotIndex is the 4th arg.
+    void window.TractorBeamDrawer.runAnnotationPipeline(
+      activeSchema,
+      requestId,
+      undefined,
+      snapshotIndex,
+    );
   }
 
   function sendCancelMessage() {
@@ -141,10 +147,18 @@ export function ModelControls({ status, progress, message, setMlHighlights }: Mo
 
   // The scoped twin of sendRunMessage: same run dispatch, plus a scope descriptor
   // that drawer-host uses to filter blocks and to tag the stored run.
-  function runScoped(scope: MlRunScope) {
+  async function runScoped(scope: MlRunScope) {
     const requestId = crypto.randomUUID();
     setCurrentRequestId(requestId);
-    void window.TractorBeamDrawer.runAnnotationPipeline(activeSchema, requestId, scope);
+    // Scoped runs are still mlRuns: snapshot the schema version they ran against,
+    // exactly as the whole-document run does (sendRunMessage).
+    const snapshotIndex = await schemaRepo.snapshot(activeSchema, 'mlRun');
+    void window.TractorBeamDrawer.runAnnotationPipeline(
+      activeSchema,
+      requestId,
+      scope,
+      snapshotIndex,
+    );
   }
 
   // Fetch the outline once, the first time the scope menu opens (same lazy pattern
@@ -152,9 +166,7 @@ export function ModelControls({ status, progress, message, setMlHighlights }: Mo
   async function loadOutline() {
     if (outline !== null) return;
     try {
-      const entries = await window.TractorBeamTextExtraction.extractOutline(
-        window.PDFViewerApplication,
-      );
+      const entries = await window.TractorBeamPdf.extractOutline(window.PDFViewerApplication);
       setOutline(entries);
     } catch (err) {
       console.warn('[model-controls] Failed to read PDF outline:', err);
@@ -164,7 +176,7 @@ export function ModelControls({ status, progress, message, setMlHighlights }: Mo
 
   function runThisPage() {
     const n = currentViewerPage();
-    runScoped({ kind: 'page', startPage: n, endPage: n, label: `Page ${n}` });
+    void runScoped({ kind: 'page', startPage: n, endPage: n, label: `Page ${n}` });
   }
 
   function openRangeDialog() {
@@ -181,7 +193,7 @@ export function ModelControls({ status, progress, message, setMlHighlights }: Mo
     const b = clamp(rangeTo);
     const [lo, hi] = a <= b ? [a, b] : [b, a];
     const label = lo === hi ? `Page ${lo}` : `Pages ${lo}–${hi}`;
-    runScoped({ kind: 'range', startPage: lo, endPage: hi, label });
+    void runScoped({ kind: 'range', startPage: lo, endPage: hi, label });
     setRangeOpen(false);
   }
 
@@ -199,7 +211,7 @@ export function ModelControls({ status, progress, message, setMlHighlights }: Mo
         break;
       }
     }
-    runScoped({ kind: 'toc', startPage: entry.pageNumber, endPage, label: entry.title });
+    void runScoped({ kind: 'toc', startPage: entry.pageNumber, endPage, label: entry.title });
   }
 
   // Range is valid only when both inputs are whole pages within bounds. `from > to`

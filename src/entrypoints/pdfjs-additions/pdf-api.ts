@@ -6,7 +6,7 @@
  * is only the impure adapter that pulls data out of the viewer and delegates.
  */
 
-import type { VisualBlock } from '@/lib/definitions';
+import type { VisualBlock, OutlineEntry } from '@/lib/definitions';
 import { normalizedItemsFromTextContent } from '@/lib/pdf/coords';
 import { groupItemsIntoBlocks, extractOutline } from '@/lib/pdf/visual-blocks';
 
@@ -44,6 +44,7 @@ declare global {
       extractVisualBlocks: (PDFViewerApplication: any) => Promise<VisualBlock[]>;
       getPageMetrics: () => Promise<{ numPages: number; pages: PageMetric[] }>;
       renderRegion: (opts: RenderRegionOptions) => Promise<RenderRegionResult>;
+      extractOutline: (PDFViewerApplication: any) => Promise<OutlineEntry[]>;
     };
   }
 }
