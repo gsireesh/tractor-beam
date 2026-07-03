@@ -7,15 +7,15 @@ import type { VisualBlock, VisualBlockItem } from '@/lib/definitions.ts';
 
 /**
  * XY-cut / block-segmentation against REAL extracted PDF pages. Each `*.items.json` here
- * was produced by scripts/extract-fixture-items.mjs from an original PDF in fixture_pdfs/
- * (gitignored), using pdf.js pinned to the vendored version — the exact path the extension
- * uses. Regenerate with `pnpm run fixtures:extract` after changing extraction.
+ * was produced by scripts/extract-fixture-items.mjs from a trimmed source PDF in
+ * test/fixtures/pdf/original/, using pdf.js pinned to the vendored version — the exact path
+ * the extension uses. Regenerate with `pnpm run fixtures:extract` after changing extraction.
  *
- * Two roles (see the plan manifest):
- *   - regression      — verified-correct grouping; assertions guard it from breaking.
- *   - characterization — known-wrong grouping; the desired behavior is written as an
- *     `it.fails`, so it stays green while broken and flips RED when the bug is fixed
- *     (a reminder to promote it to a real assertion).
+ * Every fixture now segments correctly and gets regression assertions. Three of them
+ * (tobuild.p1/p2, nas.p7) started as characterization `it.fails` documenting known-wrong
+ * output; fixing the segmenter (profile-valley gutter + adaptive paragraph grouping)
+ * flipped them, and they were promoted to the real assertions below. The `it.fails`
+ * pattern remains the way to pin any future known-wrong page.
  */
 const FIX_DIR = fileURLToPath(new URL('../../../test/fixtures/pdf/', import.meta.url));
 const fixtures = existsSync(FIX_DIR)
@@ -92,32 +92,32 @@ describe('groupItemsIntoBlocks on real PDF fixtures', () => {
     },
   );
 
-  describe.skipIf(!has('tobuild.p1'))(
-    'characterization: tobuild.p1 (ACL title page + figure)',
-    () => {
-      it.fails('should keep Figure 1 axis labels out of the abstract block', () => {
-        const abstract = blockContaining(
-          blocksFor('tobuild.p1'),
-          'NLP is in a period of disruptive change',
-        );
-        expect(abstract.text).not.toContain('17500'); // a bar-chart axis label
-      });
-    },
-  );
+  describe.skipIf(!has('tobuild.p1'))('regression: tobuild.p1 (ACL title page + figure)', () => {
+    // Was characterization (figure axis labels bled into the abstract); fixed by the
+    // profile-valley gutter finder, which peels the figure column off the text.
+    it('keeps Figure 1 axis labels out of the abstract block', () => {
+      const abstract = blockContaining(
+        blocksFor('tobuild.p1'),
+        'NLP is in a period of disruptive change',
+      );
+      expect(abstract.text).not.toContain('17500'); // a bar-chart axis label
+    });
+  });
 
-  describe.skipIf(!has('tobuild.p2'))('characterization: tobuild.p2 (ACL two-column body)', () => {
-    it.fails(
-      'should segment the two columns into multiple blocks (not one interleaved block)',
-      () => {
-        expect(blocksFor('tobuild.p2').length).toBeGreaterThan(3);
-      },
-    );
+  describe.skipIf(!has('tobuild.p2'))('regression: tobuild.p2 (ACL two-column body)', () => {
+    // Was characterization (one bottom-footnote crosser collapsed both columns into a
+    // single interleaved block); fixed by tolerating sparse gutter crossings.
+    it('segments the two columns into multiple blocks (not one interleaved block)', () => {
+      expect(blocksFor('tobuild.p2').length).toBeGreaterThan(5);
+    });
   });
 
   describe.skipIf(!has('nas_whitepaper.p7'))(
-    'characterization: nas_whitepaper.p7 (single-column)',
+    'regression: nas_whitepaper.p7 (single-column)',
     () => {
-      it.fails('should group the Summary paragraph into one block, not one block per line', () => {
+      // Was characterization (one block per line); fixed by adaptive paragraph grouping
+      // keyed off the region's own line pitch.
+      it('groups the Summary paragraph into one block, not one block per line', () => {
         const summary = blockContaining(
           blocksFor('nas_whitepaper.p7'),
           'The electricity system is undergoing',

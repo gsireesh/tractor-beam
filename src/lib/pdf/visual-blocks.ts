@@ -6,8 +6,13 @@
  */
 import type { VisualBlock, VisualBlockItem } from '@/lib/definitions';
 
-const VERTICAL_PROXIMITY_THRESHOLD = 1.5;
 const MAX_XY_CUT_DEPTH = 8;
+// A gutter segment may be crossed by at most this fraction of the busiest column's item
+// count — lets a stray full-width footnote/figure cross without hiding the columns.
+const GUTTER_COVERAGE_FRACTION = 0.2;
+// A paragraph break is a vertical gap at least this multiple of the region's own median
+// line gap (so grouping adapts to each document's leading rather than a fixed height).
+const PARAGRAPH_GAP_FACTOR = 1.5;
 const HEADER_FOOTER_MARGIN = 0.04;
 const HEADER_FOOTER_MAX_CHARS = 30;
 
@@ -75,6 +80,52 @@ function findLargestGap(intervals: { start: number; end: number }[]): Gap {
 }
 
 /**
+ * Find the column gutter: the widest vertical band crossed by only a small fraction of
+ * the busiest column's items (a valley in the horizontal coverage profile). Unlike a
+ * strict empty-gap search, this tolerates sparse spanners — a full-width footnote, a
+ * figure — that would otherwise fill the gutter and hide the columns. Returns the band's
+ * center + width (size 0 if none). Only accepts a valley with content on BOTH sides, so
+ * the empty page margins don't count.
+ */
+function findGutter(items: VisualBlockItem[]): Gap {
+  if (items.length < 2) return { position: 0, size: 0 };
+
+  const edges = Array.from(
+    new Set(items.flatMap((it) => [it.box.left, it.box.left + it.box.width])),
+  ).sort((a, b) => a - b);
+  const coverageAt = (x: number) =>
+    items.reduce((n, it) => n + (it.box.left <= x && x <= it.box.left + it.box.width ? 1 : 0), 0);
+
+  // One segment between each pair of adjacent edges; coverage is constant within it.
+  const segs: { start: number; end: number; cov: number }[] = [];
+  let maxCoverage = 0;
+  for (let i = 0; i < edges.length - 1; i++) {
+    const cov = coverageAt((edges[i] + edges[i + 1]) / 2);
+    maxCoverage = Math.max(maxCoverage, cov);
+    segs.push({ start: edges[i], end: edges[i + 1], cov });
+  }
+  const tol = Math.floor(maxCoverage * GUTTER_COVERAGE_FRACTION);
+
+  // Widest contiguous run of low-coverage segments bounded by content on both sides.
+  let best: Gap = { position: 0, size: 0 };
+  for (let i = 0; i < segs.length; ) {
+    if (segs[i].cov > tol) {
+      i++;
+      continue;
+    }
+    let j = i;
+    while (j < segs.length && segs[j].cov <= tol) j++;
+    const hasContentBothSides = i > 0 && j < segs.length;
+    if (hasContentBothSides) {
+      const size = segs[j - 1].end - segs[i].start;
+      if (size > best.size) best = { position: (segs[i].start + segs[j - 1].end) / 2, size };
+    }
+    i = j;
+  }
+  return best;
+}
+
+/**
  * Recursive XY-cut: splits items by the largest whitespace gap on alternating
  * axes (Y first, then X) until no qualifying gap remains.
  */
@@ -102,10 +153,8 @@ function xyCut(
     ];
   }
 
-  // Try X-cut (vertical split)
-  const xGap = findLargestGap(
-    items.map((item) => ({ start: item.box.left, end: item.box.left + item.box.width })),
-  );
+  // Try X-cut (vertical split): the column gutter, tolerant of sparse spanners.
+  const xGap = findGutter(items);
   console.log(
     `[xy-cut] depth=${depth} items=${items.length} xGap=${xGap.size.toFixed(4)} (need ${minXGap.toFixed(4)})`,
   );
@@ -172,23 +221,39 @@ function stratifyByFontSize(items: VisualBlockItem[], medianHeight: number): Vis
 
 // ─── Line/paragraph grouping (enhanced from original) ───────────────────────
 
-function groupIntoLines(items: VisualBlockItem[]): VisualBlockItem[][] {
+function groupIntoLines(items: VisualBlockItem[], medianHeight: number): VisualBlockItem[][] {
   if (items.length === 0) return [];
 
   const sorted = [...items].sort((a, b) => a.box.top - b.box.top || a.box.left - b.box.left);
-  const groups: VisualBlockItem[][] = [[sorted[0]]];
 
+  // Whitespace between consecutive items; same-line runs overlap (≤0) and are dropped.
+  const gaps: number[] = [];
   for (let i = 1; i < sorted.length; i++) {
-    const prev = sorted[i - 1];
-    const curr = sorted[i];
-    const avgHeight = (prev.box.height + curr.box.height) / 2;
-    const verticallyClose =
-      Math.abs(curr.box.top - prev.box.top) < VERTICAL_PROXIMITY_THRESHOLD * avgHeight;
+    const gap = sorted[i].box.top - (sorted[i - 1].box.top + sorted[i - 1].box.height);
+    if (gap > 0) gaps.push(gap);
+  }
+  // The region's dominant LINE pitch (median positive gap). A paragraph break is a gap
+  // notably larger than this — calibrating to each document's leading instead of a fixed
+  // fraction of height (chi_star's body runs at 0.22h, nas's at 0.67h; both need to group
+  // their own lines while splitting their own headings). Fall back to medianHeight when a
+  // region has no inter-line gaps (single line / all same-line runs).
+  // Use a LOW percentile (not the median) so the line pitch reflects the common
+  // intra-paragraph gap even in small regions: a heading-plus-two-lines region has gaps
+  // [body, heading], and the median would pick the larger (heading) gap and merge
+  // everything; the 30th percentile picks the body gap so the heading still splits.
+  const sortedGaps = [...gaps].sort((a, b) => a - b);
+  const lineGap = sortedGaps.length
+    ? sortedGaps[Math.floor(sortedGaps.length * 0.3)]
+    : medianHeight;
+  const breakThreshold = PARAGRAPH_GAP_FACTOR * lineGap;
 
-    if (verticallyClose) {
-      groups[groups.length - 1].push(curr);
+  const groups: VisualBlockItem[][] = [[sorted[0]]];
+  for (let i = 1; i < sorted.length; i++) {
+    const gap = sorted[i].box.top - (sorted[i - 1].box.top + sorted[i - 1].box.height);
+    if (gap < breakThreshold) {
+      groups[groups.length - 1].push(sorted[i]);
     } else {
-      groups.push([curr]);
+      groups.push([sorted[i]]);
     }
   }
   return groups;
@@ -236,7 +301,7 @@ export function groupItemsIntoBlocks(items: VisualBlockItem[], pageNumber: numbe
   for (const region of regions) {
     const subgroups = stratifyByFontSize(region, medianH);
     for (const subgroup of subgroups) {
-      const paragraphs = groupIntoLines(subgroup);
+      const paragraphs = groupIntoLines(subgroup, medianH);
       allGroups.push(...paragraphs);
     }
   }

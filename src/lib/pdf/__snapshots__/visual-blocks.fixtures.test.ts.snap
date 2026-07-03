@@ -149,22 +149,18 @@ exports[`groupItemsIntoBlocks on real PDF fixtures > block structure snapshot: h
   },
   {
     "blockId": "p1_b21",
-    "text": "costs, protecting city's pavement from rain and sun,",
+    "text": "costs, protecting city's pavement from rain and sun, noise mitigation, increasing property values, and of",
   },
   {
     "blockId": "p1_b22",
-    "text": "noise mitigation, increasing property values, and of",
-  },
-  {
-    "blockId": "p1_b23",
     "text": "course, cleaning and cooling the air, benefiting our",
   },
   {
-    "blockId": "p1_b24",
+    "blockId": "p1_b23",
     "text": "overall health and well-being. Though a lot of the",
   },
   {
-    "blockId": "p1_b25",
+    "blockId": "p1_b24",
     "text": "public's attention is focused on the value of",
   },
 ]
@@ -178,158 +174,38 @@ exports[`groupItemsIntoBlocks on real PDF fixtures > block structure snapshot: n
   },
   {
     "blockId": "p1_b1",
-    "text": "EFFECTIVE, EFFICIENT, AND INFORMED RESEARCH, DEVELOPMENT,",
+    "text": "EFFECTIVE, EFFICIENT, AND INFORMED RESEARCH, DEVELOPMENT, AND DEMONSTRATION FOR THE ELECTRICITY SYSTEM",
   },
   {
     "blockId": "p1_b2",
-    "text": "AND DEMONSTRATION FOR THE ELECTRICITY SYSTEM",
-  },
-  {
-    "blockId": "p1_b3",
     "text": "Summary",
   },
   {
+    "blockId": "p1_b3",
+    "text": "The electricity system is undergoing a period of immense change in its technologies and operation. The U.S. Department of Energy’s (DOE’s) Office of Electricity requested an Issue Paper from the National Academies of Sciences, Engineering, and Medicine that elevates and synthesizes insights for creating effective and efficient research, development, and demonstration (RD&D) in the electricity system. The authors present promising specific areas for innovation and the structural elements needed to enhance the effectiveness and efficiency of the electricity RD&D system. The discussion of these elements is structured into four categories: the locus of electricity innovation and which actors are producing these advances, the connectivity and integration of the innovation system and how to overcome its gaps, opportunities for partnerships and collaborations, and how to attain leverage for creating the largest innovation impacts with a set amount of resources. The U.S. electricity system is at a pivotal point in its evolution. DOE can engage with its innovation partners in different ways throughout the technology life cycle to create an electricity system that is future-ready and serves the public interest.",
+  },
+  {
     "blockId": "p1_b4",
-    "text": "The electricity system is undergoing a period of immense change in its technologies and operation. The U.S.",
-  },
-  {
-    "blockId": "p1_b5",
-    "text": "Department of Energy’s (DOE’s) Office of Electricity requested an Issue Paper from the National Academies of",
-  },
-  {
-    "blockId": "p1_b6",
-    "text": "Sciences, Engineering, and Medicine that elevates and synthesizes insights for creating effective and efficient",
-  },
-  {
-    "blockId": "p1_b7",
-    "text": "research, development, and demonstration (RD&D) in the electricity system. The authors present promising",
-  },
-  {
-    "blockId": "p1_b8",
-    "text": "specific areas for innovation and the structural elements needed to enhance the effectiveness and efficiency",
-  },
-  {
-    "blockId": "p1_b9",
-    "text": "of the electricity RD&D system. The discussion of these elements is structured into four categories: the locus",
-  },
-  {
-    "blockId": "p1_b10",
-    "text": "of electricity innovation and which actors are producing these advances, the connectivity and integration",
-  },
-  {
-    "blockId": "p1_b11",
-    "text": "of the innovation system and how to overcome its gaps, opportunities for partnerships and collaborations,",
-  },
-  {
-    "blockId": "p1_b12",
-    "text": "and how to attain leverage for creating the largest innovation impacts with a set amount of resources. The",
-  },
-  {
-    "blockId": "p1_b13",
-    "text": "U.S. electricity system is at a pivotal point in its evolution. DOE can engage with its innovation partners in",
-  },
-  {
-    "blockId": "p1_b14",
-    "text": "different ways throughout the technology life cycle to create an electricity system that is future-ready and",
-  },
-  {
-    "blockId": "p1_b15",
-    "text": "serves the public interest.",
-  },
-  {
-    "blockId": "p1_b16",
     "text": "Introduction",
   },
   {
-    "blockId": "p1_b17",
-    "text": "RD&D efforts are essential underpinnings for the electricity system’s ability to support the livelihoods of its",
+    "blockId": "p1_b5",
+    "text": "RD&D efforts are essential underpinnings for the electricity system’s ability to support the livelihoods of its users and enable the growth and strength of the U.S. economy. RD&D endeavors produce new technologies, services, and operational capabilities that enter into use throughout the system with the rate of diffusion affecting how quickly the electric sector can change.",
   },
   {
-    "blockId": "p1_b18",
-    "text": "users and enable the growth and strength of the U.S. economy. RD&D endeavors produce new technologies,",
+    "blockId": "p1_b6",
+    "text": "Often, the RD&D process is characterized as being top-down (driven by organizational leadership) or bottom- up (coming from researchers and employees). There is an increasing recognition over the past two decades that the top-down and bottom-up processes are intertwined (Li 2023; Owen 2009). In this Issue Paper the authors recognize the role and value of both. Top-down processes set the architectural and directional dimensions of the ecosystem and bottom-up processes leverage diverse capital, knowledge, and resource bases that give shape and context to top-down RD&D aspirations.",
   },
   {
-    "blockId": "p1_b19",
-    "text": "services, and operational capabilities that enter into use throughout the system with the rate of diffusion",
+    "blockId": "p1_b7",
+    "text": "Supporting an efficient and effective innovation ecosystem for electric power will be important for unlocking the capabilities to address the challenges and opportunities facing this system. At the time of writing, these include strains on system reliability (DOE 2025a; NERC 2025), challenges to grid resilience (Costello 2019; Gibson 2020; NASEM 2017), accelerating demand growth (ACP 2025; ICF 2025), concerns over electricity prices (McGee and Tyndall 2025; Wiser et al. 2025), regulatory paradigms that may unnecessarily constrain innovation (Kiesling et al. 2025; Schwartz 2022), and increasingly complex supply chain considerations (Howard 2025). The U.S. federal government has a strong history of supporting RD&D endeavors for critical technologies and systems, with DOE’s efforts specifically enabling improvements in reliability and affordability for the U.S. energy systems (Urecki and Das 2025). These outcomes result not just from DOE’s direct research work but also from its engagement of a broad network of innovation partners including national laboratories, universities, and the private sector (NASEM 2021a).",
   },
   {
-    "blockId": "p1_b20",
-    "text": "affecting how quickly the electric sector can change.",
-  },
-  {
-    "blockId": "p1_b21",
-    "text": "Often, the RD&D process is characterized as being top-down (driven by organizational leadership) or bottom-",
-  },
-  {
-    "blockId": "p1_b22",
-    "text": "up (coming from researchers and employees). There is an increasing recognition over the past two decades",
-  },
-  {
-    "blockId": "p1_b23",
-    "text": "that the top-down and bottom-up processes are intertwined (Li 2023; Owen 2009). In this Issue Paper",
-  },
-  {
-    "blockId": "p1_b24",
-    "text": "the authors recognize the role and value of both. Top-down processes set the architectural and directional",
-  },
-  {
-    "blockId": "p1_b25",
-    "text": "dimensions of the ecosystem and bottom-up processes leverage diverse capital, knowledge, and resource",
-  },
-  {
-    "blockId": "p1_b26",
-    "text": "bases that give shape and context to top-down RD&D aspirations.",
-  },
-  {
-    "blockId": "p1_b27",
-    "text": "Supporting an efficient and effective innovation ecosystem for electric power will be important for unlocking",
-  },
-  {
-    "blockId": "p1_b28",
-    "text": "the capabilities to address the challenges and opportunities facing this system. At the time of writing, these",
-  },
-  {
-    "blockId": "p1_b29",
-    "text": "include strains on system reliability (DOE 2025a; NERC 2025), challenges to grid resilience (Costello 2019;",
-  },
-  {
-    "blockId": "p1_b30",
-    "text": "Gibson 2020; NASEM 2017), accelerating demand growth (ACP 2025; ICF 2025), concerns over electricity",
-  },
-  {
-    "blockId": "p1_b31",
-    "text": "prices (McGee and Tyndall 2025; Wiser et al. 2025), regulatory paradigms that may unnecessarily constrain",
-  },
-  {
-    "blockId": "p1_b32",
-    "text": "innovation (Kiesling et al. 2025; Schwartz 2022), and increasingly complex supply chain considerations",
-  },
-  {
-    "blockId": "p1_b33",
-    "text": "(Howard 2025). The U.S. federal government has a strong history of supporting RD&D endeavors for",
-  },
-  {
-    "blockId": "p1_b34",
-    "text": "critical technologies and systems, with DOE’s efforts specifically enabling improvements in reliability and",
-  },
-  {
-    "blockId": "p1_b35",
-    "text": "affordability for the U.S. energy systems (Urecki and Das 2025). These outcomes result not just from DOE’s",
-  },
-  {
-    "blockId": "p1_b36",
-    "text": "direct research work but also from its engagement of a broad network of innovation partners including",
-  },
-  {
-    "blockId": "p1_b37",
-    "text": "national laboratories, universities, and the private sector (NASEM 2021a).",
-  },
-  {
-    "blockId": "p1_b38",
+    "blockId": "p1_b8",
     "text": "1",
   },
   {
-    "blockId": "p1_b39",
+    "blockId": "p1_b9",
     "text": "Copyright National Academy of Sciences. All rights reserved.",
   },
 ]
@@ -420,31 +296,95 @@ exports[`groupItemsIntoBlocks on real PDF fixtures > block structure snapshot: t
   },
   {
     "blockId": "p1_b2",
-    "text": "Abstract Unique authors publishing in *CL venues",
+    "text": "Abstract",
   },
   {
     "blockId": "p1_b3",
-    "text": "1+ papers 17500 2+ papers NLP is in a period of disruptive change that is 3+ papers 15000 impacting our methodologies, funding sources, 5+ papers",
+    "text": "NLP is in a period of disruptive change that is impacting our methodologies, funding sources, and public perception. In this work, we seek to understand how to shape our future by better understanding our past. We study factors that shape NLP as a field, including culture, incen- tives, and infrastructure by conducting long- form interviews with 26 NLP researchers of varying seniority, research area, institution, and social identity. Our interviewees identify cycli- cal patterns in the field, as well as new shifts without historical parallel, including changes in benchmark culture and software infrastructure. We complement this discussion with quantita- tive analysis of citation, authorship, and lan- guage use in the ACL Anthology over time. We conclude by discussing shared visions, con- cerns, and hopes for the future of NLP. We hope that this study of our field’s past and present can prompt informed discussion of our com- munity’s implicit norms and more deliberate action to consciously shape the future.",
   },
   {
     "blockId": "p1_b4",
-    "text": "and public perception. In this work, we seek to 12500 understand how to shape our future by better understanding our past. We study factors that 10000 shape NLP as a field, including culture, incen- 7500 tives, and infrastructure by conducting long- form interviews with 26 NLP researchers of 5000 varying seniority, research area, institution, and",
+    "text": "1",
   },
   {
     "blockId": "p1_b5",
-    "text": "2500 social identity. Our interviewees identify cycli-",
+    "text": "Introduction",
   },
   {
     "blockId": "p1_b6",
-    "text": "cal patterns in the field, as well as new shifts 0 1980 1985 1990 1995 2000 2005 2010 2015 2020 without historical parallel, including changes in Figure 1: The number of unique researchers publishing benchmark culture and software infrastructure. in ACL venues has increased dramatically, from 715 We complement this discussion with quantita- unique authors in 1980 to 17,829 in 2022. tive analysis of citation, authorship, and lan- guage use in the ACL Anthology over time. of dubious scientific value,” and that AI technol- We conclude by discussing shared visions, con- ogy could lead to a catastrophic event this century cerns, and hopes for the future of NLP. We hope (Michael et al., 2022). More recently, there has that this study of our field’s past and present been discussion of the increasing prevalence of can prompt informed discussion of our com- closed-source models in NLP and how that will munity’s implicit norms and more deliberate shape the field and its innovations (Rogers, 2023; action to consciously shape the future. Solaiman, 2023; Liao and Vaughan, 2023). In order 1 Introduction to tackle these big challenges, we must understand the factors — norms, incentives, technology and Natural language processing (NLP) is in a period culture — that led to our current crossroads. of flux. The successes of deep neural networks We present a study of the community in its cur- and large language models (LLMs) in NLP coin- rent state, informed by a series of long-form ret- cides with a shift not only in the nature of our rospective interviews with NLP researchers. Our research questions and methodology, but also in interviewees identify patterns throughout the his- the size and visibility of our field. Since the mid- tory of NLP, describing periods of research pro- 2010s, the number of first-time authors publishing ductivity and stagnation that recur over decades in the ACL Anthology has been increasing expo- and appear at smaller scale around prominent meth- nentially (Figure 1). Recent publicity around NLP ods (§3). Interviewees also point out unparalleled technology, most notably ChatGPT, has brought shifts in the community’s norms and incentives. our field into the public spotlight, with correspond- Aggregating trends across interviews, we identify ing (over-)excitement and scrutiny. key factors shaping these shifts, including the rise In the 2022 NLP Community Metasurvey, many and persistence of benchmarking culture (§4) and NLP practicioners expressed fears that private firms the maturation and centralization of software in- exert excessive influence on the field, that “a ma- frastructure (§5). Our quantitative analysis of cita- jority of the research being published in NLP is tion patterns, authorship, and language use in the ACL Anthology over time provides a complemen- ∗ Denotes equal contribution.",
+    "text": "Natural language processing (NLP) is in a period of flux. The successes of deep neural networks and large language models (LLMs) in NLP coin- cides with a shift not only in the nature of our research questions and methodology, but also in the size and visibility of our field. Since the mid- 2010s, the number of first-time authors publishing in the ACL Anthology has been increasing expo- nentially (Figure 1). Recent publicity around NLP technology, most notably ChatGPT, has brought our field into the public spotlight, with correspond- ing (over-)excitement and scrutiny. In the 2022 NLP Community Metasurvey, many NLP practicioners expressed fears that private firms exert excessive influence on the field, that “a ma- jority of the research being published in NLP is",
   },
   {
     "blockId": "p1_b7",
-    "text": "13310",
+    "text": "∗ Denotes equal contribution.",
   },
   {
     "blockId": "p1_b8",
-    "text": "Proceedings of the 2023 Conference on Empirical Methods in Natural Language Processing , pages 13310–13325 December 6-10, 2023 ©2023 Association for Computational Linguistics",
+    "text": "Proceedings of the 2023 Conference on Empirical Methods in Natural Language Processing December 6-10, 2023 ©2023 Association for Computational Linguistics",
+  },
+  {
+    "blockId": "p1_b9",
+    "text": "17500",
+  },
+  {
+    "blockId": "p1_b10",
+    "text": "15000",
+  },
+  {
+    "blockId": "p1_b11",
+    "text": "Unique authors publishing in *CL venues",
+  },
+  {
+    "blockId": "p1_b12",
+    "text": "1+ papers 2+ papers 3+ papers 5+ papers",
+  },
+  {
+    "blockId": "p1_b13",
+    "text": "12500",
+  },
+  {
+    "blockId": "p1_b14",
+    "text": "10000",
+  },
+  {
+    "blockId": "p1_b15",
+    "text": "7500",
+  },
+  {
+    "blockId": "p1_b16",
+    "text": "5000",
+  },
+  {
+    "blockId": "p1_b17",
+    "text": "2500",
+  },
+  {
+    "blockId": "p1_b18",
+    "text": "0 1980 1985 1990 1995 2000 2005 2010 2015 2020",
+  },
+  {
+    "blockId": "p1_b19",
+    "text": "Figure 1: The number of unique researchers publishing",
+  },
+  {
+    "blockId": "p1_b20",
+    "text": "in ACL venues has increased dramatically, from 715 unique authors in 1980 to 17,829 in 2022.",
+  },
+  {
+    "blockId": "p1_b21",
+    "text": "of dubious scientific value,” and that AI technol- ogy could lead to a catastrophic event this century (Michael et al., 2022). More recently, there has been discussion of the increasing prevalence of closed-source models in NLP and how that will shape the field and its innovations (Rogers, 2023; Solaiman, 2023; Liao and Vaughan, 2023). In order to tackle these big challenges, we must understand the factors — norms, incentives, technology and culture — that led to our current crossroads.",
+  },
+  {
+    "blockId": "p1_b22",
+    "text": "We present a study of the community in its cur- rent state, informed by a series of long-form ret- rospective interviews with NLP researchers. Our interviewees identify patterns throughout the his- tory of NLP, describing periods of research pro- ductivity and stagnation that recur over decades and appear at smaller scale around prominent meth- ods (§3). Interviewees also point out unparalleled shifts in the community’s norms and incentives. Aggregating trends across interviews, we identify key factors shaping these shifts, including the rise and persistence of benchmarking culture (§4) and the maturation and centralization of software in- frastructure (§5). Our quantitative analysis of cita- tion patterns, authorship, and language use in the ACL Anthology over time provides a complemen-",
+  },
+  {
+    "blockId": "p1_b23",
+    "text": "13310",
+  },
+  {
+    "blockId": "p1_b24",
+    "text": ", pages 13310–13325",
   },
 ]
 `;
@@ -453,10 +393,54 @@ exports[`groupItemsIntoBlocks on real PDF fixtures > block structure snapshot: t
 [
   {
     "blockId": "p1_b0",
-    "text": "tary view of the shifts described by interviewees, was not present in the interview applied the closed grounding their narratives and our interpretation in coding frame to the data. In weekly analysis measurable trends. Through our characterization meetings, new codes arose to capture new themes of the current state of the NLP research community or provide greater specificity, in which case the and the factors that have led us here, we aim to closed coding scheme was revised, categories offer a foundation for informed reflection on the refined, and data re-coded in an iterative process. future that we as a community might wish to see. Analysis reported here emerged first from this coded data, was refined by subsequent review of 2 Methods raw transcripts to check context, and developed in discussion between all authors. 2.1 Qualitative methods 2.2 Quantitative Methods We recruited 26 researchers to participate in inter- views using purposive (Campbell et al., 2020) and We use quantitative methods primarily as a coher- snowball sampling (Parker et al., 2019): asking ence check on our qualitative results. While our participants to recommend other candidates, and work is largely concerned with the causes and com- purposively selecting for diversity in affiliation, ca- munity reception of changes in the community, our reer stage, geographic position, and research area quantitative analyses provide evidence that these (see participant demographics in Appendix A.1). changes have occurred. This includes analyzing Our sample had a 69-31% academia-industry split, authorship shifts (Figures 1 and 4), citation pat- was 19% women, and 27% of participants identi- terns (Figure 2), terminology use (Figure 2,3) in fied as part of a minoritized group in the field. Of the ACL anthology over time; for more details on our academic participants, we had a near-even split reproducing this analysis, see Appendix B. of early-, mid-, and late-career researchers; indus- 3 Exploit-explore cycles of work try researchers were 75% individual contributors and 25% managers. Our participants described cyclical behavior in Interviews were semi-structured (Weiss, 1995), NLP research following methodological shifts ev- including a dedicated notetaker, and recorded with ery few years. Many participants referred to these participant consent, lasting between 45-73 minutes methodological shifts as “paradigm shifts”, with (mean: 58 minutes). Interviews followed an in- similar structure, which we characterize as explore terview guide (see Appendix A.3) and began by 1 and exploit phases. contrasting the participant’s experience of the NLP First wave: exploit. Participants suggested that community at the start of their career and the cur- after a key paper, a wave of work is published rent moment, then moved to discussion of shifts in that demonstrates the utility of that method across the community during their career. Interviews were varying tasks or benchmarks. Interviewees vari- conducted between November 2022 and May 2023; ously describe this stage as “following the band- these interviews were coincidentally contempora- wagon” (17) , “land grab stuff” (9) , or “picking neous with the release of ChatGPT in November the low-hanging fruit” (8) . A researcher with prior 2022 and GPT-4 in March 2023, which frequently experience in computer vision drew parallels be- provided points of reflection for our participants. tween the rise of BERT and the computer vision Following procedures of grounded the- community after AlexNet was released, where “it ory (Strauss and Corbin, 1990), the authors present felt like every other paper was, ‘I have fine tuned for the interview produced analytical memos ImageNet trained CNN on some new dataset’ ” for early interviews (Glaser et al., 2004). As (17) . However, participants identified benefits of interviews proceeded, authors began a process of this “initial wave of showing things work” (17) independently open coding the data, an interpre- in demonstrating the value of techniques across tive (Lincoln et al., 2011) analytical process where tasks or domains; in finding the seemingly obvi- researchers assign conceptual labels to segments ous ideas which do not work, thus exposing new of data (Strauss and Corbin, 1990). After this, areas to investigate; and in developing downstream authors convened to discuss their open codes, applications. When one researcher was asked to systematizing recurring themes and contrasts to construct a preliminary closed coding frame (Miles 1 Inspired by the verbiage of reinforcement learning, e.g. and Huberman, 1994). After this, an author who Sutton and Barto (2018).",
+    "text": "tary view of the shifts described by interviewees, grounding their narratives and our interpretation in measurable trends. Through our characterization of the current state of the NLP research community and the factors that have led us here, we aim to offer a foundation for informed reflection on the future that we as a community might wish to see.",
   },
   {
     "blockId": "p1_b1",
+    "text": "2",
+  },
+  {
+    "blockId": "p1_b2",
+    "text": "Methods",
+  },
+  {
+    "blockId": "p1_b3",
+    "text": "2.1 Qualitative methods",
+  },
+  {
+    "blockId": "p1_b4",
+    "text": "We recruited 26 researchers to participate in inter- views using purposive (Campbell et al., 2020) and snowball sampling (Parker et al., 2019): asking participants to recommend other candidates, and purposively selecting for diversity in affiliation, ca- reer stage, geographic position, and research area (see participant demographics in Appendix A.1). Our sample had a 69-31% academia-industry split, was 19% women, and 27% of participants identi- fied as part of a minoritized group in the field. Of our academic participants, we had a near-even split of early-, mid-, and late-career researchers; indus- try researchers were 75% individual contributors and 25% managers. Interviews were semi-structured (Weiss, 1995), including a dedicated notetaker, and recorded with participant consent, lasting between 45-73 minutes (mean: 58 minutes). Interviews followed an in- terview guide (see Appendix A.3) and began by contrasting the participant’s experience of the NLP community at the start of their career and the cur- rent moment, then moved to discussion of shifts in the community during their career. Interviews were conducted between November 2022 and May 2023; these interviews were coincidentally contempora- neous with the release of ChatGPT in November 2022 and GPT-4 in March 2023, which frequently provided points of reflection for our participants. Following procedures of grounded the- ory (Strauss and Corbin, 1990), the authors present for the interview produced analytical memos for early interviews (Glaser et al., 2004). As interviews proceeded, authors began a process of independently open coding the data, an interpre- tive (Lincoln et al., 2011) analytical process where researchers assign conceptual labels to segments of data (Strauss and Corbin, 1990). After this, authors convened to discuss their open codes, systematizing recurring themes and contrasts to construct a preliminary closed coding frame (Miles and Huberman, 1994). After this, an author who",
+  },
+  {
+    "blockId": "p1_b5",
+    "text": "was not present in the interview applied the closed coding frame to the data. In weekly analysis meetings, new codes arose to capture new themes or provide greater specificity, in which case the closed coding scheme was revised, categories refined, and data re-coded in an iterative process. Analysis reported here emerged first from this coded data, was refined by subsequent review of raw transcripts to check context, and developed in discussion between all authors.",
+  },
+  {
+    "blockId": "p1_b6",
+    "text": "2.2 Quantitative Methods",
+  },
+  {
+    "blockId": "p1_b7",
+    "text": "We use quantitative methods primarily as a coher- ence check on our qualitative results. While our work is largely concerned with the causes and com- munity reception of changes in the community, our quantitative analyses provide evidence that these changes have occurred. This includes analyzing authorship shifts (Figures 1 and 4), citation pat- terns (Figure 2), terminology use (Figure 2,3) in the ACL anthology over time; for more details on reproducing this analysis, see Appendix B.",
+  },
+  {
+    "blockId": "p1_b8",
+    "text": "3 Exploit-explore cycles of work",
+  },
+  {
+    "blockId": "p1_b9",
+    "text": "Our participants described cyclical behavior in NLP research following methodological shifts ev- ery few years. Many participants referred to these methodological shifts as “paradigm shifts”, with similar structure, which we characterize as explore 1 and exploit phases.",
+  },
+  {
+    "blockId": "p1_b10",
+    "text": "First wave: exploit. Participants suggested that after a key paper, a wave of work is published that demonstrates the utility of that method across varying tasks or benchmarks. Interviewees vari- ously describe this stage as “following the band- wagon” (17) , “land grab stuff” (9) , or “picking the low-hanging fruit” (8) . A researcher with prior experience in computer vision drew parallels be- tween the rise of BERT and the computer vision community after AlexNet was released, where “it felt like every other paper was, ‘I have fine tuned ImageNet trained CNN on some new dataset’ ” (17) . However, participants identified benefits of this “initial wave of showing things work” (17) in demonstrating the value of techniques across tasks or domains; in finding the seemingly obvi- ous ideas which do not work, thus exposing new areas to investigate; and in developing downstream applications. When one researcher was asked to",
+  },
+  {
+    "blockId": "p1_b11",
+    "text": "1 Inspired by the verbiage of reinforcement learning, e.g. Sutton and Barto (2018).",
+  },
+  {
+    "blockId": "p1_b12",
     "text": "13311",
   },
 ]
