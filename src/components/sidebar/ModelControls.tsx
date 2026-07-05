@@ -52,13 +52,29 @@ export interface ModelControlsProps {
   setMlHighlights: (highlights: Highlight[]) => void;
   progress: number;
   message: string;
+  /** Optimistically mark the run as started, so the UI reacts on click rather
+   *  than lagging until the first progress message returns from the offscreen. */
+  onRunStart: () => void;
 }
 
-const STATUS_MAP: Record<string, string> = {
-  unloaded: 'bg-red-500',
-  downloading: 'bg-yellow-400',
-  loading: 'bg-yellow-400',
-  running: 'bg-green-600',
+// Status dot + label per run stage. `unloaded` is deliberately absent: before any
+// run there's no meaningful run stage (a remote model never "loads"), so the dot
+// falls back to connection readiness instead — see `statusView` below.
+const RUN_VIEW: Partial<Record<MlProgressMessage['stage'], { label: string; dot: string }>> = {
+  downloading: { label: 'Downloading model', dot: 'bg-yellow-400' },
+  loading: { label: 'Loading model', dot: 'bg-yellow-400' },
+  running: { label: 'Running', dot: 'bg-blue-500' },
+  done: { label: 'Done', dot: 'bg-green-600' },
+  error: { label: 'Error', dot: 'bg-red-500' },
+  cancelled: { label: 'Cancelled', dot: 'bg-muted-foreground' },
+};
+
+// Readiness dot + label, shown when no run is active/terminal (stage `unloaded`).
+const READINESS_VIEW: Record<string, { label: string; dot: string }> = {
+  ready: { label: 'Ready', dot: 'bg-green-600' },
+  verifying: { label: 'Checking connection…', dot: 'bg-yellow-400' },
+  unconfigured: { label: 'Not configured', dot: 'bg-red-500' },
+  unreachable: { label: 'Unreachable', dot: 'bg-red-500' },
 };
 
 // Curated default models per provider — a static placeholder until the lists are
@@ -80,7 +96,13 @@ function readViewer(): { page?: number; pdfDocument?: { numPages?: number } } | 
 const currentViewerPage = () => readViewer()?.page ?? 1;
 const viewerPageCount = () => readViewer()?.pdfDocument?.numPages ?? 1;
 
-export function ModelControls({ status, progress, message, setMlHighlights }: ModelControlsProps) {
+export function ModelControls({
+  status,
+  progress,
+  message,
+  setMlHighlights,
+  onRunStart,
+}: ModelControlsProps) {
   const { activeSchema, pdfUrl } = useDrawerContext();
   const [currentRequestId, setCurrentRequestId] = useState<string | null>(null);
   const [config, setConfig] = useState<ModelConfig | null>(null);
@@ -104,12 +126,21 @@ export function ModelControls({ status, progress, message, setMlHighlights }: Mo
   const [rangeTo, setRangeTo] = useState('1');
   const drawerRoot = useMemo(() => document.getElementById('tractor-beam-drawer-root'), []);
 
-  const isRunning = status === 'running' && progress < 1;
+  // A run is in flight while the stage is `running` — completion is now its own
+  // terminal stage (`done`), not `running` at progress 1.
+  const isRunning = status === 'running';
 
   // Gate the run trigger on readiness: a run can't start unless the selected
   // model is actually usable. The reason (when not ready) is surfaced both on
   // the disabled button (tooltip) and beside the model name (warning triangle).
   const readiness = useModelReadiness(config);
+
+  // The dot + label combine both state machines: while a run is active or has a
+  // terminal result, show the run stage; before any run (`unloaded`), reflect
+  // connection readiness instead — so a configured remote model reads "Ready",
+  // not "unloaded".
+  const statusView = RUN_VIEW[status] ??
+    READINESS_VIEW[readiness.state] ?? { label: status, dot: 'bg-muted-foreground' };
   const runDisabled = isRunning || readiness.state !== 'ready';
   const runDisabledReason =
     readiness.state === 'unconfigured' || readiness.state === 'unreachable'
@@ -141,6 +172,7 @@ export function ModelControls({ status, progress, message, setMlHighlights }: Mo
   async function sendRunMessage() {
     const requestId = crypto.randomUUID();
     setCurrentRequestId(requestId);
+    onRunStart(); // optimistic 'running' so the UI reacts immediately on click
     // Snapshot the schema this run is based on (doc 02 mlRun version) and reference
     // it from the run by snapshotIndex — the version's label is derived from that
     // snapshot, never copied. Snapshotting is a persistence concern → repo seam.
@@ -165,6 +197,7 @@ export function ModelControls({ status, progress, message, setMlHighlights }: Mo
   async function runScoped(scope: MlRunScope) {
     const requestId = crypto.randomUUID();
     setCurrentRequestId(requestId);
+    onRunStart(); // optimistic 'running' so the UI reacts immediately on click
     // Scoped runs are still mlRuns: snapshot the schema version they ran against,
     // exactly as the whole-document run does (sendRunMessage).
     const snapshotIndex = await schemaRepo.snapshot(activeSchema, 'mlRun');
@@ -415,13 +448,9 @@ export function ModelControls({ status, progress, message, setMlHighlights }: Mo
         </div>
       )}
 
-      <p className="text-sm">
-        Status: {status}{' '}
-        <span
-          className={
-            'inline-block w-2 h-2 rounded-full ' + (STATUS_MAP[status] || 'bg-muted-foreground')
-          }
-        />
+      <p className="text-sm flex items-center gap-1.5">
+        Status: {statusView.label}
+        <span className={'inline-block w-2 h-2 rounded-full ' + statusView.dot} />
       </p>
 
       {isRunning && (
@@ -430,11 +459,25 @@ export function ModelControls({ status, progress, message, setMlHighlights }: Mo
           <Progress value={progress * 100} className="h-2 [&>div]:bg-green-500" />
         </div>
       )}
-      {status === 'loading' && (
+      {(status === 'loading' || status === 'downloading') && (
         <div className="flex flex-col gap-1">
-          <div className="text-sm text-muted-foreground">Loading model...</div>
+          <div className="text-sm text-muted-foreground">
+            {status === 'downloading' ? 'Downloading model…' : 'Loading model…'}
+          </div>
           <Progress value={progress * 100} className="h-2" />
         </div>
+      )}
+      {/* Terminal states persist until the next run starts (which resets to
+          'running' via onRunStart). This is what kills the stuck-green-dot and
+          the previously-invisible 'Cancelled'. */}
+      {status === 'error' && (
+        <div className="text-sm text-red-600">{message || 'Run failed.'}</div>
+      )}
+      {status === 'cancelled' && (
+        <div className="text-sm text-muted-foreground">Cancelled.</div>
+      )}
+      {status === 'done' && (
+        <div className="text-sm text-muted-foreground">{message || 'Done.'}</div>
       )}
 
       <div className="flex flex-row justify-between gap-1">

@@ -295,6 +295,13 @@ function DrawerContent({
             message: message.message,
           });
           break;
+        case 'mlTaskError':
+          // A fatal pipeline error (e.g. a bad key surfaced before any block, or
+          // an offline short-circuit). Previously broadcast with no listener —
+          // now it drives the run into a visible `error` state.
+          if (message.requestId && !ownsAnnotationRequest(message.requestId)) break;
+          setLlmLoaded({ stage: 'error', progress: 1, message: message.error });
+          break;
         case 'annotationResults':
           // Only persist/render results for a run THIS tab initiated — otherwise
           // another document's annotations get saved under this tab's pdfUrl.
@@ -453,6 +460,9 @@ function DrawerContent({
           setMlHighlights={setMlHighlights}
           progress={llmLoaded.progress}
           message={llmLoaded.message}
+          onRunStart={() =>
+            setLlmLoaded({ stage: 'running', progress: 0, message: 'Starting…' })
+          }
         />
       </div>
     </DrawerContext.Provider>

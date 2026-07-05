@@ -1,5 +1,4 @@
 import { placeholderSchemas } from '@/lib/placeholder-schemas.ts';
-import { rgbaToHex } from '@/lib/utils.ts';
 import { Story } from '@ladle/react';
 import { DrawerContext } from '@/contexts/DrawerContext.tsx';
 import { ModelControls } from '@/components/sidebar/ModelControls.tsx';
@@ -24,7 +23,13 @@ export const ModelControlsStory: Story = () => (
   <DrawerContext.Provider value={stubContext}>
     <Frame>
       {/*<div> testing!</div>*/}
-      <ModelControls status={'loading'} progress={0.8} message={'Loading...'} />
+      <ModelControls
+        status={'loading'}
+        progress={0.8}
+        message={'Loading...'}
+        setMlHighlights={() => {}}
+        onRunStart={() => {}}
+      />
     </Frame>
   </DrawerContext.Provider>
 );

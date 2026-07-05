@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, within, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { DrawerContext, type DrawerContextValue } from '@/contexts/DrawerContext.tsx';
-import { ModelControls } from './ModelControls';
+import { ModelControls, type ModelControlsProps } from './ModelControls';
 import type { MlAnnotationRun, Schema } from '@/lib/definitions.ts';
 
 // Replace the storage seam with a spy so no IndexedDB is touched — the repo's own
@@ -24,6 +24,16 @@ vi.mock('@/storage/repositories.ts', () => ({
 vi.mock('@/lib/config-storage.ts', () => ({
   loadModelConfig: vi.fn().mockResolvedValue(null),
   saveModelConfig: vi.fn(),
+  // ModelControls subscribes on mount; return a no-op unsubscribe.
+  subscribeModelConfig: vi.fn(() => () => {}),
+}));
+
+// Readiness gating is orthogonal to the history/run-dispatch behavior under test
+// here, and its live probe reaches chrome.runtime (absent in jsdom). Force `ready`
+// so the run button is enabled; readiness itself is covered by readiness.test.ts.
+vi.mock('@/components/model-configuration/ModelReadiness.tsx', () => ({
+  useModelReadiness: () => ({ state: 'ready' }),
+  ModelReadinessIndicator: () => null,
 }));
 
 const activeSchema: Schema = { id: 'schema-1', name: 'Invoices', classes: [] };
@@ -51,10 +61,17 @@ const ctx: DrawerContextValue = {
 const loadCachedAnnotations = vi.fn();
 const runAnnotationPipeline = vi.fn();
 
-function renderControls() {
+function renderControls(overrides: Partial<ModelControlsProps> = {}) {
   return render(
     <DrawerContext.Provider value={ctx}>
-      <ModelControls status="unloaded" progress={0} message="" setMlHighlights={() => {}} />
+      <ModelControls
+        status="unloaded"
+        progress={0}
+        message=""
+        setMlHighlights={() => {}}
+        onRunStart={() => {}}
+        {...overrides}
+      />
     </DrawerContext.Provider>,
   );
 }
@@ -127,9 +144,15 @@ describe('ModelControls — ML run history', () => {
 
     // Creates the mlRun snapshot, then kicks off the pipeline referencing it by
     // the returned snapshotIndex (label is derived from the snapshot, not passed).
+    // Whole-document run: scope arg is undefined, snapshotIndex is 4th.
     expect(snapshotMock).toHaveBeenCalledWith(activeSchema, 'mlRun');
     await waitFor(() =>
-      expect(runAnnotationPipeline).toHaveBeenCalledWith(activeSchema, expect.any(String), 42),
+      expect(runAnnotationPipeline).toHaveBeenCalledWith(
+        activeSchema,
+        expect.any(String),
+        undefined,
+        42,
+      ),
     );
   });
 
@@ -159,6 +182,39 @@ describe('ModelControls — ML run history', () => {
     // Config revealed, and crucially the run was NOT loaded by that click.
     expect(screen.getByText('https://proxy.example.com')).toBeInTheDocument();
     expect(loadCachedAnnotations).not.toHaveBeenCalled();
+  });
+});
+
+describe('ModelControls — run status', () => {
+  beforeEach(() => {
+    window.TractorBeamDrawer = {
+      loadCachedAnnotations: vi.fn(),
+      runAnnotationPipeline: vi.fn(),
+    } as unknown as typeof window.TractorBeamDrawer;
+  });
+
+  it('shows a Stop control and progress while running', () => {
+    renderControls({ status: 'running', progress: 0.5, message: 'Block 2/4' });
+    expect(screen.getByTitle('Stop Annotation')).toBeInTheDocument();
+    expect(screen.getByText('Block 2/4')).toBeInTheDocument();
+  });
+
+  it('reaches a terminal Done state — no stuck Stop control (the old green-dot bug)', () => {
+    // Empty message exercises the 'Done.' fallback, distinct from the status label.
+    renderControls({ status: 'done', progress: 1, message: '' });
+    expect(screen.queryByTitle('Stop Annotation')).not.toBeInTheDocument();
+    expect(screen.getByText('Done.')).toBeInTheDocument();
+  });
+
+  it('renders a cancelled run (previously the Cancelled message was invisible)', () => {
+    renderControls({ status: 'cancelled', progress: 1, message: 'Cancelled' });
+    expect(screen.getByText('Cancelled.')).toBeInTheDocument();
+    expect(screen.queryByTitle('Stop Annotation')).not.toBeInTheDocument();
+  });
+
+  it('surfaces a failed run (previously mlTaskError had no listener)', () => {
+    renderControls({ status: 'error', progress: 1, message: 'Authentication failed' });
+    expect(screen.getByText('Authentication failed')).toBeInTheDocument();
   });
 });
 

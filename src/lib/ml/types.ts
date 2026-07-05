@@ -1,5 +1,20 @@
-/** Lifecycle stage of a model loading/inference run. */
-export type MlStage = 'unloaded' | 'downloading' | 'loading' | 'running';
+/**
+ * Lifecycle stage of a model loading/inference run.
+ *
+ * `unloaded` is the pre-run idle state; `downloading`/`loading` are local-model
+ * warmup; `running` is inference in progress. The three terminal stages —
+ * `done`, `error`, `cancelled` — are real end states so the UI can stop faking
+ * completion as `running` at progress 1 (which left the status stuck) and can
+ * render a failed or cancelled run distinctly.
+ */
+export type MlStage =
+  | 'unloaded'
+  | 'downloading'
+  | 'loading'
+  | 'running'
+  | 'done'
+  | 'error'
+  | 'cancelled';
 
 /** Callback for reporting model loading/inference progress */
 export type ProgressCallback = (

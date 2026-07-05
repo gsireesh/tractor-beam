@@ -216,7 +216,7 @@ async function handleAnnotationPipeline(task: RunAnnotationPipelineMessage) {
       if (cancelledRequestIds.has(task.requestId)) {
         console.log(`[offscreen] Pipeline ${task.requestId} cancelled at block ${i + 1}`);
         cancelledRequestIds.delete(task.requestId);
-        broadcastProgress('running', 1, 'Cancelled', task.requestId);
+        broadcastProgress('cancelled', 1, 'Cancelled', task.requestId);
         return;
       }
 
@@ -249,12 +249,13 @@ async function handleAnnotationPipeline(task: RunAnnotationPipelineMessage) {
     }
   }
 
-  // Signal completion
+  // Signal completion with a real terminal stage (not running@1, which left the
+  // status stuck green with no way to tell finished from failed).
   if (cancelledRequestIds.has(task.requestId)) {
     cancelledRequestIds.delete(task.requestId);
-    broadcastProgress('running', 1, 'Cancelled', task.requestId);
+    broadcastProgress('cancelled', 1, 'Cancelled', task.requestId);
   } else {
-    broadcastProgress('running', 1, 'Done', task.requestId);
+    broadcastProgress('done', 1, 'Done', task.requestId);
   }
   chrome.runtime
     .sendMessage({
