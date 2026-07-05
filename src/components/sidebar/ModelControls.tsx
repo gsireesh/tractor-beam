@@ -172,7 +172,7 @@ export function ModelControls({ status, progress, message, setMlHighlights }: Mo
   // don't auto-close like DropdownMenuItems would).
   function runThisPage() {
     const n = currentViewerPage();
-    void runScoped({ kind: 'page', startPage: n, endPage: n, label: `Page ${n}` });
+    void runScoped({ kind: 'page', pages: [n], label: `Page ${n}` });
     setScopeMenuOpen(false);
   }
 
@@ -182,25 +182,17 @@ export function ModelControls({ status, progress, message, setMlHighlights }: Mo
     const a = clamp(rangeFrom);
     const b = clamp(rangeTo);
     const [lo, hi] = a <= b ? [a, b] : [b, a];
+    const pages = Array.from({ length: hi - lo + 1 }, (_, i) => lo + i);
     const label = lo === hi ? `Page ${lo}` : `Pages ${lo}–${hi}`;
-    void runScoped({ kind: 'range', startPage: lo, endPage: hi, label });
+    void runScoped({ kind: 'range', pages, label });
     setScopeMenuOpen(false);
   }
 
-  // A TOC section runs from its own start page until the next entry at the same or
-  // a shallower level (its next non-descendant heading), in document order — so
-  // picking a chapter includes its subsections. Falls back to the last page.
-  // One run over the union of the sections checked in the tree. startPage/endPage are
-  // the min/max for display; `pages` carries the exact (possibly non-contiguous) set.
+  // One run over the union of the sections checked in the tree; `pages` is the exact
+  // (possibly non-contiguous) set the section picker computed.
   function runSections(pages: number[], label: string) {
     if (pages.length === 0) return;
-    void runScoped({
-      kind: 'toc',
-      startPage: pages[0],
-      endPage: pages[pages.length - 1],
-      pages,
-      label,
-    });
+    void runScoped({ kind: 'toc', pages, label });
     setScopeMenuOpen(false);
   }
 

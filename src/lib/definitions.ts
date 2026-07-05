@@ -91,17 +91,15 @@ export interface MlRunModel {
  * and every run recorded before scoping existed). `label` is the display string
  * ("Page 7" | "Pages 3–5" | a TOC section title | "3 sections").
  *
- * page/range runs are a single contiguous `[startPage, endPage]` window. A "by
- * section" TOC run can select several non-contiguous sections, so it also carries
- * an explicit `pages` set; when present, `pages` takes precedence over the window
- * for block filtering (startPage/endPage are then just its min/max, for display).
+ * `pages` is the explicit 1-based page set the run was filtered to — a single page
+ * (`[7]`), a contiguous range (`[3,4,5]`), or a non-contiguous union of TOC sections.
+ * It is the sole source of truth for filtering; the human-readable window lives in
+ * `label`.
  */
 export interface MlRunScope {
   kind: 'page' | 'range' | 'toc';
-  startPage: number;
-  endPage: number;
   label: string;
-  pages?: number[];
+  pages: number[];
 }
 
 export interface MlAnnotationRun {

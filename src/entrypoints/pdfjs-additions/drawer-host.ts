@@ -240,18 +240,13 @@ async function runAnnotationPipeline(
 
   console.log('[drawer] Extracting visual blocks...');
   const allBlocks = await window.TractorBeamPdf.extractVisualBlocks(PDFViewerApplication);
-  // Every VisualBlock carries a pageNumber, so scoping is just a page filter here; the
-  // offscreen doc consumes whatever blocks we send. An explicit `pages` set (multi-section
-  // "by section" runs) wins over the contiguous [startPage, endPage] window.
-  const inScope = scope
-    ? scope.pages
-      ? (page: number) => scope.pages!.includes(page)
-      : (page: number) => page >= scope.startPage && page <= scope.endPage
-    : () => true;
-  const blocks = scope ? allBlocks.filter((b) => inScope(b.pageNumber)) : allBlocks;
+  // Every VisualBlock carries a pageNumber, so scoping is just a page-set filter here;
+  // the offscreen doc consumes whatever blocks we send.
+  const pageSet = scope ? new Set(scope.pages) : null;
+  const blocks = pageSet ? allBlocks.filter((b) => pageSet.has(b.pageNumber)) : allBlocks;
   console.log(
     `[drawer] Extracted ${allBlocks.length} visual blocks; dispatching ${blocks.length}` +
-      (scope ? ` for ${scope.label} (pages ${scope.startPage}–${scope.endPage})` : ''),
+      (scope ? ` for ${scope.label}` : ''),
   );
 
   // 2. Ensure the offscreen document is ready
