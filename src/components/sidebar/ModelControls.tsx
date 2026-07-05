@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { MlProgressMessage } from '@/lib/messaging/message_definitions.ts';
-import type { Highlight } from '@/lib/definitions.ts';
+import type { Highlight, MlRunScope, OutlineEntry } from '@/lib/definitions.ts';
 import { Progress } from '@/components/ui/progress.tsx';
 import {
   ChevronDown,
@@ -24,6 +24,7 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu.tsx';
+import { Input } from '@/components/ui/input.tsx';
 import { loadModelConfig, saveModelConfig } from '@/lib/config-storage.ts';
 import {
   type ModelConfig,
@@ -38,6 +39,7 @@ import { IconButton } from '@/components/ui/IconButton.tsx';
 import { ModelConfigurationModal } from '@/components/model-configuration/ModelConfigurationModal.tsx';
 import { mlAnnotationRunRepo, schemaRepo } from '@/storage/repositories.ts';
 import { MlRunCard } from '@/components/sidebar/MlRunCard.tsx';
+import { ScopeSectionTree } from '@/components/sidebar/ScopeSectionTree.tsx';
 import type { MlAnnotationRun } from '@/lib/definitions.ts';
 
 export interface ModelControlsProps {
@@ -62,6 +64,17 @@ const PROVIDER_MODELS: { provider: ModelProvider; models: readonly string[] }[] 
   { provider: 'webllm', models: WEBLLM_MODELS },
 ];
 
+// The pdf.js viewer lives in the same page as the drawer. drawer-host.ts declares
+// window.PDFViewerApplication only as { pdfDocument }, so narrow to the fields we
+// read for scoping (current page + page count) here.
+function readViewer(): { page?: number; pdfDocument?: { numPages?: number } } | undefined {
+  return window.PDFViewerApplication as
+    | { page?: number; pdfDocument?: { numPages?: number } }
+    | undefined;
+}
+const currentViewerPage = () => readViewer()?.page ?? 1;
+const viewerPageCount = () => readViewer()?.pdfDocument?.numPages ?? 1;
+
 export function ModelControls({ status, progress, message, setMlHighlights }: ModelControlsProps) {
   const { activeSchema, pdfUrl } = useDrawerContext();
   const [currentRequestId, setCurrentRequestId] = useState<string | null>(null);
@@ -71,6 +84,19 @@ export function ModelControls({ status, progress, message, setMlHighlights }: Mo
   // snapshotIndex → version label, to derive each run's schema-version name.
   const [versionLabels, setVersionLabels] = useState<Map<number, string>>(new Map());
   const [runsLoaded, setRunsLoaded] = useState(false);
+  // PDF outline, fetched lazily when the scope menu first opens. null = not loaded
+  // yet; [] = loaded and this PDF has no table of contents.
+  const [outline, setOutline] = useState<OutlineEntry[] | null>(null);
+  // Current 1-based viewer page for the "this page" label. Refreshed on menu open
+  // (not via a scroll subscription): the menu is modal, so the PDF can't scroll
+  // while it's shown, and pdf.js page changes otherwise don't re-render React.
+  const [currentPage, setCurrentPage] = useState(currentViewerPage);
+  // Scope menu is controlled so a per-row run button can close it explicitly (the
+  // rows are plain divs, not auto-closing DropdownMenuItems).
+  const [scopeMenuOpen, setScopeMenuOpen] = useState(false);
+  // Page-range inputs (strings so partial edits don't fight React).
+  const [rangeFrom, setRangeFrom] = useState('1');
+  const [rangeTo, setRangeTo] = useState('1');
   const drawerRoot = useMemo(() => document.getElementById('tractor-beam-drawer-root'), []);
 
   const isRunning = status === 'running' && progress < 1;
@@ -98,7 +124,13 @@ export function ModelControls({ status, progress, message, setMlHighlights }: Mo
     // it from the run by snapshotIndex — the version's label is derived from that
     // snapshot, never copied. Snapshotting is a persistence concern → repo seam.
     const snapshotIndex = await schemaRepo.snapshot(activeSchema, 'mlRun');
-    void window.TractorBeamDrawer.runAnnotationPipeline(activeSchema, requestId, snapshotIndex);
+    // Whole-document run: no scope (3rd arg), snapshotIndex is the 4th arg.
+    void window.TractorBeamDrawer.runAnnotationPipeline(
+      activeSchema,
+      requestId,
+      undefined,
+      snapshotIndex,
+    );
   }
 
   function sendCancelMessage() {
@@ -106,6 +138,79 @@ export function ModelControls({ status, progress, message, setMlHighlights }: Mo
     window.TractorBeamDrawer.cancelAnnotationPipeline(currentRequestId);
     setCurrentRequestId(null);
   }
+
+  // The scoped twin of sendRunMessage: same run dispatch, plus a scope descriptor
+  // that drawer-host uses to filter blocks and to tag the stored run.
+  async function runScoped(scope: MlRunScope) {
+    const requestId = crypto.randomUUID();
+    setCurrentRequestId(requestId);
+    // Scoped runs are still mlRuns: snapshot the schema version they ran against,
+    // exactly as the whole-document run does (sendRunMessage).
+    const snapshotIndex = await schemaRepo.snapshot(activeSchema, 'mlRun');
+    void window.TractorBeamDrawer.runAnnotationPipeline(
+      activeSchema,
+      requestId,
+      scope,
+      snapshotIndex,
+    );
+  }
+
+  // Fetch the outline once, the first time the scope menu opens (same lazy pattern
+  // as refreshRuns). On failure treat the PDF as having no TOC rather than retrying.
+  async function loadOutline() {
+    if (outline !== null) return;
+    try {
+      const entries = await window.TractorBeamPdf.extractOutline(window.PDFViewerApplication);
+      setOutline(entries);
+    } catch (err) {
+      console.warn('[model-controls] Failed to read PDF outline:', err);
+      setOutline([]);
+    }
+  }
+
+  // Each run handler closes the scope menu itself (the rows are plain divs, so they
+  // don't auto-close like DropdownMenuItems would).
+  function runThisPage() {
+    const n = currentViewerPage();
+    void runScoped({ kind: 'page', pages: [n], label: `Page ${n}` });
+    setScopeMenuOpen(false);
+  }
+
+  function submitRange() {
+    const total = viewerPageCount();
+    const clamp = (v: string) => Math.min(Math.max(1, Math.trunc(Number(v))), total);
+    const a = clamp(rangeFrom);
+    const b = clamp(rangeTo);
+    const [lo, hi] = a <= b ? [a, b] : [b, a];
+    const pages = Array.from({ length: hi - lo + 1 }, (_, i) => lo + i);
+    const label = lo === hi ? `Page ${lo}` : `Pages ${lo}–${hi}`;
+    void runScoped({ kind: 'range', pages, label });
+    setScopeMenuOpen(false);
+  }
+
+  // One run over the union of the sections checked in the tree; `pages` is the exact
+  // (possibly non-contiguous) set the section picker computed.
+  function runSections(pages: number[], label: string) {
+    if (pages.length === 0) return;
+    void runScoped({ kind: 'toc', pages, label });
+    setScopeMenuOpen(false);
+  }
+
+  // Range is valid only when both inputs are whole pages within bounds. `from > to`
+  // is tolerated (submitRange swaps them), so it isn't a validity failure.
+  const pageTotal = viewerPageCount();
+  const rangeValid = (() => {
+    const a = Number(rangeFrom);
+    const b = Number(rangeTo);
+    return (
+      Number.isInteger(a) &&
+      Number.isInteger(b) &&
+      a >= 1 &&
+      b >= 1 &&
+      a <= pageTotal &&
+      b <= pageTotal
+    );
+  })();
 
   // Refetch the run archive each time the history menu opens, newest first, so the
   // list reflects runs completed since it was last viewed. We show a brief loading
@@ -198,16 +303,116 @@ export function ModelControls({ status, progress, message, setMlHighlights }: Mo
 
       <div className="flex flex-row justify-between gap-1">
         <div className="flex flex-row items-center justify-start gap-1">
-          <IconButton
-            title="Highlight with AI"
-            label="Highlight with AI"
-            variant="outline"
-            className="border-[green]"
-            icon={Highlighter}
-            color={'green'}
-            onClick={sendRunMessage}
-            disabled={isRunning}
-          />
+          {/* Split button: the panel's one primary action, so it wears the filled
+              `default` (brand purple) tier while every sibling stays quiet outline.
+              The pair sits in its own gap-0 group so the row's gap-1 still spaces the
+              History/Hide buttons; inner corners are flattened and the caret carries a
+              hairline `border-primary-foreground/30` divider (same seam as the popover's
+              "Add example" split button). */}
+          <div className="flex flex-row items-center">
+            <IconButton
+              title="Highlight with AI"
+              label="Highlight with AI"
+              variant="default"
+              className="rounded-r-none"
+              icon={Highlighter}
+              color={null}
+              onClick={sendRunMessage}
+              disabled={isRunning}
+            />
+            <DropdownMenu
+              open={scopeMenuOpen}
+              onOpenChange={(open) => {
+                setScopeMenuOpen(open);
+                if (open) {
+                  const p = String(currentViewerPage());
+                  setCurrentPage(currentViewerPage());
+                  setRangeFrom(p);
+                  setRangeTo(p);
+                  void loadOutline();
+                }
+              }}
+            >
+              <DropdownMenuTrigger disabled={isRunning}>
+                <IconButton
+                  title="Highlight options"
+                  variant="default"
+                  className="rounded-l-none border-l border-primary-foreground/30"
+                  icon={ChevronDown}
+                  color={null}
+                  size={'icon-sm'}
+                  disabled={isRunning}
+                />
+              </DropdownMenuTrigger>
+              <DropdownMenuPortal container={drawerRoot}>
+                {/* Rows are plain divs, not DropdownMenuItems: each Highlighter button
+                    drives its own run (no whole-row click), and the range inputs accept
+                    typing without the menu's item typeahead/close-on-select firing. */}
+                <DropdownMenuContent align="start" className="z-[10001] w-64">
+                  {/* This page */}
+                  <div className="flex items-center justify-between gap-2 px-2 py-1.5">
+                    <span className="text-sm">This page ({currentPage})</span>
+                    <IconButton
+                      title={`Highlight page ${currentPage}`}
+                      variant="default"
+                      icon={Highlighter}
+                      color={null}
+                      size={'icon-sm'}
+                      onClick={runThisPage}
+                    />
+                  </div>
+
+                  {/* Page range — inputs inline under the label; run stays disabled
+                      until both ends are valid pages. */}
+                  <div className="px-2 py-1.5">
+                    <span className="text-sm">Page range</span>
+                    <div className="mt-1.5 flex items-center gap-1.5">
+                      <Input
+                        aria-label="From page"
+                        type="number"
+                        min={1}
+                        max={pageTotal}
+                        value={rangeFrom}
+                        onChange={(e) => setRangeFrom(e.target.value)}
+                        onKeyDown={(e) => e.stopPropagation()}
+                        aria-invalid={!rangeValid}
+                        className="h-7 w-14 px-2 text-sm"
+                      />
+                      <span className="text-sm text-muted-foreground">–</span>
+                      <Input
+                        aria-label="To page"
+                        type="number"
+                        min={1}
+                        max={pageTotal}
+                        value={rangeTo}
+                        onChange={(e) => setRangeTo(e.target.value)}
+                        onKeyDown={(e) => e.stopPropagation()}
+                        aria-invalid={!rangeValid}
+                        className="h-7 w-14 px-2 text-sm"
+                      />
+                      <IconButton
+                        title="Highlight page range"
+                        variant="default"
+                        className="ml-auto"
+                        icon={Highlighter}
+                        color={null}
+                        size={'icon-sm'}
+                        disabled={!rangeValid}
+                        onClick={submitRange}
+                      />
+                    </div>
+                  </div>
+
+                  <ScopeSectionTree
+                    outline={outline}
+                    pageCount={pageTotal}
+                    disabled={isRunning}
+                    onAnnotate={runSections}
+                  />
+                </DropdownMenuContent>
+              </DropdownMenuPortal>
+            </DropdownMenu>
+          </div>
           {isRunning && (
             <IconButton
               title={'Stop Annotation'}
@@ -225,7 +430,10 @@ export function ModelControls({ status, progress, message, setMlHighlights }: Mo
               <IconButton title={'Prior AI runs'} icon={History} />
             </DropdownMenuTrigger>
             <DropdownMenuPortal container={drawerRoot}>
-              <DropdownMenuContent align="start" className="z-[10001] w-72 max-h-80 overflow-y-auto">
+              <DropdownMenuContent
+                align="start"
+                className="z-[10001] w-72 max-h-80 overflow-y-auto"
+              >
                 {!runsLoaded ? (
                   <DropdownMenuItem disabled>Loading…</DropdownMenuItem>
                 ) : runs.length === 0 ? (

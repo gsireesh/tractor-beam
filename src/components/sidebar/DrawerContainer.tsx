@@ -53,6 +53,7 @@ import { AnnotationMinimap } from '@/components/minimap/AnnotationMinimap.tsx';
 import {
   clearDrawerContent,
   getRunModel,
+  getRunScope,
   getRunName,
   getRunSnapshotIndex,
   ownsAnnotationRequest,
@@ -310,6 +311,7 @@ function DrawerContent({
               annotations: message.annotations,
               createdAt: Date.now(),
               model: getRunModel(message.requestId),
+              scope: getRunScope(message.requestId),
               name: getRunName(message.requestId),
               snapshotIndex: getRunSnapshotIndex(message.requestId),
             }).catch((err: unknown) =>

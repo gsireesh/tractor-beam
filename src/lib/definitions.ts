@@ -46,6 +46,20 @@ export interface VisualBlock {
   itemOffsets: number[]; // char offset in `text` where each item starts
 }
 
+// ─── PDF embedded table of contents (outline) ───
+
+/**
+ * One entry of the PDF's embedded outline, flattened depth-first from the nested
+ * tree pdf.js returns. `level` is the nesting depth (0 = top-level), used both to
+ * indent the menu and to derive a section's page window (a section runs until the
+ * next entry at the same or a shallower level). `pageNumber` is 1-based.
+ */
+export interface OutlineEntry {
+  title: string;
+  pageNumber: number;
+  level: number;
+}
+
 // ─── ML annotation pipeline results ───
 
 export interface MlAnnotation {
@@ -72,6 +86,22 @@ export interface MlRunModel {
   params?: Record<string, number | string | undefined>;
 }
 
+/**
+ * The document region a run covered. Absent = whole-document run (the default,
+ * and every run recorded before scoping existed). `label` is the display string
+ * ("Page 7" | "Pages 3–5" | a TOC section title | "3 sections").
+ *
+ * `pages` is the explicit 1-based page set the run was filtered to — a single page
+ * (`[7]`), a contiguous range (`[3,4,5]`), or a non-contiguous union of TOC sections.
+ * It is the sole source of truth for filtering; the human-readable window lives in
+ * `label`.
+ */
+export interface MlRunScope {
+  kind: 'page' | 'range' | 'toc';
+  label: string;
+  pages: number[];
+}
+
 export interface MlAnnotationRun {
   id: string; // requestId
   pdfUrl: string;
@@ -80,6 +110,8 @@ export interface MlAnnotationRun {
   createdAt: number;
   /** Model used for this run; absent on runs recorded before this was captured. */
   model?: MlRunModel;
+  /** Document region covered; absent = whole document (see MlRunScope). */
+  scope?: MlRunScope;
   /** Friendly `adverb-verb` nickname; absent on runs recorded before naming. */
   name?: string;
   /**

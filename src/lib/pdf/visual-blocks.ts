@@ -4,7 +4,7 @@
  * pdf.js entrypoint so they're unit-testable in isolation (the entrypoint only feeds
  * them normalized items pulled from the vendored viewer).
  */
-import type { VisualBlock, VisualBlockItem } from '@/lib/definitions';
+import type { VisualBlock, VisualBlockItem, OutlineEntry } from '@/lib/definitions';
 
 const MAX_XY_CUT_DEPTH = 8;
 // A gutter segment may be crossed by at most this fraction of the busiest column's item
@@ -329,4 +329,54 @@ export function groupItemsIntoBlocks(items: VisualBlockItem[], pageNumber: numbe
   }
 
   return allGroups.map((group, idx) => buildVisualBlock(group, pageNumber, idx));
+}
+
+/**
+ * Read the PDF's embedded table of contents (outline / bookmarks) and flatten it
+ * depth-first into 1-based page numbers. Returns [] when the PDF has no outline.
+ *
+ * Resolving an entry's `dest` to a page mirrors the vendored viewer's own logic
+ * (public/pdfjs/web/viewer.mjs goToDestination): a string dest is first looked up
+ * via getDestination, then the destination's page ref is resolved with
+ * getPageIndex. Entries whose dest can't be resolved are skipped rather than
+ * guessed at, so an unresolved bookmark never scopes a run to the wrong pages.
+ */
+export async function extractOutline(PDFViewerApplication: any): Promise<OutlineEntry[]> {
+  const pdfDoc = PDFViewerApplication.pdfDocument;
+  if (!pdfDoc) throw new Error('No PDF document loaded');
+
+  const outline = await pdfDoc.getOutline();
+  if (!outline || outline.length === 0) return [];
+
+  const entries: OutlineEntry[] = [];
+
+  async function resolvePageNumber(dest: any): Promise<number | null> {
+    const explicitDest = typeof dest === 'string' ? await pdfDoc.getDestination(dest) : dest;
+    if (!Array.isArray(explicitDest) || explicitDest.length === 0) return null;
+    const ref = explicitDest[0];
+    try {
+      // A page ref object needs async resolution; an integer is already a 0-based index.
+      const pageIndex =
+        typeof ref === 'object' && ref !== null ? await pdfDoc.getPageIndex(ref) : ref;
+      return typeof pageIndex === 'number' ? pageIndex + 1 : null;
+    } catch {
+      return null;
+    }
+  }
+
+  async function walk(nodes: any[], level: number): Promise<void> {
+    for (const node of nodes) {
+      const pageNumber = node.dest != null ? await resolvePageNumber(node.dest) : null;
+      if (pageNumber != null && node.title) {
+        entries.push({ title: node.title, pageNumber, level });
+      }
+      if (node.items && node.items.length > 0) {
+        await walk(node.items, level + 1);
+      }
+    }
+  }
+
+  await walk(outline, 0);
+  console.log(`[text-extraction] Extracted ${entries.length} outline entries`);
+  return entries;
 }

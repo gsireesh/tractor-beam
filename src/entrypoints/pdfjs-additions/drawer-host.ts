@@ -11,7 +11,14 @@
  */
 
 import { mlAnnotationRunRepo } from '@/storage/repositories';
-import type { Highlight, Instance, MlRunModel, Schema, SchemaAction } from '@/lib/definitions';
+import type {
+  Highlight,
+  Instance,
+  MlRunModel,
+  MlRunScope,
+  Schema,
+  SchemaAction,
+} from '@/lib/definitions';
 import { loadModelConfig } from '@/lib/config-storage';
 import type { ModelConfig } from '@/lib/ml/model-config';
 import { runName } from '@/lib/friendly-name';
@@ -154,6 +161,11 @@ const runNames = new Map<string, string>();
 // can reference it (doc 02: run → snapshot); the label is derived from it later.
 const runSnapshotIndices = new Map<string, number>();
 
+// Scope descriptor per owned run, captured at initiation for the same reason as
+// runModels: the scope is chosen here but persisted by DrawerContainer's receiver.
+// Absent for whole-document runs.
+const runScopes = new Map<string, MlRunScope>();
+
 /** True if this tab initiated the given annotation run. */
 export function ownsAnnotationRequest(requestId: string): boolean {
   return ownedRequestIds.has(requestId);
@@ -174,6 +186,11 @@ export function getRunSnapshotIndex(requestId: string): number | undefined {
   return runSnapshotIndices.get(requestId);
 }
 
+/** The scope recorded for a run this tab initiated, if any (absent = whole doc). */
+export function getRunScope(requestId: string): MlRunScope | undefined {
+  return runScopes.get(requestId);
+}
+
 /**
  * Distill the active selection into a credential-free snapshot for storage.
  * Only `params` (effort/maxTokens/…) and `baseUrl` are copied; the provider
@@ -191,11 +208,21 @@ function modelSnapshot(config: ModelConfig): MlRunModel {
 }
 
 // ─── Pipeline orchestration (called via window API) ───
-async function runAnnotationPipeline(schema: Schema, requestId: string, snapshotIndex?: number) {
-  console.log('[drawer] Starting annotation pipeline:', requestId);
+async function runAnnotationPipeline(
+  schema: Schema,
+  requestId: string,
+  scope?: MlRunScope,
+  snapshotIndex?: number,
+) {
+  console.log(
+    '[drawer] Starting annotation pipeline:',
+    requestId,
+    scope ? `scope=${scope.label}` : 'whole document',
+  );
   ownedRequestIds.add(requestId);
   runNames.set(requestId, runName());
   if (snapshotIndex !== undefined) runSnapshotIndices.set(requestId, snapshotIndex);
+  if (scope) runScopes.set(requestId, scope);
 
   // Reset ML highlights for the new run (state change re-syncs the viewer).
   setMlHighlightsFn?.([]);
@@ -212,8 +239,15 @@ async function runAnnotationPipeline(schema: Schema, requestId: string, snapshot
   }
 
   console.log('[drawer] Extracting visual blocks...');
-  const blocks = await window.TractorBeamPdf.extractVisualBlocks(PDFViewerApplication);
-  console.log(`[drawer] Extracted ${blocks.length} visual blocks`);
+  const allBlocks = await window.TractorBeamPdf.extractVisualBlocks(PDFViewerApplication);
+  // Every VisualBlock carries a pageNumber, so scoping is just a page-set filter here;
+  // the offscreen doc consumes whatever blocks we send.
+  const pageSet = scope ? new Set(scope.pages) : null;
+  const blocks = pageSet ? allBlocks.filter((b) => pageSet.has(b.pageNumber)) : allBlocks;
+  console.log(
+    `[drawer] Extracted ${allBlocks.length} visual blocks; dispatching ${blocks.length}` +
+      (scope ? ` for ${scope.label}` : ''),
+  );
 
   // 2. Ensure the offscreen document is ready
   await chrome.runtime.sendMessage({ type: 'ensureOffscreen' }).catch(() => {
@@ -265,6 +299,7 @@ declare global {
       runAnnotationPipeline: (
         schema: Schema,
         requestId: string,
+        scope?: MlRunScope,
         snapshotIndex?: number,
       ) => Promise<void>;
       runSegmentationPipeline: () => Promise<void>;
