@@ -23,7 +23,7 @@ import { ClaudeRunner } from '@/lib/ml/claude-runner';
 import { OpenAiRunner } from '@/lib/ml/openai-runner';
 import { DEFAULT_MODEL_CONFIG, type ModelConfig } from '@/lib/ml/model-config';
 import { parallelMap } from '@/lib/ml/parallel';
-import { classifyMlError } from '@/lib/ml/errors';
+import { classifyMlError, describeMlError } from '@/lib/ml/errors';
 import type {
   VerifyModelConnectionMessage,
   ModelConnectionResult,
@@ -109,6 +109,22 @@ function broadcastProgress(
     });
 }
 
+/**
+ * Report a single failed block to the UI instead of console.warn-swallowing it.
+ * The message is classified (bad key vs offline vs rate limited) so the drawer's
+ * expandable warning list reads clearly.
+ */
+function reportBlockError(requestId: string, blockId: string, err: unknown) {
+  const message = describeMlError(
+    classifyMlError(err),
+    err instanceof Error ? err.message : String(err),
+  );
+  console.warn(`[offscreen] Block ${blockId} failed: ${message}`, err);
+  chrome.runtime
+    .sendMessage({ type: 'mlBlockError', requestId, blockId, message })
+    .catch(() => {});
+}
+
 function buildNerPrompt(
   schema: Schema,
   pdfText: { pageNumber: number; text: string }[],
@@ -168,17 +184,25 @@ async function handleAnnotationPipeline(task: RunAnnotationPipelineMessage) {
       return { block, nerText: result.choices?.[0]?.message?.content ?? '' };
     };
 
-    for await (const { result } of parallelMap(processableBlocks, processBlock, CONCURRENCY, () =>
+    for await (const outcome of parallelMap(processableBlocks, processBlock, CONCURRENCY, () =>
       cancelledRequestIds.has(task.requestId),
     )) {
       completed++;
-      console.log(`[offscreen] Block ${result.block.blockId} NER output:`, result.nerText);
       broadcastProgress(
         'running',
         completed / processableBlocks.length,
         `Block ${completed}/${processableBlocks.length}`,
         task.requestId,
       );
+
+      if (!outcome.ok) {
+        // Map the failure back to its block via the outcome index, then surface it.
+        reportBlockError(task.requestId, processableBlocks[outcome.index].blockId, outcome.error);
+        continue;
+      }
+
+      const { result } = outcome;
+      console.log(`[offscreen] Block ${result.block.blockId} NER output:`, result.nerText);
 
       const annotations = parseSingleBlockNerOutput(
         result.nerText,
@@ -244,7 +268,7 @@ async function handleAnnotationPipeline(task: RunAnnotationPipelineMessage) {
             .catch(() => {});
         }
       } catch (err) {
-        console.warn(`[offscreen] Block ${block.blockId} failed, skipping:`, err);
+        reportBlockError(task.requestId, block.blockId, err);
       }
     }
   }

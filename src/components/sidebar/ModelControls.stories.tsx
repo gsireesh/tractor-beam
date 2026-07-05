@@ -29,6 +29,7 @@ export const ModelControlsStory: Story = () => (
         message={'Loading...'}
         setMlHighlights={() => {}}
         onRunStart={() => {}}
+        failures={[]}
       />
     </Frame>
   </DrawerContext.Provider>

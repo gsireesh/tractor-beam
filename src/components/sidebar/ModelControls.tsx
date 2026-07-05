@@ -10,6 +10,7 @@ import {
   LayoutPanelLeft,
   MoreVertical,
   Square,
+  TriangleAlert,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -42,6 +43,8 @@ import {
   ModelReadinessIndicator,
 } from '@/components/model-configuration/ModelReadiness.tsx';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip.tsx';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover.tsx';
+import type { BlockFailure } from '@/lib/ml/types.ts';
 import { mlAnnotationRunRepo, schemaRepo } from '@/storage/repositories.ts';
 import { MlRunCard } from '@/components/sidebar/MlRunCard.tsx';
 import { ScopeSectionTree } from '@/components/sidebar/ScopeSectionTree.tsx';
@@ -55,6 +58,8 @@ export interface ModelControlsProps {
   /** Optimistically mark the run as started, so the UI reacts on click rather
    *  than lagging until the first progress message returns from the offscreen. */
   onRunStart: () => void;
+  /** Per-block failures for the current run — surfaced as an expandable warning. */
+  failures: BlockFailure[];
 }
 
 // Status dot + label per run stage. `unloaded` is deliberately absent: before any
@@ -102,6 +107,7 @@ export function ModelControls({
   message,
   setMlHighlights,
   onRunStart,
+  failures,
 }: ModelControlsProps) {
   const { activeSchema, pdfUrl } = useDrawerContext();
   const [currentRequestId, setCurrentRequestId] = useState<string | null>(null);
@@ -478,6 +484,37 @@ export function ModelControls({
       )}
       {status === 'done' && (
         <div className="text-sm text-muted-foreground">{message || 'Done.'}</div>
+      )}
+
+      {/* Per-block failures — a count that expands to the per-block detail. Shown
+          during and after a run (until the next run clears it), so a partial run
+          that still reports "Done" doesn't hide that some blocks failed. */}
+      {failures.length > 0 && (
+        <Popover>
+          <PopoverTrigger asChild>
+            <button
+              type="button"
+              className="flex items-center gap-1 text-sm text-amber-600 outline-none hover:underline"
+            >
+              <TriangleAlert className="size-4 shrink-0" />
+              {failures.length} block{failures.length > 1 ? 's' : ''} failed
+            </button>
+          </PopoverTrigger>
+          <PopoverContent
+            container={drawerRoot}
+            align="start"
+            className="z-[10002] max-h-60 w-72 overflow-y-auto"
+          >
+            <ul className="flex flex-col gap-1.5 text-xs">
+              {failures.map((f, i) => (
+                <li key={`${f.blockId}-${i}`}>
+                  <span className="font-mono text-muted-foreground">{f.blockId}</span>
+                  <span className="block">{f.message}</span>
+                </li>
+              ))}
+            </ul>
+          </PopoverContent>
+        </Popover>
       )}
 
       <div className="flex flex-row justify-between gap-1">

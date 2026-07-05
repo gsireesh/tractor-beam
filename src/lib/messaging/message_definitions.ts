@@ -106,6 +106,18 @@ export interface MlTaskErrorMessage {
   error: string;
 }
 
+/**
+ * One block failed mid-run. Emitted per failed block (previously these were
+ * console.warn-swallowed), so the UI can show "N blocks failed" with detail and
+ * the run can distinguish a partial success from a clean one.
+ */
+export interface MlBlockErrorMessage {
+  type: 'mlBlockError';
+  requestId: string;
+  blockId: string;
+  message: string;
+}
+
 // ─── Progress & status ───
 
 export interface MlProgressMessage {
@@ -167,6 +179,7 @@ export type ExtensionMessage =
   | RunTransformersTaskMessage
   | MlTaskResultMessage
   | MlTaskErrorMessage
+  | MlBlockErrorMessage
   | MlProgressMessage
   | GetModelStatusMessage
   | ModelStatusReportMessage

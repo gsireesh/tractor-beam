@@ -70,6 +70,7 @@ function renderControls(overrides: Partial<ModelControlsProps> = {}) {
         message=""
         setMlHighlights={() => {}}
         onRunStart={() => {}}
+        failures={[]}
         {...overrides}
       />
     </DrawerContext.Provider>,
@@ -215,6 +216,22 @@ describe('ModelControls — run status', () => {
   it('surfaces a failed run (previously mlTaskError had no listener)', () => {
     renderControls({ status: 'error', progress: 1, message: 'Authentication failed' });
     expect(screen.getByText('Authentication failed')).toBeInTheDocument();
+  });
+
+  it('shows a per-block failure count that expands to detail', async () => {
+    const user = userEvent.setup();
+    renderControls({
+      status: 'done',
+      progress: 1,
+      failures: [
+        { blockId: 'block-3', message: "Couldn't reach the model endpoint" },
+        { blockId: 'block-7', message: "Couldn't reach the model endpoint" },
+      ],
+    });
+    const trigger = screen.getByRole('button', { name: /2 blocks failed/i });
+    await user.click(trigger);
+    expect(await screen.findByText('block-3')).toBeInTheDocument();
+    expect(screen.getByText('block-7')).toBeInTheDocument();
   });
 });
 

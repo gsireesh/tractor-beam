@@ -27,6 +27,7 @@ import { Schema } from '@/lib/definitions';
 import { schemasReducer } from '@/lib/schema-reducer';
 import { usePersistedSchemaReducer } from '@/hooks/persisted-reducer';
 import type { ExtensionMessage, MlProgressMessage } from '@/lib/messaging/message_definitions';
+import type { BlockFailure } from '@/lib/ml/types';
 import {
   type DrawerView,
   getUiState,
@@ -192,6 +193,9 @@ function DrawerContent({
     progress: 0,
     message: '',
   });
+  // Per-block failures for the current run, accumulated from mlBlockError and
+  // reset when the next run starts. Drives the run's "N blocks failed" warning.
+  const [mlFailures, setMlFailures] = useState<BlockFailure[]>([]);
 
   const [exportOpen, setExportOpen] = useState(false);
   // The drawer root is a stable singleton; resolve it once rather than on every render.
@@ -301,6 +305,15 @@ function DrawerContent({
           // now it drives the run into a visible `error` state.
           if (message.requestId && !ownsAnnotationRequest(message.requestId)) break;
           setLlmLoaded({ stage: 'error', progress: 1, message: message.error });
+          break;
+        case 'mlBlockError':
+          // A single block failed (previously console.warn-swallowed). Accumulate
+          // for this run's warning list; ignore blocks from another tab's run.
+          if (message.requestId && !ownsAnnotationRequest(message.requestId)) break;
+          setMlFailures((prev) => [
+            ...prev,
+            { blockId: message.blockId, message: message.message },
+          ]);
           break;
         case 'annotationResults':
           // Only persist/render results for a run THIS tab initiated — otherwise
@@ -460,9 +473,11 @@ function DrawerContent({
           setMlHighlights={setMlHighlights}
           progress={llmLoaded.progress}
           message={llmLoaded.message}
-          onRunStart={() =>
-            setLlmLoaded({ stage: 'running', progress: 0, message: 'Starting…' })
-          }
+          onRunStart={() => {
+            setLlmLoaded({ stage: 'running', progress: 0, message: 'Starting…' });
+            setMlFailures([]); // clear the previous run's warnings
+          }}
+          failures={mlFailures}
         />
       </div>
     </DrawerContext.Provider>

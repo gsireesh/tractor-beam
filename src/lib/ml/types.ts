@@ -16,6 +16,12 @@ export type MlStage =
   | 'error'
   | 'cancelled';
 
+/** A single block that failed during a run — surfaced to the user, not swallowed. */
+export interface BlockFailure {
+  blockId: string;
+  message: string;
+}
+
 /** Callback for reporting model loading/inference progress */
 export type ProgressCallback = (
   stage: MlStage,
