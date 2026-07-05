@@ -208,8 +208,17 @@ function modelSnapshot(config: ModelConfig): MlRunModel {
 }
 
 // ─── Pipeline orchestration (called via window API) ───
-async function runAnnotationPipeline(schema: Schema, requestId: string, scope?: MlRunScope, snapshotIndex?: number) {
-  console.log('[drawer] Starting annotation pipeline:', requestId, scope ? `scope=${scope.label}` : 'whole document');
+async function runAnnotationPipeline(
+  schema: Schema,
+  requestId: string,
+  scope?: MlRunScope,
+  snapshotIndex?: number,
+) {
+  console.log(
+    '[drawer] Starting annotation pipeline:',
+    requestId,
+    scope ? `scope=${scope.label}` : 'whole document',
+  );
   ownedRequestIds.add(requestId);
   runNames.set(requestId, runName());
   if (snapshotIndex !== undefined) runSnapshotIndices.set(requestId, snapshotIndex);
@@ -231,11 +240,15 @@ async function runAnnotationPipeline(schema: Schema, requestId: string, scope?: 
 
   console.log('[drawer] Extracting visual blocks...');
   const allBlocks = await window.TractorBeamPdf.extractVisualBlocks(PDFViewerApplication);
-  // Every VisualBlock carries a pageNumber, so all scope kinds reduce to a single
-  // page-window filter here; the offscreen doc just consumes whatever blocks we send.
-  const blocks = scope
-    ? allBlocks.filter((b) => b.pageNumber >= scope.startPage && b.pageNumber <= scope.endPage)
-    : allBlocks;
+  // Every VisualBlock carries a pageNumber, so scoping is just a page filter here; the
+  // offscreen doc consumes whatever blocks we send. An explicit `pages` set (multi-section
+  // "by section" runs) wins over the contiguous [startPage, endPage] window.
+  const inScope = scope
+    ? scope.pages
+      ? (page: number) => scope.pages!.includes(page)
+      : (page: number) => page >= scope.startPage && page <= scope.endPage
+    : () => true;
+  const blocks = scope ? allBlocks.filter((b) => inScope(b.pageNumber)) : allBlocks;
   console.log(
     `[drawer] Extracted ${allBlocks.length} visual blocks; dispatching ${blocks.length}` +
       (scope ? ` for ${scope.label} (pages ${scope.startPage}–${scope.endPage})` : ''),

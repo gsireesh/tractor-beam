@@ -19,7 +19,6 @@ import {
   DropdownMenuPortal,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
-  DropdownMenuSeparator,
   DropdownMenuSub,
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
@@ -40,6 +39,7 @@ import { IconButton } from '@/components/ui/IconButton.tsx';
 import { ModelConfigurationModal } from '@/components/model-configuration/ModelConfigurationModal.tsx';
 import { mlAnnotationRunRepo, schemaRepo } from '@/storage/repositories.ts';
 import { MlRunCard } from '@/components/sidebar/MlRunCard.tsx';
+import { ScopeSectionTree } from '@/components/sidebar/ScopeSectionTree.tsx';
 import type { MlAnnotationRun } from '@/lib/definitions.ts';
 
 export interface ModelControlsProps {
@@ -190,18 +190,17 @@ export function ModelControls({ status, progress, message, setMlHighlights }: Mo
   // A TOC section runs from its own start page until the next entry at the same or
   // a shallower level (its next non-descendant heading), in document order — so
   // picking a chapter includes its subsections. Falls back to the last page.
-  function runTocEntry(index: number) {
-    const list = outline ?? [];
-    const entry = list[index];
-    if (!entry) return;
-    let endPage = viewerPageCount();
-    for (let j = index + 1; j < list.length; j++) {
-      if (list[j].level <= entry.level) {
-        endPage = Math.max(entry.pageNumber, list[j].pageNumber - 1);
-        break;
-      }
-    }
-    void runScoped({ kind: 'toc', startPage: entry.pageNumber, endPage, label: entry.title });
+  // One run over the union of the sections checked in the tree. startPage/endPage are
+  // the min/max for display; `pages` carries the exact (possibly non-contiguous) set.
+  function runSections(pages: number[], label: string) {
+    if (pages.length === 0) return;
+    void runScoped({
+      kind: 'toc',
+      startPage: pages[0],
+      endPage: pages[pages.length - 1],
+      pages,
+      label,
+    });
     setScopeMenuOpen(false);
   }
 
@@ -412,39 +411,12 @@ export function ModelControls({ status, progress, message, setMlHighlights }: Mo
                     </div>
                   </div>
 
-                  <DropdownMenuSeparator />
-
-                  {/* Table of contents — inline scrollable list, one run button per section */}
-                  <div className="px-2 py-1 text-xs font-medium text-muted-foreground">
-                    Table of contents
-                  </div>
-                  <div className="max-h-56 overflow-y-auto">
-                    {outline === null ? (
-                      <div className="px-2 py-1.5 text-sm text-muted-foreground">Reading…</div>
-                    ) : outline.length === 0 ? (
-                      <div className="px-2 py-1.5 text-sm text-muted-foreground">
-                        No table of contents
-                      </div>
-                    ) : (
-                      outline.map((entry, i) => (
-                        <div
-                          key={`${i}-${entry.pageNumber}`}
-                          className="flex items-center justify-between gap-2 py-1 pr-2"
-                          style={{ paddingLeft: `${0.5 + entry.level * 0.75}rem` }}
-                        >
-                          <span className="min-w-0 truncate text-sm">{entry.title}</span>
-                          <IconButton
-                            title={`Highlight “${entry.title}”`}
-                            variant="default"
-                            icon={Highlighter}
-                            color={null}
-                            size={'icon-sm'}
-                            onClick={() => runTocEntry(i)}
-                          />
-                        </div>
-                      ))
-                    )}
-                  </div>
+                  <ScopeSectionTree
+                    outline={outline}
+                    pageCount={pageTotal}
+                    disabled={isRunning}
+                    onAnnotate={runSections}
+                  />
                 </DropdownMenuContent>
               </DropdownMenuPortal>
             </DropdownMenu>

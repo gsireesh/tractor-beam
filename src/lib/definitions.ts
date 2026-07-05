@@ -88,15 +88,20 @@ export interface MlRunModel {
 
 /**
  * The document region a run covered. Absent = whole-document run (the default,
- * and every run recorded before scoping existed). All three scope kinds reduce to
- * an inclusive 1-based `[startPage, endPage]` page window; `label` is the display
- * string ("Page 7" | "Pages 3–5" | a TOC section title).
+ * and every run recorded before scoping existed). `label` is the display string
+ * ("Page 7" | "Pages 3–5" | a TOC section title | "3 sections").
+ *
+ * page/range runs are a single contiguous `[startPage, endPage]` window. A "by
+ * section" TOC run can select several non-contiguous sections, so it also carries
+ * an explicit `pages` set; when present, `pages` takes precedence over the window
+ * for block filtering (startPage/endPage are then just its min/max, for display).
  */
 export interface MlRunScope {
   kind: 'page' | 'range' | 'toc';
   startPage: number;
   endPage: number;
   label: string;
+  pages?: number[];
 }
 
 export interface MlAnnotationRun {
