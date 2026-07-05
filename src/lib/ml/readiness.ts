@@ -50,3 +50,17 @@ export function describeConfigGap(config: ModelConfig): string | null {
       return null;
   }
 }
+
+/**
+ * A stable key over exactly the fields a connection probe depends on — the
+ * active provider plus its model and connection settings. The readiness hook
+ * re-probes when this string changes, so unrelated config edits (a different
+ * provider's params, sampling knobs) don't trigger a needless network call.
+ */
+export function readinessProbeKey(config: ModelConfig): string {
+  const { provider, model } = config.selected;
+  const block = config[provider];
+  const apiKey = 'apiKey' in block ? (block.apiKey ?? '') : '';
+  const baseUrl = 'baseUrl' in block ? block.baseUrl : '';
+  return `${provider}|${model}|${apiKey}|${baseUrl}`;
+}

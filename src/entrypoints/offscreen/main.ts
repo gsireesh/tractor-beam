@@ -23,6 +23,11 @@ import { ClaudeRunner } from '@/lib/ml/claude-runner';
 import { OpenAiRunner } from '@/lib/ml/openai-runner';
 import { DEFAULT_MODEL_CONFIG, type ModelConfig } from '@/lib/ml/model-config';
 import { parallelMap } from '@/lib/ml/parallel';
+import { classifyMlError } from '@/lib/ml/errors';
+import type {
+  VerifyModelConnectionMessage,
+  ModelConnectionResult,
+} from '@/lib/messaging/message_definitions';
 
 const webllm = new WebLlmRunner(broadcastProgress);
 const transformers = new TransformersRunner(broadcastProgress);
@@ -54,6 +59,32 @@ function configureRunner(config: ModelConfig): Runner {
     runner.setModel(config.selected.model);
   }
   return runner;
+}
+
+/**
+ * Probe whether a provider is reachable and authenticated, without spending a
+ * completion. `provider` (when set) overrides the active selection so the config
+ * modal can test a specific tab. Never throws — classifies the failure so the
+ * panel can show why (bad key vs offline vs rate limited).
+ */
+async function handleVerifyConnection(
+  message: VerifyModelConnectionMessage,
+): Promise<ModelConnectionResult> {
+  const base = message.modelConfig ?? DEFAULT_MODEL_CONFIG;
+  const config: ModelConfig = message.provider
+    ? { ...base, selected: { ...base.selected, provider: message.provider } }
+    : base;
+  try {
+    const runner = configureRunner(config);
+    await runner.verify();
+    return { ok: true };
+  } catch (err) {
+    return {
+      ok: false,
+      classification: classifyMlError(err),
+      error: err instanceof Error ? err.message : String(err),
+    };
+  }
 }
 
 const cancelledRequestIds = new Set<string>();
@@ -307,6 +338,10 @@ chrome.runtime.onMessage.addListener((message: ExtensionMessage, _sender, sendRe
         openai: openai.getStatus(),
       });
       return true;
+
+    case 'verifyModelConnection':
+      handleVerifyConnection(message).then(sendResponse);
+      return true; // async response
   }
 });
 

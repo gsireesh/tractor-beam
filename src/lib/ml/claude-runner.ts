@@ -134,4 +134,19 @@ export class ClaudeRunner {
   getStatus(): { loaded: boolean; model: string | null } {
     return { loaded: this.apiKey !== null, model: this.apiKey ? this.model : null };
   }
+
+  /**
+   * Free reachability + auth check: list models (GET /v1/models) rather than
+   * spend a message. Resolves on success; throws the SDK error on failure so the
+   * caller can classify it (bad key → 401, offline → connection error).
+   */
+  async verify(): Promise<void> {
+    const apiKey = this.ensureApiKey();
+    const client = new Anthropic({
+      apiKey,
+      baseURL: this.baseUrl,
+      dangerouslyAllowBrowser: true,
+    });
+    await client.models.list({ limit: 1 });
+  }
 }

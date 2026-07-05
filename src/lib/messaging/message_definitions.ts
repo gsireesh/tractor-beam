@@ -1,6 +1,7 @@
 import { Schema, VisualBlock, MlAnnotation } from '@/lib/definitions';
 import type { MlStage } from '@/lib/ml/types';
-import type { ModelConfig } from '@/lib/ml/model-config';
+import type { ModelConfig, ModelProvider } from '@/lib/ml/model-config';
+import type { MlErrorClass } from '@/lib/ml/errors';
 
 // ─── Viewer ↔ background messages ───
 
@@ -119,6 +120,27 @@ export interface GetModelStatusMessage {
   type: 'getModelStatus';
 }
 
+// ─── Connection verification ───
+// Sent by the panel to the offscreen document to probe whether the selected (or
+// an explicitly named) provider is actually reachable and authenticated — a free
+// GET /v1/models, never a completion. The offscreen replies via sendResponse with
+// a ModelConnectionResult. Config travels in the message (offscreen can't read
+// chrome.storage); `provider` overrides config.selected.provider so the config
+// modal can test a specific tab regardless of the active selection.
+
+export interface VerifyModelConnectionMessage {
+  type: 'verifyModelConnection';
+  modelConfig: ModelConfig;
+  provider?: ModelProvider;
+}
+
+/** The offscreen's reply to a verify request (returned via sendResponse, not broadcast). */
+export interface ModelConnectionResult {
+  ok: boolean;
+  classification?: MlErrorClass;
+  error?: string;
+}
+
 export interface ModelStatusReportMessage {
   type: 'modelStatusReport';
   webllm: { loaded: boolean; model: string | null };
@@ -147,7 +169,8 @@ export type ExtensionMessage =
   | MlTaskErrorMessage
   | MlProgressMessage
   | GetModelStatusMessage
-  | ModelStatusReportMessage;
+  | ModelStatusReportMessage
+  | VerifyModelConnectionMessage;
 
 // Type-safe message type string
 export type MessageType = ExtensionMessage['type'];

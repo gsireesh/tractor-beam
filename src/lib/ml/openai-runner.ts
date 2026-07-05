@@ -117,4 +117,22 @@ export class OpenAiRunner {
   getStatus(): { loaded: boolean; model: string | null } {
     return { loaded: !!this.baseUrl, model: this.baseUrl ? this.model : null };
   }
+
+  /**
+   * Free reachability + auth check: list models (GET /v1/models) against the
+   * configured endpoint rather than spend a completion. Resolves on success;
+   * throws on failure (missing base URL, unreachable host, bad key) so the caller
+   * can classify it.
+   */
+  async verify(): Promise<void> {
+    if (!this.baseUrl) {
+      throw new Error('OpenAI-compatible base URL not configured. Set it in Model Configuration.');
+    }
+    const client = new OpenAI({
+      apiKey: this.apiKey ?? 'not-needed',
+      baseURL: this.baseUrl,
+      dangerouslyAllowBrowser: true,
+    });
+    await client.models.list();
+  }
 }

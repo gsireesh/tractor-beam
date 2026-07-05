@@ -5,11 +5,15 @@ import {
   saveModelConfig,
   type ModelConfigPatch,
 } from '@/lib/config-storage';
-import type { ModelConfig } from '@/lib/ml/model-config';
+import type { ModelConfig, ModelProvider } from '@/lib/ml/model-config';
 import { ModelProviderNameMap } from '@/lib/ml/model-config';
 import type { EffortLevel } from '@/lib/ml/claude-runner';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
+import { Check, Loader2, TriangleAlert } from 'lucide-react';
+import { verifyModelConnection } from '@/lib/ml/verify-connection';
+import { describeMlError } from '@/lib/ml/errors';
 
 const EFFORT_LEVELS: EffortLevel[] = ['low', 'medium', 'high', 'xhigh', 'max'];
 
@@ -20,6 +24,51 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
       <span className="text-muted-foreground">{label}</span>
       <div className="w-48">{children}</div>
     </label>
+  );
+}
+
+type TestState =
+  | { status: 'idle' }
+  | { status: 'testing' }
+  | { status: 'ok' }
+  | { status: 'error'; message: string };
+
+/**
+ * Explicit "Test connection" for one provider tab — the modal-only counterpart to
+ * the panel's passive readiness triangle. Runs the same free `models.list()` probe
+ * against the tab's provider (overriding the active selection), so a user can
+ * confirm a key/URL before leaving the modal.
+ */
+function TestConnection({ config, provider }: { config: ModelConfig; provider: ModelProvider }) {
+  const [state, setState] = useState<TestState>({ status: 'idle' });
+
+  async function run() {
+    setState({ status: 'testing' });
+    const res = await verifyModelConnection(config, provider);
+    setState(
+      res.ok
+        ? { status: 'ok' }
+        : { status: 'error', message: describeMlError(res.classification ?? 'unknown', res.error) },
+    );
+  }
+
+  return (
+    <div className="flex items-center gap-2 pt-1">
+      <Button variant="outline" size="sm" onClick={() => void run()} disabled={state.status === 'testing'}>
+        {state.status === 'testing' && <Loader2 className="size-4 animate-spin" />}
+        Test connection
+      </Button>
+      {state.status === 'ok' && (
+        <span className="flex items-center gap-1 text-sm text-green-600">
+          <Check className="size-4" /> Connected
+        </span>
+      )}
+      {state.status === 'error' && (
+        <span className="flex items-center gap-1 text-sm text-amber-600">
+          <TriangleAlert className="size-4 shrink-0" /> {state.message}
+        </span>
+      )}
+    </div>
   );
 }
 
@@ -103,6 +152,7 @@ export function ModelConfigurationPanel() {
             onChange={(e) => update({ anthropic: { params: { maxTokens: num(e.target.value) } } })}
           />
         </Field>
+        <TestConnection config={config} provider="anthropic" />
       </TabsContent>
 
       <TabsContent value="openai" className="flex flex-col gap-2 pt-2">
@@ -143,6 +193,7 @@ export function ModelConfigurationPanel() {
             onChange={(e) => update({ openai: { params: { maxTokens: num(e.target.value) } } })}
           />
         </Field>
+        <TestConnection config={config} provider="openai" />
       </TabsContent>
 
       <TabsContent value="webllm" className="flex flex-col gap-2 pt-2">
@@ -160,6 +211,7 @@ export function ModelConfigurationPanel() {
             onChange={(e) => update({ webllm: { params: { maxTokens: num(e.target.value) } } })}
           />
         </Field>
+        <TestConnection config={config} provider="webllm" />
       </TabsContent>
     </Tabs>
   );

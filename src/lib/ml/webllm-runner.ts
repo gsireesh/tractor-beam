@@ -99,4 +99,13 @@ export class WebLlmRunner {
   getStatus(): { loaded: boolean; model: string | null } {
     return { loaded: this.engine !== null, model: this.loadedModel };
   }
+
+  /**
+   * Local model — there is no endpoint to probe, so a connection check is a
+   * no-op success. Readiness for WebLLM is purely structural (a model is
+   * selected); the expensive GPU load happens at run time, not here.
+   */
+  async verify(): Promise<void> {
+    return;
+  }
 }
