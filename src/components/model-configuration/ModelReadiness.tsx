@@ -8,7 +8,7 @@
  * to `ready` / `unreachable`.
  */
 import { useEffect, useRef, useState } from 'react';
-import { TriangleAlert } from 'lucide-react';
+import { Loader2, TriangleAlert } from 'lucide-react';
 import type { ModelConfig } from '@/lib/ml/model-config';
 import { describeConfigGap, readinessProbeKey, type ModelReadiness } from '@/lib/ml/readiness';
 import { verifyModelConnection } from '@/lib/ml/verify-connection';
@@ -79,8 +79,9 @@ export function useModelReadiness(config: ModelConfig | null): ModelReadiness {
 }
 
 /**
- * Warning triangle shown next to the model name when the model can't run.
- * Hovering explains why. Renders nothing when the model is ready or verifying.
+ * Status glyph shown next to the model name: a spinner while the connection is
+ * being verified, a warning triangle (with a why-tooltip) when the model can't
+ * run, and nothing once it's ready.
  *
  * `container` must be the themed drawer root, or the portaled tooltip renders
  * transparent (see the note in tooltip.tsx / config panel usage).
@@ -92,6 +93,14 @@ export function ModelReadinessIndicator({
   readiness: ModelReadiness;
   container: Element | null;
 }) {
+  if (readiness.state === 'verifying') {
+    return (
+      <Loader2
+        className="size-4 shrink-0 animate-spin text-muted-foreground"
+        aria-label="Checking model connection"
+      />
+    );
+  }
   if (readiness.state !== 'unconfigured' && readiness.state !== 'unreachable') return null;
   return (
     <Tooltip>

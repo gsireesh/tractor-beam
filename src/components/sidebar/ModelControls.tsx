@@ -114,7 +114,9 @@ export function ModelControls({ status, progress, message, setMlHighlights }: Mo
   const runDisabledReason =
     readiness.state === 'unconfigured' || readiness.state === 'unreachable'
       ? readiness.reason
-      : undefined;
+      : readiness.state === 'verifying'
+        ? 'Checking connection…'
+        : undefined;
 
   // Load the config once, then stay subscribed: readiness must react to edits
   // made in the config modal (e.g. clearing the API key), which writes storage
