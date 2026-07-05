@@ -244,6 +244,30 @@ export async function saveModelConfig(patch: ModelConfigPatch): Promise<void> {
   await store.set({ [MODEL_CONFIG_KEY]: next });
 }
 
+/**
+ * Subscribe to model-config changes. `chrome.storage.onChanged` fires in every
+ * extension context — including the one that wrote — so a surface that reads the
+ * config once on mount (e.g. ModelControls) can stay in sync with edits made
+ * elsewhere (e.g. the config modal clearing an API key) instead of holding a
+ * stale copy. Fires the callback with the freshly-healed config on any change to
+ * the config key or the legacy key it migrates. Returns an unsubscribe function;
+ * no-ops (and unsubscribes to a no-op) when `chrome` is absent.
+ */
+export function subscribeModelConfig(callback: (config: ModelConfig) => void): () => void {
+  if (typeof chrome === 'undefined' || !chrome.storage?.onChanged) return () => {};
+  const listener = (
+    changes: Record<string, chrome.storage.StorageChange>,
+    area: string,
+  ) => {
+    if (area !== 'local') return;
+    if (MODEL_CONFIG_KEY in changes || API_KEY_STORAGE_KEY in changes) {
+      void loadModelConfig().then(callback);
+    }
+  };
+  chrome.storage.onChanged.addListener(listener);
+  return () => chrome.storage.onChanged.removeListener(listener);
+}
+
 // ─── UI state ───
 
 /** Read the UI state blob from chrome.storage.local, merged with defaults. */

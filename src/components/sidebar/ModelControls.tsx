@@ -25,7 +25,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu.tsx';
 import { Input } from '@/components/ui/input.tsx';
-import { loadModelConfig, saveModelConfig } from '@/lib/config-storage.ts';
+import { loadModelConfig, saveModelConfig, subscribeModelConfig } from '@/lib/config-storage.ts';
 import {
   type ModelConfig,
   type ModelProvider,
@@ -37,6 +37,11 @@ import { WEBLLM_MODELS } from '@/lib/ml/types.ts';
 import { useDrawerContext } from '@/contexts/DrawerContext.tsx';
 import { IconButton } from '@/components/ui/IconButton.tsx';
 import { ModelConfigurationModal } from '@/components/model-configuration/ModelConfigurationModal.tsx';
+import {
+  useModelReadiness,
+  ModelReadinessIndicator,
+} from '@/components/model-configuration/ModelReadiness.tsx';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip.tsx';
 import { mlAnnotationRunRepo, schemaRepo } from '@/storage/repositories.ts';
 import { MlRunCard } from '@/components/sidebar/MlRunCard.tsx';
 import { ScopeSectionTree } from '@/components/sidebar/ScopeSectionTree.tsx';
@@ -101,8 +106,22 @@ export function ModelControls({ status, progress, message, setMlHighlights }: Mo
 
   const isRunning = status === 'running' && progress < 1;
 
+  // Gate the run trigger on readiness: a run can't start unless the selected
+  // model is actually usable. The reason (when not ready) is surfaced both on
+  // the disabled button (tooltip) and beside the model name (warning triangle).
+  const readiness = useModelReadiness(config);
+  const runDisabled = isRunning || readiness.state !== 'ready';
+  const runDisabledReason =
+    readiness.state === 'unconfigured' || readiness.state === 'unreachable'
+      ? readiness.reason
+      : undefined;
+
+  // Load the config once, then stay subscribed: readiness must react to edits
+  // made in the config modal (e.g. clearing the API key), which writes storage
+  // but doesn't share this component's local state.
   useEffect(() => {
     void loadModelConfig().then(setConfig);
+    return subscribeModelConfig(setConfig);
   }, []);
 
   // Set the active model + the provider it belongs to. Local state updates for a
@@ -231,6 +250,120 @@ export function ModelControls({ status, progress, message, setMlHighlights }: Mo
     setRunsLoaded(true);
   }
 
+  // The scoped run split button (primary "Highlight with AI" + a caret opening the
+  // page/range/section scope menu). Built once as an element so the readiness gate
+  // in the return can render it either bare or wrapped in an explain-why tooltip
+  // without duplicating the tree — and without the remount a wrapper *component*
+  // would cause. Every run affordance here (primary action, caret, and each in-menu
+  // run button) is gated by the same `runDisabled`.
+  const runControls = (
+    <div className="flex flex-row items-center">
+      <IconButton
+        title="Highlight with AI"
+        label="Highlight with AI"
+        variant="default"
+        className="rounded-r-none"
+        icon={Highlighter}
+        color={null}
+        onClick={sendRunMessage}
+        disabled={runDisabled}
+      />
+      <DropdownMenu
+        open={scopeMenuOpen}
+        onOpenChange={(open) => {
+          setScopeMenuOpen(open);
+          if (open) {
+            const p = String(currentViewerPage());
+            setCurrentPage(currentViewerPage());
+            setRangeFrom(p);
+            setRangeTo(p);
+            void loadOutline();
+          }
+        }}
+      >
+        <DropdownMenuTrigger disabled={runDisabled}>
+          <IconButton
+            title="Highlight options"
+            variant="default"
+            className="rounded-l-none border-l border-primary-foreground/30"
+            icon={ChevronDown}
+            color={null}
+            size={'icon-sm'}
+            disabled={runDisabled}
+          />
+        </DropdownMenuTrigger>
+        <DropdownMenuPortal container={drawerRoot}>
+          {/* Rows are plain divs, not DropdownMenuItems: each Highlighter button
+              drives its own run (no whole-row click), and the range inputs accept
+              typing without the menu's item typeahead/close-on-select firing. */}
+          <DropdownMenuContent align="start" className="z-[10001] w-64">
+            {/* This page */}
+            <div className="flex items-center justify-between gap-2 px-2 py-1.5">
+              <span className="text-sm">This page ({currentPage})</span>
+              <IconButton
+                title={`Highlight page ${currentPage}`}
+                variant="default"
+                icon={Highlighter}
+                color={null}
+                size={'icon-sm'}
+                disabled={runDisabled}
+                onClick={runThisPage}
+              />
+            </div>
+
+            {/* Page range — inputs inline under the label; run stays disabled
+                until both ends are valid pages. */}
+            <div className="px-2 py-1.5">
+              <span className="text-sm">Page range</span>
+              <div className="mt-1.5 flex items-center gap-1.5">
+                <Input
+                  aria-label="From page"
+                  type="number"
+                  min={1}
+                  max={pageTotal}
+                  value={rangeFrom}
+                  onChange={(e) => setRangeFrom(e.target.value)}
+                  onKeyDown={(e) => e.stopPropagation()}
+                  aria-invalid={!rangeValid}
+                  className="h-7 w-14 px-2 text-sm"
+                />
+                <span className="text-sm text-muted-foreground">–</span>
+                <Input
+                  aria-label="To page"
+                  type="number"
+                  min={1}
+                  max={pageTotal}
+                  value={rangeTo}
+                  onChange={(e) => setRangeTo(e.target.value)}
+                  onKeyDown={(e) => e.stopPropagation()}
+                  aria-invalid={!rangeValid}
+                  className="h-7 w-14 px-2 text-sm"
+                />
+                <IconButton
+                  title="Highlight page range"
+                  variant="default"
+                  className="ml-auto"
+                  icon={Highlighter}
+                  color={null}
+                  size={'icon-sm'}
+                  disabled={!rangeValid || runDisabled}
+                  onClick={submitRange}
+                />
+              </div>
+            </div>
+
+            <ScopeSectionTree
+              outline={outline}
+              pageCount={pageTotal}
+              disabled={runDisabled}
+              onAnnotate={runSections}
+            />
+          </DropdownMenuContent>
+        </DropdownMenuPortal>
+      </DropdownMenu>
+    </div>
+  );
+
   return (
     <div className="flex flex-col gap-2 border-t-2 border-[#9370DB] p-2 m-0 shadow-[0px_-4px_6px_-1px_rgba(0,0,0,0.1)]">
       <div className="flex items-center justify-between">
@@ -239,9 +372,9 @@ export function ModelControls({ status, progress, message, setMlHighlights }: Mo
       </div>
 
       {config && (
-        <div className="">
+        <div className="flex items-center gap-1">
           <DropdownMenu>
-            <DropdownMenuTrigger className="flex w-full items-center gap-2 text-sm outline-none">
+            <DropdownMenuTrigger className="flex items-center gap-2 text-sm outline-none">
               Highlighter:
               <span className={config.selected.model ? '' : 'text-muted-foreground'}>
                 <b>{config.selected.model || 'Select model…'}</b>
@@ -276,6 +409,7 @@ export function ModelControls({ status, progress, message, setMlHighlights }: Mo
               </DropdownMenuContent>
             </DropdownMenuPortal>
           </DropdownMenu>
+          <ModelReadinessIndicator readiness={readiness} container={drawerRoot} />
         </div>
       )}
 
@@ -308,111 +442,25 @@ export function ModelControls({ status, progress, message, setMlHighlights }: Mo
               The pair sits in its own gap-0 group so the row's gap-1 still spaces the
               History/Hide buttons; inner corners are flattened and the caret carries a
               hairline `border-primary-foreground/30` divider (same seam as the popover's
-              "Add example" split button). */}
-          <div className="flex flex-row items-center">
-            <IconButton
-              title="Highlight with AI"
-              label="Highlight with AI"
-              variant="default"
-              className="rounded-r-none"
-              icon={Highlighter}
-              color={null}
-              onClick={sendRunMessage}
-              disabled={isRunning}
-            />
-            <DropdownMenu
-              open={scopeMenuOpen}
-              onOpenChange={(open) => {
-                setScopeMenuOpen(open);
-                if (open) {
-                  const p = String(currentViewerPage());
-                  setCurrentPage(currentViewerPage());
-                  setRangeFrom(p);
-                  setRangeTo(p);
-                  void loadOutline();
-                }
-              }}
-            >
-              <DropdownMenuTrigger disabled={isRunning}>
-                <IconButton
-                  title="Highlight options"
-                  variant="default"
-                  className="rounded-l-none border-l border-primary-foreground/30"
-                  icon={ChevronDown}
-                  color={null}
-                  size={'icon-sm'}
-                  disabled={isRunning}
-                />
-              </DropdownMenuTrigger>
-              <DropdownMenuPortal container={drawerRoot}>
-                {/* Rows are plain divs, not DropdownMenuItems: each Highlighter button
-                    drives its own run (no whole-row click), and the range inputs accept
-                    typing without the menu's item typeahead/close-on-select firing. */}
-                <DropdownMenuContent align="start" className="z-[10001] w-64">
-                  {/* This page */}
-                  <div className="flex items-center justify-between gap-2 px-2 py-1.5">
-                    <span className="text-sm">This page ({currentPage})</span>
-                    <IconButton
-                      title={`Highlight page ${currentPage}`}
-                      variant="default"
-                      icon={Highlighter}
-                      color={null}
-                      size={'icon-sm'}
-                      onClick={runThisPage}
-                    />
-                  </div>
+              "Add example" split button).
 
-                  {/* Page range — inputs inline under the label; run stays disabled
-                      until both ends are valid pages. */}
-                  <div className="px-2 py-1.5">
-                    <span className="text-sm">Page range</span>
-                    <div className="mt-1.5 flex items-center gap-1.5">
-                      <Input
-                        aria-label="From page"
-                        type="number"
-                        min={1}
-                        max={pageTotal}
-                        value={rangeFrom}
-                        onChange={(e) => setRangeFrom(e.target.value)}
-                        onKeyDown={(e) => e.stopPropagation()}
-                        aria-invalid={!rangeValid}
-                        className="h-7 w-14 px-2 text-sm"
-                      />
-                      <span className="text-sm text-muted-foreground">–</span>
-                      <Input
-                        aria-label="To page"
-                        type="number"
-                        min={1}
-                        max={pageTotal}
-                        value={rangeTo}
-                        onChange={(e) => setRangeTo(e.target.value)}
-                        onKeyDown={(e) => e.stopPropagation()}
-                        aria-invalid={!rangeValid}
-                        className="h-7 w-14 px-2 text-sm"
-                      />
-                      <IconButton
-                        title="Highlight page range"
-                        variant="default"
-                        className="ml-auto"
-                        icon={Highlighter}
-                        color={null}
-                        size={'icon-sm'}
-                        disabled={!rangeValid}
-                        onClick={submitRange}
-                      />
-                    </div>
-                  </div>
-
-                  <ScopeSectionTree
-                    outline={outline}
-                    pageCount={pageTotal}
-                    disabled={isRunning}
-                    onAnnotate={runSections}
-                  />
-                </DropdownMenuContent>
-              </DropdownMenuPortal>
-            </DropdownMenu>
-          </div>
+              When the selected model can't run, the whole split button is disabled and
+              a tooltip — hung off a wrapping span, since disabled controls emit no
+              pointer events — explains why. */}
+          {runDisabledReason ? (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span tabIndex={0} className="flex flex-row items-center">
+                  {runControls}
+                </span>
+              </TooltipTrigger>
+              <TooltipContent container={drawerRoot} className="z-[10002]">
+                {runDisabledReason}
+              </TooltipContent>
+            </Tooltip>
+          ) : (
+            runControls
+          )}
           {isRunning && (
             <IconButton
               title={'Stop Annotation'}
