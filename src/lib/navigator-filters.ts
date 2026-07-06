@@ -15,18 +15,30 @@
 import type { Highlight, Signpost } from '@/lib/definitions';
 import { type OutlineNode, sectionPathForPage } from '@/lib/pdf/outline-tree';
 
+/** An inclusive 1-based page range; either bound null = open-ended on that side.
+ *  Both null = no page constraint. A range scales where a per-page set doesn't. */
+export interface PageRange {
+  from: number | null;
+  to: number | null;
+}
+
 export interface NavigatorFilter {
   /** Highlight sources to keep ('manual' = confirmed, 'ml' = suggested). Empty = all. */
   sources: ReadonlySet<Highlight['source']>;
   /** Schema class ids to keep. Empty = all. */
   classIds: ReadonlySet<string>;
-  /** 1-based page numbers to keep. Empty = all. */
-  pages: ReadonlySet<number>;
+  /** Inclusive page range to keep. Both bounds null = all pages. */
+  pageRange: PageRange;
   /** Outline node keys to keep (a highlight matches if its page's section path
-   *  includes any selected key). Empty = all. Wired up in the ToC-section slice. */
+   *  includes any selected key). Empty = all. */
   sectionKeys: ReadonlySet<number>;
   /** Case-insensitive substring match over the highlight text. Empty = all. */
   query: string;
+}
+
+/** Whether a page range constrains anything (either bound set). */
+export function pageRangeIsActive(r: PageRange): boolean {
+  return r.from !== null || r.to !== null;
 }
 
 /** A filter with no constraints — passes every highlight. Safe to share: writers
@@ -34,7 +46,7 @@ export interface NavigatorFilter {
 export const EMPTY_FILTER: NavigatorFilter = {
   sources: new Set(),
   classIds: new Set(),
-  pages: new Set(),
+  pageRange: { from: null, to: null },
   sectionKeys: new Set(),
   query: '',
 };
@@ -50,7 +62,7 @@ export function activeFilterCount(f: NavigatorFilter): number {
   let n = 0;
   if (f.sources.size > 0) n++;
   if (f.classIds.size > 0) n++;
-  if (f.pages.size > 0) n++;
+  if (pageRangeIsActive(f.pageRange)) n++;
   if (f.sectionKeys.size > 0) n++;
   if (f.query.trim().length > 0) n++;
   return n;
@@ -131,7 +143,11 @@ export function applyNavigatorFilter<T extends Highlight>(
     if (f.classIds.size > 0 && !f.classIds.has(h.classId)) return false;
 
     const page = highlightPage(h);
-    if (f.pages.size > 0 && (page === null || !f.pages.has(page))) return false;
+    if (pageRangeIsActive(f.pageRange)) {
+      if (page === null) return false;
+      if (f.pageRange.from !== null && page < f.pageRange.from) return false;
+      if (f.pageRange.to !== null && page > f.pageRange.to) return false;
+    }
     if (f.sectionKeys.size > 0) {
       if (page === null) return false;
       if (!sectionOf(page).some((key) => f.sectionKeys.has(key))) return false;

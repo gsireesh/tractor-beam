@@ -11,12 +11,14 @@ import {
   EMPTY_FILTER,
   filterIsActive,
   type NavigatorFilter,
+  pageRangeIsActive,
   sectionCountsByKey,
 } from '@/lib/navigator-filters.ts';
 import { type OutlineNode, sectionPathForPage } from '@/lib/pdf/outline-tree.ts';
 import { Toggle } from '@/components/ui/toggle.tsx';
 import { Button } from '@/components/ui/button.tsx';
 import { Checkbox } from '@/components/ui/checkbox.tsx';
+import { Input } from '@/components/ui/input.tsx';
 import {
   InputGroup,
   InputGroupAddon,
@@ -143,15 +145,18 @@ export function InstanceNavigator({
       else sectionKeys.delete(key);
       return { ...prev, sectionKeys };
     });
-  // Page has no panel chips (a chip-per-page doesn't scale on long documents), so
-  // the card's page badge is the only page control — toggling, so clicking it
-  // again clears the page filter.
+  // Page filtering is a range (a chip-per-page doesn't scale on long documents).
+  const setPageBound = (which: 'from' | 'to', value: number | null) =>
+    setFilter((prev) => ({ ...prev, pageRange: { ...prev.pageRange, [which]: value } }));
+  // A card's page badge collapses the range to that single page; clicking the same
+  // page again (range already [p, p]) clears it.
   const filterByPage = (page: number) =>
     setFilter((prev) => {
-      const pages = new Set(prev.pages);
-      if (pages.has(page)) pages.delete(page);
-      else pages.add(page);
-      return { ...prev, pages };
+      const isJustThisPage = prev.pageRange.from === page && prev.pageRange.to === page;
+      return {
+        ...prev,
+        pageRange: isJustThisPage ? { from: null, to: null } : { from: page, to: page },
+      };
     });
   // Clicking a card's section chip toggles that section and reveals the panel so
   // the section tree (with its now-active checkbox) is in view.
@@ -175,12 +180,18 @@ export function InstanceNavigator({
   const active = filterIsActive(filter);
   const classes = classFacets(all);
   const sectionCounts = sectionCountsByKey(outlineRoots, all);
-  const hasPanel = classes.length > 0 || outlineRoots.length > 0;
+  // Page bounds present in the data, shown as the range inputs' placeholders.
+  const pagesPresent = all
+    .map((sp) => sp.coords[0]?.pageNumber)
+    .filter((p): p is number => p !== undefined);
+  const hasPages = pagesPresent.length > 0;
+  const hasPanel = classes.length > 0 || hasPages || outlineRoots.length > 0;
   // Active dimensions that live inside the (possibly collapsed) panel — surfaced as
-  // a badge on the disclosure button so they're discoverable when collapsed. Page
-  // isn't here: it has no panel UI (its only control is the card badge).
+  // a badge on the disclosure button so they're discoverable when collapsed.
   const panelActiveCount =
-    (filter.classIds.size > 0 ? 1 : 0) + (filter.sectionKeys.size > 0 ? 1 : 0);
+    (filter.classIds.size > 0 ? 1 : 0) +
+    (pageRangeIsActive(filter.pageRange) ? 1 : 0) +
+    (filter.sectionKeys.size > 0 ? 1 : 0);
 
   return (
     <>
@@ -280,6 +291,38 @@ export function InstanceNavigator({
                   </Toggle>
                 ))}
               </FacetSection>
+            )}
+            {hasPages && (
+              <div className="flex flex-col gap-1">
+                <span className="px-1 text-xs font-medium text-muted-foreground">Page range</span>
+                <div className="flex items-center gap-2 px-1">
+                  <Input
+                    type="number"
+                    min={1}
+                    inputMode="numeric"
+                    aria-label="Page from"
+                    placeholder={String(Math.min(...pagesPresent))}
+                    className="h-7 w-20"
+                    value={filter.pageRange.from ?? ''}
+                    onChange={(e) =>
+                      setPageBound('from', e.target.value === '' ? null : Number(e.target.value))
+                    }
+                  />
+                  <span className="text-xs text-muted-foreground">to</span>
+                  <Input
+                    type="number"
+                    min={1}
+                    inputMode="numeric"
+                    aria-label="Page to"
+                    placeholder={String(Math.max(...pagesPresent))}
+                    className="h-7 w-20"
+                    value={filter.pageRange.to ?? ''}
+                    onChange={(e) =>
+                      setPageBound('to', e.target.value === '' ? null : Number(e.target.value))
+                    }
+                  />
+                </div>
+              </div>
             )}
             {outlineRoots.length > 0 && (
               <div className="flex flex-col gap-1">

@@ -56,20 +56,23 @@ describe('applyNavigatorFilter', () => {
     expect(result.map((h) => h.classId)).toEqual(['y']);
   });
 
-  it('filters by page (first box), dropping coordless highlights', () => {
+  it('filters by an inclusive page range, dropping coordless highlights', () => {
+    const onPage = (n: number, text: string) =>
+      makeHighlight({ coords: [{ pageNumber: n, left: 0, top: 0, width: 1, height: 1 }], text });
     const items = [
-      makeHighlight({
-        coords: [{ pageNumber: 2, left: 0, top: 0, width: 1, height: 1 }],
-        text: 'p2',
-      }),
-      makeHighlight({
-        coords: [{ pageNumber: 5, left: 0, top: 0, width: 1, height: 1 }],
-        text: 'p5',
-      }),
+      onPage(2, 'p2'),
+      onPage(5, 'p5'),
+      onPage(9, 'p9'),
       makeHighlight({ coords: [], text: 'nowhere' }),
     ];
-    const result = applyNavigatorFilter(items, filter({ pages: new Set([2]) }));
-    expect(result.map((h) => h.text)).toEqual(['p2']);
+    // Closed range [3,7] keeps only p5.
+    expect(
+      applyNavigatorFilter(items, filter({ pageRange: { from: 3, to: 7 } })).map((h) => h.text),
+    ).toEqual(['p5']);
+    // Open-ended lower bound (>= 5) keeps p5 and p9.
+    expect(
+      applyNavigatorFilter(items, filter({ pageRange: { from: 5, to: null } })).map((h) => h.text),
+    ).toEqual(['p5', 'p9']);
   });
 
   it('filters by section via the sectionOf resolver', () => {
@@ -182,8 +185,14 @@ describe('filterIsActive / activeFilterCount', () => {
   });
 
   it('counts each engaged dimension once', () => {
-    const f = filter({ sources: new Set(['ml']), pages: new Set([1, 2, 3]), query: 'x' });
-    expect(activeFilterCount(f)).toBe(3); // sources + pages + query, regardless of value count
+    const f = filter({ sources: new Set(['ml']), pageRange: { from: 1, to: 3 }, query: 'x' });
+    expect(activeFilterCount(f)).toBe(3); // sources + pageRange + query
     expect(filterIsActive(f)).toBe(true);
+  });
+
+  it('treats a page range as active when either bound is set', () => {
+    expect(filterIsActive(filter({ pageRange: { from: 3, to: null } }))).toBe(true);
+    expect(filterIsActive(filter({ pageRange: { from: null, to: 8 } }))).toBe(true);
+    expect(filterIsActive(filter({ pageRange: { from: null, to: null } }))).toBe(false);
   });
 });

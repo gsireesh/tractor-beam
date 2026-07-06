@@ -262,8 +262,26 @@ describe('InstanceNavigator', () => {
     });
   });
 
-  describe('page filter via the card badge', () => {
-    it('toggles the page filter: first click filters, second click clears', async () => {
+  describe('page filter', () => {
+    it('filters by the From/To range inputs in the panel', async () => {
+      const user = userEvent.setup();
+      renderNavigator({
+        confirmedSignposts: [
+          makeSignpost(onPage(2, 'two')),
+          makeSignpost(onPage(5, 'five')),
+          makeSignpost(onPage(9, 'nine')),
+        ],
+      });
+
+      await user.click(screen.getByRole('button', { name: /more filters/i }));
+      await user.type(screen.getByLabelText('Page from'), '3');
+      await user.type(screen.getByLabelText('Page to'), '7');
+
+      expect(screen.getAllByTestId('signpost')).toHaveLength(1);
+      expect(screen.getByText('five')).toBeInTheDocument();
+    });
+
+    it('the card page badge toggles a single-page range: click filters, click again clears', async () => {
       const user = userEvent.setup();
       renderNavigator({
         confirmedSignposts: [
