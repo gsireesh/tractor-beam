@@ -92,6 +92,11 @@ export interface RunTransformersTaskMessage {
   requestId: string;
   task: 'ner' | 'embeddings' | 'classification';
   input: string;
+  // Optional per-request model override. No sender populates this yet — the
+  // local transformers path has no caller today (the live annotation pipeline
+  // uses RunAnnotationPipelineMessage.modelConfig instead). Left as a hook so
+  // TransformersRunner.run can read task.model; falls back to DEFAULT_MODELS.
+  model?: string;
 }
 
 export interface MlTaskResultMessage {

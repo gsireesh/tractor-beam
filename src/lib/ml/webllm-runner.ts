@@ -22,7 +22,6 @@ export const DEFAULT_WEBLLM_CONFIG: WebLlmConfig = {};
 export class WebLlmRunner {
   private engine: MLCEngine | null = null;
   private loadedModel: string | null = null;
-  private loading = false;
   private currentModel: string = DEFAULT_WEBLLM_MODEL;
   private onProgress: ProgressCallback;
 
@@ -47,22 +46,17 @@ export class WebLlmRunner {
       this.loadedModel = null;
     }
 
-    this.loading = true;
-    try {
-      // Lazy-load the runtime only when actually creating an engine (browser
-      // context), keeping web-llm out of the build-time module graph.
-      const { CreateMLCEngine } = await import('@mlc-ai/web-llm');
-      this.engine = await CreateMLCEngine(this.currentModel, {
-        initProgressCallback: (report) => {
-          this.onProgress('loading', report.progress, report.text, requestId);
-        },
-      });
-      this.onProgress('running', 1, '', '');
-      this.loadedModel = this.currentModel;
-      return this.engine;
-    } finally {
-      this.loading = false;
-    }
+    // Lazy-load the runtime only when actually creating an engine (browser
+    // context), keeping web-llm out of the build-time module graph.
+    const { CreateMLCEngine } = await import('@mlc-ai/web-llm');
+    this.engine = await CreateMLCEngine(this.currentModel, {
+      initProgressCallback: (report) => {
+        this.onProgress('loading', report.progress, report.text, requestId);
+      },
+    });
+    this.onProgress('running', 1, '', '');
+    this.loadedModel = this.currentModel;
+    return this.engine;
   }
 
   /**

@@ -27,7 +27,7 @@ import { applyFilters, FilterState } from './filters';
 
 const ALL_PDFS = '__all__';
 
-function emptyFilters(schema: Schema | undefined): FilterState {
+function emptyFilters(): FilterState {
   return {
     classIds: [],
     pdfUrl: null,
@@ -39,7 +39,7 @@ function emptyFilters(schema: Schema | undefined): FilterState {
 export function SchemaManagerApp() {
   const [schemas, setSchemas] = useState<Schema[] | null>(null);
   const [activeSchemaId, setActiveSchemaId] = useState<string | null>(null);
-  const [filters, setFilters] = useState<FilterState>(emptyFilters(undefined));
+  const [filters, setFilters] = useState<FilterState>(emptyFilters());
   const [exportOpen, setExportOpen] = useState(false);
 
   // Load all schemas once; pick the initial schema from ?schemaId= (set by the
@@ -60,7 +60,7 @@ export function SchemaManagerApp() {
 
   // Reset filters whenever the active schema changes — class ids are schema-specific.
   useEffect(() => {
-    setFilters(emptyFilters(activeSchema));
+    setFilters(emptyFilters());
   }, [activeSchema]);
 
   const rows = useMemo(() => (activeSchema ? flattenSchema(activeSchema) : []), [activeSchema]);

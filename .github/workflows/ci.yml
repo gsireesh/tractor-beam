@@ -1,0 +1,72 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  # Manual trigger (Actions tab → Run workflow) so the build/zip can be run
+  # on demand from any branch, without waiting for a merge to main.
+  workflow_dispatch:
+
+# Cancel superseded runs on the same ref (e.g. rapid pushes to a PR branch)
+# so we don't pay for stale builds.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# Least privilege: the workflow only reads the repo. upload-artifact needs no
+# extra scope beyond the default token.
+permissions:
+  contents: read
+
+jobs:
+  # Typecheck + tests share a single install instead of paying for one each.
+  check:
+    name: Typecheck & test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # action-setup must precede setup-node so that `cache: pnpm` can find the
+      # pnpm binary. Version comes from package.json's "packageManager" field.
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      # --prefer-offline resolves from the (cached) pnpm store, skipping package
+      # metadata network round-trips on a cache hit.
+      - run: pnpm install --frozen-lockfile --prefer-offline
+      # `tsc --noEmit` at zero errors IS the regression gate: any newly
+      # introduced type error fails the job. `pnpm typecheck` runs `wxt prepare`
+      # first to generate .wxt/tsconfig.json that tsconfig.json extends.
+      - run: pnpm typecheck
+      - run: pnpm test
+
+  build:
+    name: Build & package
+    runs-on: ubuntu-latest
+    # Gate the artifact on green. Build on pushes to main (the zip is a
+    # main-branch product) or on a manual dispatch from any branch; PR
+    # iteration runs just the fast check job.
+    needs: [check]
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'push' && github.ref == 'refs/heads/main')
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile --prefer-offline
+      # `wxt zip` builds the extension and writes .output/<name>-<version>.zip.
+      - run: pnpm zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: chrome-extension
+          path: .output/*.zip
+          # .output is a dot-directory; upload-artifact v4 excludes hidden paths
+          # by default, so without this the zip is silently filtered out.
+          include-hidden-files: true
+          if-no-files-found: error

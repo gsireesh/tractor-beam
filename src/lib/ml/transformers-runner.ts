@@ -46,13 +46,17 @@ export class TransformersRunner {
 
     this.onProgress('downloading', 0, `Loading ${resolvedModel}...`, requestId);
 
-    const pipe = await pipeline(pipelineTask as Parameters<typeof pipeline>[0], resolvedModel, {
+    // transformers.js types pipeline() as a 20+ member union of every pipeline
+    // subtype — too complex for TS to represent (TS2590) and not assignable to
+    // the base Pipeline. Cast at this boundary so the Map/return/call sites stay
+    // clean; Pipeline is callable, so run()'s pipe(task.input) is still typed.
+    const pipe = (await pipeline(pipelineTask as Parameters<typeof pipeline>[0], resolvedModel, {
       progress_callback: (progress: { status: string; progress?: number }) => {
         if (progress.progress !== undefined) {
           this.onProgress('downloading', progress.progress / 100, progress.status, requestId);
         }
       },
-    });
+    })) as unknown as Pipeline;
 
     this.pipelines.set(key, pipe);
     return pipe;
