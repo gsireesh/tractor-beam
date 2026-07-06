@@ -141,7 +141,7 @@ describe('InstanceNavigator', () => {
   it('shows the empty state and zero counts when there are no signposts', () => {
     renderNavigator();
 
-    expect(screen.getByText('No matching instances.')).toBeInTheDocument();
+    expect(screen.getByText('No highlights to navigate yet.')).toBeInTheDocument();
     // Toggles are buttons; their accessible name is their text content.
     expect(screen.getByRole('button', { name: /Confirmed \(0\)/ })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Suggested \(0\)/ })).toBeInTheDocument();
@@ -237,7 +237,11 @@ describe('InstanceNavigator', () => {
 
       // queryAllByTestId (not getAllBy) so zero matches returns [] instead of throwing.
       expect(screen.queryAllByTestId('signpost')).toHaveLength(0);
-      expect(screen.getByText('No matching instances.')).toBeInTheDocument();
+      // Filters-hid-everything empty state offers an escape hatch.
+      expect(screen.getByText('No instances match the current filters.')).toBeInTheDocument();
+
+      await user.click(screen.getByRole('button', { name: /clear filters/i }));
+      expect(screen.getByTestId('signpost')).toBeInTheDocument();
     });
   });
 

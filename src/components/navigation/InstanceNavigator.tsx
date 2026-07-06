@@ -1,4 +1,4 @@
-import { type Dispatch, type SetStateAction, useState } from 'react';
+import { type Dispatch, type SetStateAction, useId, useState } from 'react';
 import { ChevronDown, ChevronRight, Search, X } from 'lucide-react';
 import { Highlight, Signpost } from '@/lib/definitions.ts';
 import { ConfirmedHighlightSignpost } from '@/components/navigation/ConfirmedHighlightSignpost.tsx';
@@ -123,6 +123,7 @@ export function InstanceNavigator({
   // and text stay always-visible; the active-filter indicator is always visible
   // too, so a filter hidden inside a collapsed panel is never a mystery.
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const panelId = useId();
 
   const toggleSource = (source: Highlight['source'], pressed: boolean) =>
     setFilter((prev) => {
@@ -242,6 +243,7 @@ export function InstanceNavigator({
               size="sm"
               className="ml-auto h-7 gap-1 px-2 text-xs"
               aria-expanded={filtersOpen}
+              aria-controls={panelId}
               onClick={() => setFiltersOpen((o) => !o)}
             >
               {filtersOpen ? <ChevronDown /> : <ChevronRight />}
@@ -271,7 +273,12 @@ export function InstanceNavigator({
           </div>
         )}
         {filtersOpen && hasPanel && (
-          <div className="flex flex-col gap-3 px-1 pt-1">
+          <div
+            id={panelId}
+            role="group"
+            aria-label="Filters"
+            className="flex flex-col gap-3 px-1 pt-1"
+          >
             {classes.length > 0 && (
               <FacetSection label="Class">
                 {classes.map((f) => (
@@ -284,6 +291,7 @@ export function InstanceNavigator({
                     onPressedChange={(p) => toggleClass(f.classId, p)}
                   >
                     <span
+                      aria-hidden
                       className="mr-1 inline-block size-2 rounded-full"
                       style={{ backgroundColor: f.color }}
                     />
@@ -344,9 +352,23 @@ export function InstanceNavigator({
         )}
       </div>
       {visible.length === 0 ? (
-        <p className="px-1 py-6 text-center text-sm text-muted-foreground">
-          No matching instances.
-        </p>
+        <div className="flex flex-col items-center gap-1 px-1 py-6 text-center text-sm text-muted-foreground">
+          {active && all.length > 0 ? (
+            <>
+              <p>No instances match the current filters.</p>
+              <Button
+                variant="link"
+                size="sm"
+                className="h-auto p-0"
+                onClick={() => setFilter(EMPTY_FILTER)}
+              >
+                Clear filters
+              </Button>
+            </>
+          ) : (
+            <p>No highlights to navigate yet.</p>
+          )}
+        </div>
       ) : (
         visible.map((sp) => {
           const page = sp.coords[0]?.pageNumber;
