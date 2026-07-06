@@ -91,7 +91,12 @@ export class OpenAiRunner {
         role: m.role,
         content: m.content,
       })) as OpenAI.Chat.Completions.ChatCompletionMessageParam[],
-      max_tokens: this.params.maxTokens ?? maxTokens,
+      // `max_completion_tokens`, not the deprecated `max_tokens`: OpenAI's o-series
+      // and GPT-5 models (our defaults) reject `max_tokens` with a 400. Modern
+      // OpenAI-compatible servers (vLLM, OpenRouter, Together) accept this too;
+      // older ones that only know `max_tokens` ignore the unknown field (no cap)
+      // rather than erroring — a better failure mode than hard-breaking OpenAI.
+      max_completion_tokens: this.params.maxTokens ?? maxTokens,
       ...(this.params.temperature != null ? { temperature: this.params.temperature } : {}),
       ...(this.params.topP != null ? { top_p: this.params.topP } : {}),
     });
