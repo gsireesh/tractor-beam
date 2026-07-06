@@ -91,24 +91,6 @@ export function classFacets(signposts: Signpost[]): ClassFacet[] {
   return [...byId.values()].sort((a, b) => a.className.localeCompare(b.className));
 }
 
-export interface PageFacet {
-  page: number;
-  count: number;
-}
-
-/** One entry per page that has at least one signpost, sorted ascending. */
-export function pageFacets(signposts: Signpost[]): PageFacet[] {
-  const byPage = new Map<number, number>();
-  for (const sp of signposts) {
-    const page = highlightPage(sp);
-    if (page === null) continue;
-    byPage.set(page, (byPage.get(page) ?? 0) + 1);
-  }
-  return [...byPage.entries()]
-    .map(([page, count]) => ({ page, count }))
-    .sort((a, b) => a.page - b.page);
-}
-
 /**
  * How many signposts fall under each outline node, keyed by node key. A signpost
  * counts toward every section in its path, so a parent's count includes all its

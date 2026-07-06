@@ -7,7 +7,6 @@ import {
   filterIsActive,
   highlightPage,
   type NavigatorFilter,
-  pageFacets,
   sectionCountsByKey,
 } from './navigator-filters';
 import { buildOutlineTree } from './pdf/outline-tree';
@@ -145,18 +144,6 @@ describe('classFacets', () => {
     expect(facets).toEqual([
       { classId: 'a', className: 'Alpha', color: 'red', count: 1 },
       { classId: 'b', className: 'Beta', color: 'blue', count: 2 },
-    ]);
-  });
-});
-
-describe('pageFacets', () => {
-  it('counts per page, sorted ascending, ignoring coordless signposts', () => {
-    const onPage = (n: number) =>
-      makeSignpost({ coords: [{ pageNumber: n, left: 0, top: 0, width: 1, height: 1 }] });
-    const facets = pageFacets([onPage(3), onPage(1), onPage(3), makeSignpost({ coords: [] })]);
-    expect(facets).toEqual([
-      { page: 1, count: 1 },
-      { page: 3, count: 2 },
     ]);
   });
 });

@@ -241,7 +241,7 @@ describe('InstanceNavigator', () => {
     });
   });
 
-  describe('expandable panel: class and page filters', () => {
+  describe('expandable panel: class filter', () => {
     it('filters by class chip (revealed under "More filters")', async () => {
       const user = userEvent.setup();
       const confirmed = [
@@ -260,33 +260,26 @@ describe('InstanceNavigator', () => {
       expect(screen.getByText('party a')).toBeInTheDocument();
       expect(screen.queryByText('date a')).not.toBeInTheDocument();
     });
+  });
 
-    it('filters by page chip', async () => {
+  describe('page filter via the card badge', () => {
+    it('toggles the page filter: first click filters, second click clears', async () => {
       const user = userEvent.setup();
-      const onPage = (n: number, text: string) =>
-        makeSignpost({ text, coords: [{ pageNumber: n, left: 0, top: 0, width: 1, height: 1 }] });
-      renderNavigator({ confirmedSignposts: [onPage(2, 'on two'), onPage(7, 'on seven')] });
+      renderNavigator({
+        confirmedSignposts: [
+          makeSignpost(onPage(2, 'on two')),
+          makeSignpost(onPage(7, 'on seven')),
+        ],
+      });
 
-      await user.click(screen.getByRole('button', { name: /more filters/i }));
-      await user.click(screen.getByRole('button', { name: 'Page 7' }));
-
-      expect(screen.getAllByTestId('signpost')).toHaveLength(1);
-      expect(screen.getByText('on seven')).toBeInTheDocument();
-    });
-
-    it('clicking a card page badge filters the list to that page', async () => {
-      const user = userEvent.setup();
-      const onPage = (n: number, text: string) =>
-        makeSignpost({ text, coords: [{ pageNumber: n, left: 0, top: 0, width: 1, height: 1 }] });
-      renderNavigator({ confirmedSignposts: [onPage(2, 'on two'), onPage(7, 'on seven')] });
-
-      // Click the page badge on the first card (page 2).
+      // Click the page badge on the first card (page 2) → filters to page 2.
       await user.click(screen.getAllByTestId('page-badge')[0]);
-
       expect(screen.getAllByTestId('signpost')).toHaveLength(1);
       expect(screen.getByText('on two')).toBeInTheDocument();
-      // The panel's page chip for the now-active page is revealed.
-      expect(screen.getByRole('button', { name: 'Page 2' })).toHaveAttribute('data-state', 'on');
+
+      // Clicking the same badge again clears the page filter (both cards return).
+      await user.click(screen.getAllByTestId('page-badge')[0]);
+      expect(screen.getAllByTestId('signpost')).toHaveLength(2);
     });
   });
 
@@ -303,6 +296,21 @@ describe('InstanceNavigator', () => {
 
       expect(screen.getAllByTestId('signpost')).toHaveLength(1);
       expect(screen.getByText('ch2 body')).toBeInTheDocument();
+    });
+
+    it('collapses subsections by default, revealing them via the caret', async () => {
+      const user = userEvent.setup();
+      renderNavigator({
+        confirmedSignposts: [makeSignpost(onPage(2, 'x'))],
+        outlineRoots: outlineFixture,
+      });
+
+      await user.click(screen.getByRole('button', { name: /more filters/i }));
+      // Section 1.1 (child of Chapter 1) is hidden until Chapter 1 is expanded.
+      expect(screen.queryByRole('checkbox', { name: /Section 1\.1/ })).not.toBeInTheDocument();
+
+      await user.click(screen.getByRole('button', { name: /expand Chapter 1/i }));
+      expect(screen.getByRole('checkbox', { name: /Section 1\.1/ })).toBeInTheDocument();
     });
 
     it('selecting a parent section matches pages in its subsections', async () => {

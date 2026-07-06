@@ -11,7 +11,6 @@ import {
   EMPTY_FILTER,
   filterIsActive,
   type NavigatorFilter,
-  pageFacets,
   sectionCountsByKey,
 } from '@/lib/navigator-filters.ts';
 import { type OutlineNode, sectionPathForPage } from '@/lib/pdf/outline-tree.ts';
@@ -48,52 +47,65 @@ function FacetSection({ label, children }: { label: string; children: React.Reac
 }
 
 /**
- * The Section filter: a nested checkbox tree over the PDF outline. Unlike
- * ScopeSectionTree's leaf-derived tri-state, each checkbox toggles exactly its own
- * node key into filter.sectionKeys — selecting a parent still matches every
- * descendant because the predicate matches on the page's full section path.
+ * One node of the Section filter tree. Unlike ScopeSectionTree's leaf-derived
+ * tri-state, each checkbox toggles exactly its own node key into
+ * filter.sectionKeys — selecting a parent still matches every descendant because
+ * the predicate matches on the page's full section path. Children are collapsed
+ * by default and revealed with the caret, so a deep ToC stays scannable.
  */
-function SectionCheckboxTree({
-  nodes,
+function SectionNode({
+  node,
   selected,
   counts,
   onToggle,
 }: {
-  nodes: OutlineNode[];
+  node: OutlineNode;
   selected: ReadonlySet<number>;
   counts: Map<number, number>;
   onToggle: (key: number, checked: boolean) => void;
 }) {
+  const [expanded, setExpanded] = useState(false);
+  const hasChildren = node.children.length > 0;
+  const id = `filter-section-${node.key}`;
   return (
-    <>
-      {nodes.map((node) => {
-        const id = `filter-section-${node.key}`;
-        return (
-          <div key={node.key}>
-            <div className="flex items-center gap-2 rounded-sm px-1 py-0.5 hover:bg-accent">
-              <Checkbox
-                id={id}
-                checked={selected.has(node.key)}
-                onCheckedChange={(c) => onToggle(node.key, c === true)}
-              />
-              <label htmlFor={id} className="min-w-0 flex-1 cursor-pointer truncate text-sm">
-                {node.title} ({counts.get(node.key) ?? 0})
-              </label>
-            </div>
-            {node.children.length > 0 && (
-              <div className="ml-4 border-l border-border pl-1">
-                <SectionCheckboxTree
-                  nodes={node.children}
-                  selected={selected}
-                  counts={counts}
-                  onToggle={onToggle}
-                />
-              </div>
-            )}
-          </div>
-        );
-      })}
-    </>
+    <div>
+      <div className="flex items-center gap-1 rounded-sm px-1 py-0.5 hover:bg-accent">
+        {hasChildren ? (
+          <button
+            type="button"
+            aria-label={`${expanded ? 'Collapse' : 'Expand'} ${node.title}`}
+            className="flex size-4 shrink-0 items-center justify-center text-muted-foreground"
+            onClick={() => setExpanded((e) => !e)}
+          >
+            {expanded ? <ChevronDown className="size-3" /> : <ChevronRight className="size-3" />}
+          </button>
+        ) : (
+          // Spacer so leaf checkboxes line up under their siblings' checkboxes.
+          <span className="size-4 shrink-0" />
+        )}
+        <Checkbox
+          id={id}
+          checked={selected.has(node.key)}
+          onCheckedChange={(c) => onToggle(node.key, c === true)}
+        />
+        <label htmlFor={id} className="min-w-0 flex-1 cursor-pointer truncate text-sm">
+          {node.title} ({counts.get(node.key) ?? 0})
+        </label>
+      </div>
+      {hasChildren && expanded && (
+        <div className="ml-4 border-l border-border pl-1">
+          {node.children.map((child) => (
+            <SectionNode
+              key={child.key}
+              node={child}
+              selected={selected}
+              counts={counts}
+              onToggle={onToggle}
+            />
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -124,13 +136,6 @@ export function InstanceNavigator({
       else classIds.delete(classId);
       return { ...prev, classIds };
     });
-  const togglePage = (page: number, pressed: boolean) =>
-    setFilter((prev) => {
-      const pages = new Set(prev.pages);
-      if (pressed) pages.add(page);
-      else pages.delete(page);
-      return { ...prev, pages };
-    });
   const toggleSection = (key: number, checked: boolean) =>
     setFilter((prev) => {
       const sectionKeys = new Set(prev.sectionKeys);
@@ -138,14 +143,25 @@ export function InstanceNavigator({
       else sectionKeys.delete(key);
       return { ...prev, sectionKeys };
     });
-  // Clicking a card's page/section chip adds it to the filter and reveals the panel
-  // so the now-active chip is visible.
-  const filterByPage = (page: number) => {
-    setFilter((prev) => ({ ...prev, pages: new Set(prev.pages).add(page) }));
-    setFiltersOpen(true);
-  };
+  // Page has no panel chips (a chip-per-page doesn't scale on long documents), so
+  // the card's page badge is the only page control — toggling, so clicking it
+  // again clears the page filter.
+  const filterByPage = (page: number) =>
+    setFilter((prev) => {
+      const pages = new Set(prev.pages);
+      if (pages.has(page)) pages.delete(page);
+      else pages.add(page);
+      return { ...prev, pages };
+    });
+  // Clicking a card's section chip toggles that section and reveals the panel so
+  // the section tree (with its now-active checkbox) is in view.
   const filterBySection = (key: number) => {
-    setFilter((prev) => ({ ...prev, sectionKeys: new Set(prev.sectionKeys).add(key) }));
+    setFilter((prev) => {
+      const sectionKeys = new Set(prev.sectionKeys);
+      if (sectionKeys.has(key)) sectionKeys.delete(key);
+      else sectionKeys.add(key);
+      return { ...prev, sectionKeys };
+    });
     setFiltersOpen(true);
   };
   const setQuery = (query: string) => setFilter((prev) => ({ ...prev, query }));
@@ -158,15 +174,13 @@ export function InstanceNavigator({
   const hiddenCount = all.length - visible.length;
   const active = filterIsActive(filter);
   const classes = classFacets(all);
-  const pages = pageFacets(all);
   const sectionCounts = sectionCountsByKey(outlineRoots, all);
-  const hasPanel = classes.length > 0 || pages.length > 0 || outlineRoots.length > 0;
-  // Active dimensions tucked inside the (possibly collapsed) panel — surfaced as a
-  // badge on the disclosure button so they're discoverable when collapsed.
+  const hasPanel = classes.length > 0 || outlineRoots.length > 0;
+  // Active dimensions that live inside the (possibly collapsed) panel — surfaced as
+  // a badge on the disclosure button so they're discoverable when collapsed. Page
+  // isn't here: it has no panel UI (its only control is the card badge).
   const panelActiveCount =
-    (filter.classIds.size > 0 ? 1 : 0) +
-    (filter.pages.size > 0 ? 1 : 0) +
-    (filter.sectionKeys.size > 0 ? 1 : 0);
+    (filter.classIds.size > 0 ? 1 : 0) + (filter.sectionKeys.size > 0 ? 1 : 0);
 
   return (
     <>
@@ -267,33 +281,19 @@ export function InstanceNavigator({
                 ))}
               </FacetSection>
             )}
-            {pages.length > 0 && (
-              <FacetSection label="Page">
-                {pages.map((f) => (
-                  <Toggle
-                    key={f.page}
-                    variant="outline"
-                    size="sm"
-                    className="rounded-full"
-                    aria-label={`Page ${f.page}`}
-                    pressed={filter.pages.has(f.page)}
-                    onPressedChange={(p) => togglePage(f.page, p)}
-                  >
-                    {f.page} ({f.count})
-                  </Toggle>
-                ))}
-              </FacetSection>
-            )}
             {outlineRoots.length > 0 && (
               <div className="flex flex-col gap-1">
                 <span className="px-1 text-xs font-medium text-muted-foreground">Section</span>
                 <div className="max-h-48 overflow-y-auto">
-                  <SectionCheckboxTree
-                    nodes={outlineRoots}
-                    selected={filter.sectionKeys}
-                    counts={sectionCounts}
-                    onToggle={toggleSection}
-                  />
+                  {outlineRoots.map((node) => (
+                    <SectionNode
+                      key={node.key}
+                      node={node}
+                      selected={filter.sectionKeys}
+                      counts={sectionCounts}
+                      onToggle={toggleSection}
+                    />
+                  ))}
                 </div>
               </div>
             )}
