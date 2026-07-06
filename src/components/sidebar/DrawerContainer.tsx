@@ -603,7 +603,7 @@ function DrawerContent({
             </TabsTrigger>
             <TabsTrigger value={'navigation'}>
               <SignpostIcon />
-              Navigate Highlights ({confirmedSignposts.length + mlSignposts.length})
+              Highlights ({confirmedSignposts.length + mlSignposts.length})
             </TabsTrigger>
           </TabsList>
           <TabsContent value={'schema'} className="overflow-scroll flex-1 min-h-0">
