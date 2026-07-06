@@ -3,85 +3,32 @@
  * `ModelConfig` into a `ModelReadiness` verdict, and a small indicator that
  * explains (via tooltip) why a model isn't ready to run.
  *
- * Two layers: a synchronous *structural* gate (`describeConfigGap`), then a
- * debounced, free `models.list()` probe that upgrades a structurally-OK config
- * to `ready` / `unreachable`.
+ * Readiness is purely structural (`describeConfigGap`) — no eager network probe.
+ * Reachability is proven at run time (offline pre-check + circuit-breaker) or on
+ * demand via the config modal's Test-connection button.
  */
-import { useEffect, useRef, useState } from 'react';
-import { Loader2, TriangleAlert } from 'lucide-react';
+import { useMemo } from 'react';
+import { TriangleAlert } from 'lucide-react';
 import type { ModelConfig } from '@/lib/ml/model-config';
-import { describeConfigGap, readinessProbeKey, type ModelReadiness } from '@/lib/ml/readiness';
-import { verifyModelConnection } from '@/lib/ml/verify-connection';
-import { describeMlError } from '@/lib/ml/errors';
+import { describeConfigGap, type ModelReadiness } from '@/lib/ml/readiness';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-
-// Debounce the network probe so typing an API key in the modal (which persists —
-// and thus re-runs this hook — on every keystroke) fires one request, not one per key.
-const PROBE_DEBOUNCE_MS = 600;
 
 /**
  * Derive whether the selected model can run. `null` config means storage hasn't
  * loaded yet — treated as not-ready (button stays disabled), but with no visible
  * warning since the model picker it sits beside isn't rendered until config loads.
- *
- * Structurally-incomplete configs never hit the network. A structurally-OK config
- * goes `verifying` → `ready`/`unreachable` from the probe result. The probe re-runs
- * only when `readinessProbeKey` changes (provider/model/key/baseUrl), and stale
- * results are discarded via a per-effect cancellation flag.
  */
 export function useModelReadiness(config: ModelConfig | null): ModelReadiness {
-  const [readiness, setReadiness] = useState<ModelReadiness>({
-    state: 'unconfigured',
-    reason: 'Loading model configuration…',
-  });
-  // Depend on the probe key (a primitive), not the config object — immer hands us
-  // a new object on every edit, but we only want to re-probe on connection-field changes.
-  const probeKey = config ? readinessProbeKey(config) : null;
-  const configRef = useRef(config);
-  configRef.current = config;
-
-  useEffect(() => {
-    const current = configRef.current;
-    if (!current) {
-      setReadiness({ state: 'unconfigured', reason: 'Loading model configuration…' });
-      return;
-    }
-    const gap = describeConfigGap(current);
-    if (gap) {
-      setReadiness({ state: 'unconfigured', reason: gap });
-      return;
-    }
-    // Structurally OK → verify reachability (debounced, cancellable).
-    setReadiness({ state: 'verifying' });
-    let cancelled = false;
-    const timer = setTimeout(() => {
-      void verifyModelConnection(current).then((res) => {
-        if (cancelled) return;
-        if (res.ok) {
-          setReadiness({ state: 'ready' });
-        } else {
-          setReadiness({
-            state: 'unreachable',
-            reason: describeMlError(res.classification ?? 'unknown', res.error),
-          });
-        }
-      });
-    }, PROBE_DEBOUNCE_MS);
-    return () => {
-      cancelled = true;
-      clearTimeout(timer);
-    };
-    // probeKey captures every field the probe reads; configRef supplies the latest object.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [probeKey]);
-
-  return readiness;
+  return useMemo<ModelReadiness>(() => {
+    if (!config) return { state: 'unconfigured', reason: 'Loading model configuration…' };
+    const gap = describeConfigGap(config);
+    return gap ? { state: 'unconfigured', reason: gap } : { state: 'ready' };
+  }, [config]);
 }
 
 /**
- * Status glyph shown next to the model name: a spinner while the connection is
- * being verified, a warning triangle (with a why-tooltip) when the model can't
- * run, and nothing once it's ready.
+ * Warning triangle shown next to the model name when the config is incomplete.
+ * Hovering explains what's missing. Renders nothing once the model is ready.
  *
  * `container` must be the themed drawer root, or the portaled tooltip renders
  * transparent (see the note in tooltip.tsx / config panel usage).
@@ -93,15 +40,7 @@ export function ModelReadinessIndicator({
   readiness: ModelReadiness;
   container: Element | null;
 }) {
-  if (readiness.state === 'verifying') {
-    return (
-      <Loader2
-        className="size-4 shrink-0 animate-spin text-muted-foreground"
-        aria-label="Checking model connection"
-      />
-    );
-  }
-  if (readiness.state !== 'unconfigured' && readiness.state !== 'unreachable') return null;
+  if (readiness.state !== 'unconfigured') return null;
   return (
     <Tooltip>
       <TooltipTrigger asChild>

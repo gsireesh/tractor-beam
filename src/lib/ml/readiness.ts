@@ -1,14 +1,13 @@
 /**
- * Model readiness — is the selected model actually usable *before* a run starts?
+ * Model readiness — is the selected model *structurally* usable before a run?
  *
- * Two layers, deliberately separated from the run-lifecycle state (`MlStage`):
- *
- *  - `describeConfigGap` is the pure, synchronous *structural* check: does the
- *    config even have the fields a run needs (a selected model, and for remote
- *    providers a key / base URL)? It never touches the network, so it's the
- *    cheap first gate and is trivially unit-testable.
- *  - A live connection probe (added in a later slice) upgrades a structurally-OK
- *    config to `ready` / `unreachable`.
+ * This is deliberately a pure, synchronous, network-free check
+ * (`describeConfigGap`): does the config have the fields a run needs (a selected
+ * model, and for remote providers a key / base URL)? Reachability is NOT probed
+ * eagerly — we have no reason to assume a user wants to run right now, and a
+ * proxy that serves completions but not `/v1/models` shouldn't be falsely
+ * blocked. Actual connectivity is proven at run time (offline pre-check +
+ * circuit-breaker), or on demand via the modal's Test-connection button.
  *
  * The `ModelReadiness` union is what the UI consumes to gray the run button and
  * explain *why* it's disabled.
@@ -17,9 +16,7 @@ import type { ModelConfig } from './model-config';
 
 export type ModelReadiness =
   | { state: 'unconfigured'; reason: string }
-  | { state: 'verifying' }
-  | { state: 'ready' }
-  | { state: 'unreachable'; reason: string };
+  | { state: 'ready' };
 
 /**
  * The structural reason the selected model can't run yet, or `null` when the
@@ -49,18 +46,4 @@ export function describeConfigGap(config: ModelConfig): string | null {
     default:
       return null;
   }
-}
-
-/**
- * A stable key over exactly the fields a connection probe depends on — the
- * active provider plus its model and connection settings. The readiness hook
- * re-probes when this string changes, so unrelated config edits (a different
- * provider's params, sampling knobs) don't trigger a needless network call.
- */
-export function readinessProbeKey(config: ModelConfig): string {
-  const { provider, model } = config.selected;
-  const block = config[provider];
-  const apiKey = 'apiKey' in block ? (block.apiKey ?? '') : '';
-  const baseUrl = 'baseUrl' in block ? block.baseUrl : '';
-  return `${provider}|${model}|${apiKey}|${baseUrl}`;
 }

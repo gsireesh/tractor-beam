@@ -77,9 +77,7 @@ const RUN_VIEW: Partial<Record<MlProgressMessage['stage'], { label: string; dot:
 // Readiness dot + label, shown when no run is active/terminal (stage `unloaded`).
 const READINESS_VIEW: Record<string, { label: string; dot: string }> = {
   ready: { label: 'Ready', dot: 'bg-green-600' },
-  verifying: { label: 'Checking connection…', dot: 'bg-yellow-400' },
   unconfigured: { label: 'Not configured', dot: 'bg-red-500' },
-  unreachable: { label: 'Unreachable', dot: 'bg-red-500' },
 };
 
 // Curated default models per provider — a static placeholder until the lists are
@@ -149,11 +147,7 @@ export function ModelControls({
     READINESS_VIEW[readiness.state] ?? { label: status, dot: 'bg-muted-foreground' };
   const runDisabled = isRunning || readiness.state !== 'ready';
   const runDisabledReason =
-    readiness.state === 'unconfigured' || readiness.state === 'unreachable'
-      ? readiness.reason
-      : readiness.state === 'verifying'
-        ? 'Checking connection…'
-        : undefined;
+    readiness.state === 'unconfigured' ? readiness.reason : undefined;
 
   // Load the config once, then stay subscribed: readiness must react to edits
   // made in the config modal (e.g. clearing the API key), which writes storage
