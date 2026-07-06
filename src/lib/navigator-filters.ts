@@ -12,7 +12,7 @@
  * all-empty filter ({@link EMPTY_FILTER}) passes everything through.
  */
 
-import type { Highlight } from '@/lib/definitions';
+import type { Highlight, Signpost } from '@/lib/definitions';
 
 export interface NavigatorFilter {
   /** Highlight sources to keep ('manual' = confirmed, 'ml' = suggested). Empty = all. */
@@ -58,6 +58,54 @@ export function activeFilterCount(f: NavigatorFilter): number {
 /** The 1-based page a highlight sits on (its first box), or null when it has none. */
 export function highlightPage(h: Highlight): number | null {
   return h.coords[0]?.pageNumber ?? null;
+}
+
+// ─── Facets: the selectable options the filter panel offers ───
+// Derived from the signposts themselves (not the schema) so an option only exists
+// when something carries it — a chip can never resolve to an empty result. Counts
+// are over ALL signposts (like the source toggles), so they stay stable while
+// filtering.
+
+export interface ClassFacet {
+  classId: string;
+  className: string;
+  color: string;
+  count: number;
+}
+
+/** One entry per class present among the signposts, sorted by name. */
+export function classFacets(signposts: Signpost[]): ClassFacet[] {
+  const byId = new Map<string, ClassFacet>();
+  for (const sp of signposts) {
+    const existing = byId.get(sp.classId);
+    if (existing) existing.count++;
+    else
+      byId.set(sp.classId, {
+        classId: sp.classId,
+        className: sp.className,
+        color: sp.color,
+        count: 1,
+      });
+  }
+  return [...byId.values()].sort((a, b) => a.className.localeCompare(b.className));
+}
+
+export interface PageFacet {
+  page: number;
+  count: number;
+}
+
+/** One entry per page that has at least one signpost, sorted ascending. */
+export function pageFacets(signposts: Signpost[]): PageFacet[] {
+  const byPage = new Map<number, number>();
+  for (const sp of signposts) {
+    const page = highlightPage(sp);
+    if (page === null) continue;
+    byPage.set(page, (byPage.get(page) ?? 0) + 1);
+  }
+  return [...byPage.entries()]
+    .map(([page, count]) => ({ page, count }))
+    .sort((a, b) => a.page - b.page);
 }
 
 /**

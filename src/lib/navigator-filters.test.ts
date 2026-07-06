@@ -2,12 +2,14 @@ import { describe, it, expect } from 'vitest';
 import {
   activeFilterCount,
   applyNavigatorFilter,
+  classFacets,
   EMPTY_FILTER,
   filterIsActive,
   highlightPage,
   type NavigatorFilter,
+  pageFacets,
 } from './navigator-filters';
-import type { Highlight } from './definitions';
+import type { Highlight, Signpost } from './definitions';
 
 // Fully-shaped Highlight with overridable defaults, so fixtures stay honest to the
 // real type (same factory pattern as the reducer/navigator tests).
@@ -124,6 +126,36 @@ describe('highlightPage', () => {
       ),
     ).toBe(7);
     expect(highlightPage(makeHighlight({ coords: [] }))).toBeNull();
+  });
+});
+
+function makeSignpost(overrides: Partial<Signpost> = {}): Signpost {
+  return { ...makeHighlight(), className: 'Class', ...overrides };
+}
+
+describe('classFacets', () => {
+  it('groups by classId with counts, carrying name+color, sorted by name', () => {
+    const facets = classFacets([
+      makeSignpost({ classId: 'b', className: 'Beta', color: 'blue' }),
+      makeSignpost({ classId: 'a', className: 'Alpha', color: 'red' }),
+      makeSignpost({ classId: 'b', className: 'Beta', color: 'blue' }),
+    ]);
+    expect(facets).toEqual([
+      { classId: 'a', className: 'Alpha', color: 'red', count: 1 },
+      { classId: 'b', className: 'Beta', color: 'blue', count: 2 },
+    ]);
+  });
+});
+
+describe('pageFacets', () => {
+  it('counts per page, sorted ascending, ignoring coordless signposts', () => {
+    const onPage = (n: number) =>
+      makeSignpost({ coords: [{ pageNumber: n, left: 0, top: 0, width: 1, height: 1 }] });
+    const facets = pageFacets([onPage(3), onPage(1), onPage(3), makeSignpost({ coords: [] })]);
+    expect(facets).toEqual([
+      { page: 1, count: 1 },
+      { page: 3, count: 2 },
+    ]);
   });
 });
 

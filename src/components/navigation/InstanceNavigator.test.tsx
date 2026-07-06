@@ -14,17 +14,37 @@ import type { Signpost } from '@/lib/definitions.ts';
 // stand-ins that just surface each signpost's text, isolating the filter pipeline.
 // vi.mock is HOISTED above the imports, so the factory can't reference outer
 // variables; it returns the same named exports the real modules do.
+// Stand-ins surface each signpost's text and expose the onPageClick wiring via a
+// button, so we can exercise "click the page badge → filter to that page" without
+// mounting the real card (DrawerContext, portals, editors).
+type StubProps = {
+  text?: string;
+  coords?: { pageNumber: number }[];
+  onPageClick?: (page: number) => void;
+};
 vi.mock('@/components/navigation/ConfirmedHighlightSignpost.tsx', () => ({
-  ConfirmedHighlightSignpost: (props: { text?: string }) => (
+  ConfirmedHighlightSignpost: (props: StubProps) => (
     <div data-testid="signpost" data-source="confirmed">
       {props.text}
+      <button
+        data-testid="page-badge"
+        onClick={() => props.onPageClick?.(props.coords?.[0]?.pageNumber ?? 0)}
+      >
+        page
+      </button>
     </div>
   ),
 }));
 vi.mock('@/components/navigation/ProvisionalHighlightSignpost.tsx', () => ({
-  ProvisionalHighlightSignpost: (props: { text?: string }) => (
+  ProvisionalHighlightSignpost: (props: StubProps) => (
     <div data-testid="signpost" data-source="provisional">
       {props.text}
+      <button
+        data-testid="page-badge"
+        onClick={() => props.onPageClick?.(props.coords?.[0]?.pageNumber ?? 0)}
+      >
+        page
+      </button>
     </div>
   ),
 }));
@@ -173,6 +193,55 @@ describe('InstanceNavigator', () => {
       // queryAllByTestId (not getAllBy) so zero matches returns [] instead of throwing.
       expect(screen.queryAllByTestId('signpost')).toHaveLength(0);
       expect(screen.getByText('No matching instances.')).toBeInTheDocument();
+    });
+  });
+
+  describe('expandable panel: class and page filters', () => {
+    it('filters by class chip (revealed under "More filters")', async () => {
+      const user = userEvent.setup();
+      const confirmed = [
+        makeSignpost({ text: 'party a', classId: 'party', className: 'Party' }),
+        makeSignpost({ text: 'date a', classId: 'date', className: 'Date' }),
+      ];
+
+      renderNavigator({ confirmedSignposts: confirmed });
+      // Class chips live inside the collapsed panel.
+      expect(screen.queryByRole('button', { name: /Party · 1/ })).not.toBeInTheDocument();
+
+      await user.click(screen.getByRole('button', { name: /more filters/i }));
+      await user.click(screen.getByRole('button', { name: /Party · 1/ }));
+
+      expect(screen.getAllByTestId('signpost')).toHaveLength(1);
+      expect(screen.getByText('party a')).toBeInTheDocument();
+      expect(screen.queryByText('date a')).not.toBeInTheDocument();
+    });
+
+    it('filters by page chip', async () => {
+      const user = userEvent.setup();
+      const onPage = (n: number, text: string) =>
+        makeSignpost({ text, coords: [{ pageNumber: n, left: 0, top: 0, width: 1, height: 1 }] });
+      renderNavigator({ confirmedSignposts: [onPage(2, 'on two'), onPage(7, 'on seven')] });
+
+      await user.click(screen.getByRole('button', { name: /more filters/i }));
+      await user.click(screen.getByRole('button', { name: 'Page 7' }));
+
+      expect(screen.getAllByTestId('signpost')).toHaveLength(1);
+      expect(screen.getByText('on seven')).toBeInTheDocument();
+    });
+
+    it('clicking a card page badge filters the list to that page', async () => {
+      const user = userEvent.setup();
+      const onPage = (n: number, text: string) =>
+        makeSignpost({ text, coords: [{ pageNumber: n, left: 0, top: 0, width: 1, height: 1 }] });
+      renderNavigator({ confirmedSignposts: [onPage(2, 'on two'), onPage(7, 'on seven')] });
+
+      // Click the page badge on the first card (page 2).
+      await user.click(screen.getAllByTestId('page-badge')[0]);
+
+      expect(screen.getAllByTestId('signpost')).toHaveLength(1);
+      expect(screen.getByText('on two')).toBeInTheDocument();
+      // The panel's page chip for the now-active page is revealed.
+      expect(screen.getByRole('button', { name: 'Page 2' })).toHaveAttribute('data-state', 'on');
     });
   });
 

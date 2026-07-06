@@ -3,7 +3,13 @@ import { Signpost } from '@/lib/definitions.ts';
 import { scrollToAnnotation } from '@/lib/pdf-navigation.ts';
 import { EditInstanceInline } from '@/components/navigation/EditInstanceInline.tsx';
 
-export function ConfirmedHighlightSignpost({ id, schemaId, classId, coords }: Signpost) {
+export function ConfirmedHighlightSignpost({
+  id,
+  schemaId,
+  classId,
+  coords,
+  onPageClick,
+}: Signpost & { onPageClick?: (page: number) => void }) {
   // Clicking the card navigates to the annotation in the PDF — except when the
   // click lands on a form control (notes textarea, class picker, delete), which
   // should do their own thing. The class dropdown is portaled out of the card,
@@ -17,7 +23,12 @@ export function ConfirmedHighlightSignpost({ id, schemaId, classId, coords }: Si
   };
   return (
     <div className="mx-1 my-2 cursor-pointer" onClick={handleClick}>
-      <EditInstanceInline schemaId={schemaId} classId={classId} instanceId={id} />
+      <EditInstanceInline
+        schemaId={schemaId}
+        classId={classId}
+        instanceId={id}
+        onPageClick={onPageClick}
+      />
     </div>
   );
 }

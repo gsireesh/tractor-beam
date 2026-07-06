@@ -15,7 +15,13 @@ import { AddExampleButton } from '@/components/popovers/AddExampleButton.tsx';
  * selection) and dispatches `addInstance` on Add. Same form UI as the confirmed
  * editor (InstancePopoverContent); same logic as PromoteInstancePopover, inline.
  */
-export function ProvisionalHighlightSignpost({ id, classId, coords, text }: Signpost) {
+export function ProvisionalHighlightSignpost({
+  id,
+  classId,
+  coords,
+  text,
+  onPageClick,
+}: Signpost & { onPageClick?: (page: number) => void }) {
   const { activeSchema, pdfUrl, dispatch, removeMlHighlight } = useDrawerContext();
   const initialClass = activeSchema.classes.find((c) => c.id === classId) ?? null;
   const [selectedClass, setSelectedClass] = useState<SchemaClass | null>(initialClass);
@@ -95,6 +101,7 @@ export function ProvisionalHighlightSignpost({ id, classId, coords, text }: Sign
           classes={activeSchema.classes}
           accentColor={accentColor}
           pageNumber={coords[0]?.pageNumber}
+          onPageClick={onPageClick}
           comboboxContainer={document.getElementById('tractor-beam-popover-root')}
           comboboxPositionerClassName="z-[100001]"
           closeComboboxOnScroll={true}
