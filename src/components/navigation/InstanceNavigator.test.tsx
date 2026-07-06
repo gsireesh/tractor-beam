@@ -1,10 +1,12 @@
 // @vitest-environment jsdom
 // ^ This pragma opts THIS file into the jsdom DOM environment. Without it the
 //   file would run in the default 'node' env and `render` would have no document.
+import { useState } from 'react';
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { InstanceNavigator, SEARCH_PLACEHOLDER_TEXT } from './InstanceNavigator';
+import { EMPTY_FILTER, type NavigatorFilter } from '@/lib/navigator-filters.ts';
 import type { Signpost } from '@/lib/definitions.ts';
 
 // Mock the child signposts. They drag in DrawerContext + a portal + window
@@ -26,6 +28,26 @@ vi.mock('@/components/navigation/ProvisionalHighlightSignpost.tsx', () => ({
     </div>
   ),
 }));
+
+// The navigator is a controlled component: filter state is lifted to its parent
+// (DrawerContent in the app). This harness plays that parent, holding the filter
+// in real useState so the toggles/search/reset drive genuine state transitions.
+function renderNavigator(
+  props: { confirmedSignposts?: Signpost[]; mlSignposts?: Signpost[] } = {},
+) {
+  function Harness() {
+    const [filter, setFilter] = useState<NavigatorFilter>(EMPTY_FILTER);
+    return (
+      <InstanceNavigator
+        confirmedSignposts={props.confirmedSignposts ?? []}
+        mlSignposts={props.mlSignposts ?? []}
+        filter={filter}
+        setFilter={setFilter}
+      />
+    );
+  }
+  return render(<Harness />);
+}
 
 // Build fully-shaped Signposts with overridable defaults — same factory pattern
 // as the reducer tests, so fixtures stay honest to the real type.
@@ -52,7 +74,7 @@ describe('InstanceNavigator', () => {
   // Note we query the way a USER perceives the UI: by visible text and by the
   // accessible role/name of controls, never by class names or internal state.
   it('shows the empty state and zero counts when there are no signposts', () => {
-    render(<InstanceNavigator confirmedSignposts={[]} mlSignposts={[]} />);
+    renderNavigator();
 
     expect(screen.getByText('No matching instances.')).toBeInTheDocument();
     // Toggles are buttons; their accessible name is their text content.
@@ -62,7 +84,7 @@ describe('InstanceNavigator', () => {
 
   it('shows the clear search icon only when search is populated', async () => {
     const user = userEvent.setup();
-    render(<InstanceNavigator confirmedSignposts={[]} mlSignposts={[]} />);
+    renderNavigator();
 
     expect(screen.queryByRole('button', { name: /clear search/i })).not.toBeInTheDocument();
 
@@ -87,7 +109,7 @@ describe('InstanceNavigator', () => {
       const confirmed = [makeSignpost({ text: 'alpha' }), makeSignpost({ text: 'beta' })];
       const ml = [makeSignpost({ text: 'gamma', source: 'ml' })];
 
-      render(<InstanceNavigator confirmedSignposts={confirmed} mlSignposts={ml} />);
+      renderNavigator({ confirmedSignposts: confirmed, mlSignposts: ml });
 
       expect(screen.getAllByTestId('signpost')).toHaveLength(3);
       expect(screen.getByText('alpha')).toBeInTheDocument();
@@ -100,7 +122,7 @@ describe('InstanceNavigator', () => {
 
       const user = userEvent.setup();
 
-      render(<InstanceNavigator confirmedSignposts={confirmed} mlSignposts={ml} />);
+      renderNavigator({ confirmedSignposts: confirmed, mlSignposts: ml });
 
       expect(screen.getAllByTestId('signpost')).toHaveLength(3);
 
@@ -129,7 +151,7 @@ describe('InstanceNavigator', () => {
         makeSignpost({ text: 'shipping address' }),
       ];
 
-      render(<InstanceNavigator confirmedSignposts={confirmed} mlSignposts={[]} />);
+      renderNavigator({ confirmedSignposts: confirmed });
       expect(screen.getAllByTestId('signpost')).toHaveLength(3);
 
       // Query is upper-case; the filter lowercases both sides, so it still matches.
@@ -144,18 +166,39 @@ describe('InstanceNavigator', () => {
     it('shows the empty state when no signpost text matches the query', async () => {
       const user = userEvent.setup();
 
-      render(
-        <InstanceNavigator
-          confirmedSignposts={[makeSignpost({ text: 'invoice total' })]}
-          mlSignposts={[]}
-        />,
-      );
+      renderNavigator({ confirmedSignposts: [makeSignpost({ text: 'invoice total' })] });
 
       await user.type(screen.getByPlaceholderText(SEARCH_PLACEHOLDER_TEXT), 'zzz');
 
       // queryAllByTestId (not getAllBy) so zero matches returns [] instead of throwing.
       expect(screen.queryAllByTestId('signpost')).toHaveLength(0);
       expect(screen.getByText('No matching instances.')).toBeInTheDocument();
+    });
+  });
+
+  describe('active-filter indicator and reset', () => {
+    it('hides the indicator when no filter is active', () => {
+      renderNavigator({ confirmedSignposts: [makeSignpost()] });
+      expect(screen.queryByRole('button', { name: /reset/i })).not.toBeInTheDocument();
+    });
+
+    it('surfaces the active count + hidden count, and Reset restores everything', async () => {
+      const user = userEvent.setup();
+      const confirmed = [makeSignpost({ text: 'alpha' }), makeSignpost({ text: 'beta' })];
+      const ml = [makeSignpost({ text: 'gamma', source: 'ml' })];
+
+      renderNavigator({ confirmedSignposts: confirmed, mlSignposts: ml });
+
+      // Engage one dimension: show only Suggested. 2 confirmed become hidden.
+      await user.click(screen.getByRole('button', { name: /suggested/i }));
+      expect(screen.getAllByTestId('signpost')).toHaveLength(1);
+      expect(screen.getByText(/1 filter active/)).toBeInTheDocument();
+      expect(screen.getByText(/2 hidden/)).toBeInTheDocument();
+
+      await user.click(screen.getByRole('button', { name: /^reset$/i }));
+
+      expect(screen.getAllByTestId('signpost')).toHaveLength(3);
+      expect(screen.queryByRole('button', { name: /^reset$/i })).not.toBeInTheDocument();
     });
   });
 });

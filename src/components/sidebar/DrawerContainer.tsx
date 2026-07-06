@@ -39,6 +39,11 @@ import {
 import { DrawerContext } from '@/contexts/DrawerContext';
 import { scrollToAnnotation } from '@/lib/pdf-navigation';
 import {
+  applyNavigatorFilter,
+  EMPTY_FILTER,
+  type NavigatorFilter,
+} from '@/lib/navigator-filters.ts';
+import {
   colorMapForSchema,
   createNewSchema,
   getHighlightsFromSchema,
@@ -198,6 +203,10 @@ function DrawerContent({
   const [mlFailures, setMlFailures] = useState<BlockFailure[]>([]);
 
   const [exportOpen, setExportOpen] = useState(false);
+  // Filter state lives here (not in InstanceNavigator) so the same predicate can
+  // shape both the navigator list AND the arrays pushed to the in-page viewer.
+  const [filter, setFilter] = useState<NavigatorFilter>(EMPTY_FILTER);
+  const resetFilter = useCallback(() => setFilter(EMPTY_FILTER), []);
   // The drawer root is a stable singleton; resolve it once rather than on every render.
   const drawerRoot = useMemo(() => document.getElementById('tractor-beam-drawer-root'), []);
 
@@ -231,10 +240,13 @@ function DrawerContent({
   const selectSchema = useCallback(
     (id: string) => {
       setActiveSchemaId(id);
+      // A different schema has different classes; any class/section/page selection
+      // would be stale, so clear the filter rather than silently hide the new set.
+      resetFilter();
       void setDocumentUiState(pdfUrl, { schemaId: id });
       void setLastSchemaId(id);
     },
-    [pdfUrl],
+    [pdfUrl, resetFilter],
   );
 
   // Pin this document's resolved position on first open, so it persists independently
@@ -259,6 +271,17 @@ function DrawerContent({
     () => (activeSchema ? getSignpostsFromHighlights(mlHighlights, activeSchema) : []),
     [mlHighlights, activeSchema],
   );
+  // The viewer must show exactly what the navigator shows, so both sync effects
+  // below push these FILTERED arrays. (Section filtering has no outline yet, so
+  // sectionOf defaults to a no-op — added in the ToC-section slice.)
+  const filteredConfirmedHighlights = useMemo<Highlight[]>(
+    () => applyNavigatorFilter(confirmedHighlights, filter),
+    [confirmedHighlights, filter],
+  );
+  const filteredMlHighlights = useMemo<Highlight[]>(
+    () => applyNavigatorFilter(mlHighlights, filter),
+    [mlHighlights, filter],
+  );
   const removeMlHighlight = useCallback(
     (highlightId: string) => setMlHighlights((prev) => prev.filter((h) => h.id !== highlightId)),
     [],
@@ -271,9 +294,10 @@ function DrawerContent({
       dispatch,
       getActiveSchema: () => activeSchema ?? null,
       setMlHighlights,
+      resetFilter,
     });
     return () => clearDrawerContent();
-  }, [dispatch, activeSchema]);
+  }, [dispatch, activeSchema, resetFilter]);
 
   // Push ML highlights to the viewer whenever they or the active schema change.
   // Keyed on the whole activeSchema object (not just its id) so a recolor re-fires
@@ -281,8 +305,8 @@ function DrawerContent({
   // confirmed-sync effect reacts to activeSchema (via the confirmedHighlights memo),
   // so both highlight kinds recolor through the same trigger.
   useEffect(() => {
-    syncProvisionalHighlights(mlHighlights);
-  }, [mlHighlights, activeSchema]);
+    syncProvisionalHighlights(filteredMlHighlights);
+  }, [filteredMlHighlights, activeSchema]);
 
   // Listen for messages from offscreen document (ML results)
   useEffect(() => {
@@ -363,10 +387,10 @@ function DrawerContent({
   useEffect(() => {
     if (!window.TractorBeamHighlights) return;
     console.log(
-      `[drawer] confirmed highlight sync: ${confirmedHighlights.length} manual, pdfUrl="${pdfUrl}"`,
+      `[drawer] confirmed highlight sync: ${filteredConfirmedHighlights.length} manual, pdfUrl="${pdfUrl}"`,
     );
-    window.TractorBeamHighlights.setHighlights('confirmed', confirmedHighlights);
-  }, [confirmedHighlights, pdfUrl]);
+    window.TractorBeamHighlights.setHighlights('confirmed', filteredConfirmedHighlights);
+  }, [filteredConfirmedHighlights, pdfUrl]);
 
   // Deep link (?instance=…): scroll to and flash the target highlight once, after
   // its highlights have been synced above.
@@ -463,7 +487,12 @@ function DrawerContent({
             <SchemaViewer schema={activeSchema} dispatch={dispatch} />
           </TabsContent>
           <TabsContent value={'navigation'} className="overflow-scroll flex-1 min-h-0">
-            <InstanceNavigator confirmedSignposts={confirmedSignposts} mlSignposts={mlSignposts} />
+            <InstanceNavigator
+              confirmedSignposts={confirmedSignposts}
+              mlSignposts={mlSignposts}
+              filter={filter}
+              setFilter={setFilter}
+            />
           </TabsContent>
         </Tabs>
       </div>

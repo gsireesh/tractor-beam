@@ -36,6 +36,11 @@ let getActiveSchemaFn: () => Schema | null = () => null;
 // highlights into the component's reactive state. Null until the drawer mounts.
 let setMlHighlightsFn: ((highlights: Highlight[]) => void) | null = null;
 
+// Bridge to clear the navigator/viewer filter. Whenever the ML set is wholesale
+// replaced (a new run starts, or a cached run is loaded from history), a stale
+// filter could silently hide the fresh annotations — so we reset it in lockstep.
+let resetFilterFn: (() => void) | null = null;
+
 // ─── Registration contract ───
 // DrawerContent registers/clears the handle on mount/unmount. The window API
 // reads these refs lazily, so they may legitimately be empty between install
@@ -45,12 +50,14 @@ export interface DrawerHandle {
   dispatch: (action: SchemaAction) => void;
   getActiveSchema: () => Schema | null;
   setMlHighlights: (highlights: Highlight[]) => void;
+  resetFilter: () => void;
 }
 
 export function registerDrawerContent(handle: DrawerHandle): void {
   drawerDispatch = handle.dispatch;
   getActiveSchemaFn = handle.getActiveSchema;
   setMlHighlightsFn = handle.setMlHighlights;
+  resetFilterFn = handle.resetFilter;
 }
 
 export function clearDrawerContent(): void {
@@ -59,6 +66,7 @@ export function clearDrawerContent(): void {
   // so callers (getInstance, syncProvisionalHighlights) needn't guard it.
   getActiveSchemaFn = () => null;
   setMlHighlightsFn = null;
+  resetFilterFn = null;
 }
 
 async function runSegmentationPipeline() {
@@ -118,7 +126,10 @@ async function loadCachedAnnotations(schemaId: string, pdfUrl: string, runId?: s
     color: colorsByClass[a.classId] ?? '',
     positiveExample: true,
   }));
-  // State change drives the viewer sync via the [mlHighlights] effect.
+  // Clear any active filter first, so the freshly loaded run isn't silently
+  // hidden by a filter set up against the previous set. State change drives the
+  // viewer sync via the [mlHighlights] effect.
+  resetFilterFn?.();
   setMlHighlightsFn?.(loaded);
 }
 
@@ -223,7 +234,9 @@ async function runAnnotationPipeline(
   if (snapshotIndex !== undefined) runSnapshotIndices.set(requestId, snapshotIndex);
   if (scope) runScopes.set(requestId, scope);
 
-  // Reset ML highlights for the new run (state change re-syncs the viewer).
+  // Reset ML highlights for the new run (state change re-syncs the viewer), and
+  // clear any active filter so incoming results aren't hidden by a stale filter.
+  resetFilterFn?.();
   setMlHighlightsFn?.([]);
 
   // 1. Extract visual blocks directly from the in-page API
