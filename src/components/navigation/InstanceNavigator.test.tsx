@@ -98,8 +98,8 @@ describe('InstanceNavigator', () => {
 
     expect(screen.getByText('No matching instances.')).toBeInTheDocument();
     // Toggles are buttons; their accessible name is their text content.
-    expect(screen.getByRole('button', { name: /Confirmed · 0/ })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Suggested · 0/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Confirmed \(0\)/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Suggested \(0\)/ })).toBeInTheDocument();
   });
 
   it('shows the clear search icon only when search is populated', async () => {
@@ -206,10 +206,10 @@ describe('InstanceNavigator', () => {
 
       renderNavigator({ confirmedSignposts: confirmed });
       // Class chips live inside the collapsed panel.
-      expect(screen.queryByRole('button', { name: /Party · 1/ })).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: /Party \(1\)/ })).not.toBeInTheDocument();
 
       await user.click(screen.getByRole('button', { name: /more filters/i }));
-      await user.click(screen.getByRole('button', { name: /Party · 1/ }));
+      await user.click(screen.getByRole('button', { name: /Party \(1\)/ }));
 
       expect(screen.getAllByTestId('signpost')).toHaveLength(1);
       expect(screen.getByText('party a')).toBeInTheDocument();

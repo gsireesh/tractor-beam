@@ -127,7 +127,7 @@ export function InstanceNavigator({
             pressed={filter.sources.has('manual')}
             onPressedChange={(p) => toggleSource('manual', p)}
           >
-            Confirmed · {confirmedSignposts.length}
+            Confirmed ({confirmedSignposts.length})
           </Toggle>
           <Toggle
             variant="outline"
@@ -136,7 +136,7 @@ export function InstanceNavigator({
             pressed={filter.sources.has('ml')}
             onPressedChange={(p) => toggleSource('ml', p)}
           >
-            Suggested · {mlSignposts.length}
+            Suggested ({mlSignposts.length})
           </Toggle>
           <Button
             variant="ghost"
@@ -187,7 +187,7 @@ export function InstanceNavigator({
                       className="mr-1 inline-block size-2 rounded-full"
                       style={{ backgroundColor: f.color }}
                     />
-                    {f.className} · {f.count}
+                    {f.className} ({f.count})
                   </Toggle>
                 ))}
               </FacetSection>
@@ -204,7 +204,7 @@ export function InstanceNavigator({
                     pressed={filter.pages.has(f.page)}
                     onPressedChange={(p) => togglePage(f.page, p)}
                   >
-                    {f.page} · {f.count}
+                    {f.page} ({f.count})
                   </Toggle>
                 ))}
               </FacetSection>
