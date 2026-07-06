@@ -24,6 +24,7 @@ import { OpenAiRunner } from '@/lib/ml/openai-runner';
 import { DEFAULT_MODEL_CONFIG, type ModelConfig } from '@/lib/ml/model-config';
 import { parallelMap } from '@/lib/ml/parallel';
 import { classifyMlError, describeMlError } from '@/lib/ml/errors';
+import { shouldAbortRun } from '@/lib/ml/circuit-breaker';
 import type {
   VerifyModelConnectionMessage,
   ModelConnectionResult,
@@ -168,10 +169,23 @@ async function handleAnnotationPipeline(task: RunAnnotationPipelineMessage) {
     `[offscreen] ${processableBlocks.length} blocks to process (${blocks.length - processableBlocks.length} skipped as too short)`,
   );
 
+  // Offline pre-check for remote providers: don't fire a request per block only
+  // to have every one fail. The throw surfaces as an `error` run state via the
+  // outer mlTaskError catch. (Local webLLM needs no network.)
+  if (
+    (provider === 'anthropic' || provider === 'openai') &&
+    typeof navigator !== 'undefined' &&
+    !navigator.onLine
+  ) {
+    throw new Error('You appear to be offline. Connect to the internet and try again.');
+  }
+
   if (provider === 'anthropic' || provider === 'openai') {
     // Parallel execution for remote APIs (benefits from concurrent requests)
     const CONCURRENCY = provider === 'anthropic' ? 5 : 3;
     let completed = 0;
+    // Circuit-breaker: consecutive settle-order failures, reset by any success.
+    let consecutiveFailures = 0;
 
     const processBlock = async (block: (typeof processableBlocks)[number]) => {
       const messages: ChatMessage[] = [
@@ -198,8 +212,18 @@ async function handleAnnotationPipeline(task: RunAnnotationPipelineMessage) {
       if (!outcome.ok) {
         // Map the failure back to its block via the outcome index, then surface it.
         reportBlockError(task.requestId, processableBlocks[outcome.index].blockId, outcome.error);
+        consecutiveFailures++;
+        const decision = shouldAbortRun({
+          consecutiveFailures,
+          classification: classifyMlError(outcome.error),
+          isFirstBlock: completed === 1,
+        });
+        // Throw to short-circuit: in-flight blocks won't launch more (parallelMap
+        // stops on the next tick) and the outer catch turns this into an error run.
+        if (decision.abort) throw new Error(decision.reason);
         continue;
       }
+      consecutiveFailures = 0; // a success resets the streak
 
       const { result } = outcome;
       console.log(`[offscreen] Block ${result.block.blockId} NER output:`, result.nerText);
@@ -225,6 +249,7 @@ async function handleAnnotationPipeline(task: RunAnnotationPipelineMessage) {
     }
   } else {
     // Sequential execution for WebLLM (local GPU, one inference at a time)
+    let consecutiveFailures = 0;
     for (let i = 0; i < processableBlocks.length; i++) {
       const block = processableBlocks[i];
       console.log(
@@ -253,6 +278,7 @@ async function handleAnnotationPipeline(task: RunAnnotationPipelineMessage) {
         const result = await runner.run(messages, task.requestId);
         const nerText = result.choices?.[0]?.message?.content ?? '';
         console.log(`[offscreen] Block ${block.blockId} NER output:`, nerText);
+        consecutiveFailures = 0; // a success resets the streak
 
         const annotations = parseSingleBlockNerOutput(nerText, block, task.schema, pdfUrl);
         if (annotations.length > 0) {
@@ -269,6 +295,13 @@ async function handleAnnotationPipeline(task: RunAnnotationPipelineMessage) {
         }
       } catch (err) {
         reportBlockError(task.requestId, block.blockId, err);
+        consecutiveFailures++;
+        const decision = shouldAbortRun({
+          consecutiveFailures,
+          classification: classifyMlError(err),
+          isFirstBlock: i === 0,
+        });
+        if (decision.abort) throw new Error(decision.reason);
       }
     }
   }
