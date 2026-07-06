@@ -100,21 +100,9 @@ type LegacyModelConfig = {
 function withDefaults(stored: Partial<ModelConfig>): ModelConfig {
   return {
     selected: { ...DEFAULT_MODEL_CONFIG.selected, ...stored.selected },
-    anthropic: {
-      ...DEFAULT_MODEL_CONFIG.anthropic,
-      ...stored.anthropic,
-      params: { ...DEFAULT_MODEL_CONFIG.anthropic.params, ...stored.anthropic?.params },
-    },
-    openai: {
-      ...DEFAULT_MODEL_CONFIG.openai,
-      ...stored.openai,
-      params: { ...DEFAULT_MODEL_CONFIG.openai.params, ...stored.openai?.params },
-    },
-    webllm: {
-      ...DEFAULT_MODEL_CONFIG.webllm,
-      ...stored.webllm,
-      params: { ...DEFAULT_MODEL_CONFIG.webllm.params, ...stored.webllm?.params },
-    },
+    anthropic: { ...DEFAULT_MODEL_CONFIG.anthropic, ...stored.anthropic },
+    openai: { ...DEFAULT_MODEL_CONFIG.openai, ...stored.openai },
+    webllm: {}, // local — no connection settings
   };
 }
 
@@ -200,27 +188,14 @@ export type ModelConfigPatch = {
   webllm?: Partial<ModelConfig['webllm']>;
 };
 
-/** Merge a patch over a full config — symmetric to {@link withDefaults}: top-level
- *  block spread, with `params` merged one level deeper so a partial params update
- *  doesn't wipe sibling params. */
+/** Merge a patch over a full config — symmetric to {@link withDefaults}: a
+ *  shallow per-block spread (each provider block is now just connection fields). */
 export function applyModelConfigPatch(base: ModelConfig, patch: ModelConfigPatch): ModelConfig {
   return {
     selected: { ...base.selected, ...patch.selected },
-    anthropic: {
-      ...base.anthropic,
-      ...patch.anthropic,
-      params: { ...base.anthropic.params, ...patch.anthropic?.params },
-    },
-    openai: {
-      ...base.openai,
-      ...patch.openai,
-      params: { ...base.openai.params, ...patch.openai?.params },
-    },
-    webllm: {
-      ...base.webllm,
-      ...patch.webllm,
-      params: { ...base.webllm.params, ...patch.webllm?.params },
-    },
+    anthropic: { ...base.anthropic, ...patch.anthropic },
+    openai: { ...base.openai, ...patch.openai },
+    webllm: {}, // local — no connection settings
   };
 }
 
@@ -242,6 +217,30 @@ export async function saveModelConfig(patch: ModelConfigPatch): Promise<void> {
   if (!store) return;
   const next = applyModelConfigPatch(await loadModelConfig(), patch);
   await store.set({ [MODEL_CONFIG_KEY]: next });
+}
+
+/**
+ * Subscribe to model-config changes. `chrome.storage.onChanged` fires in every
+ * extension context — including the one that wrote — so a surface that reads the
+ * config once on mount (e.g. ModelControls) can stay in sync with edits made
+ * elsewhere (e.g. the config modal clearing an API key) instead of holding a
+ * stale copy. Fires the callback with the freshly-healed config on any change to
+ * the config key or the legacy key it migrates. Returns an unsubscribe function;
+ * no-ops (and unsubscribes to a no-op) when `chrome` is absent.
+ */
+export function subscribeModelConfig(callback: (config: ModelConfig) => void): () => void {
+  if (typeof chrome === 'undefined' || !chrome.storage?.onChanged) return () => {};
+  const listener = (
+    changes: Record<string, chrome.storage.StorageChange>,
+    area: string,
+  ) => {
+    if (area !== 'local') return;
+    if (MODEL_CONFIG_KEY in changes || API_KEY_STORAGE_KEY in changes) {
+      void loadModelConfig().then(callback);
+    }
+  };
+  chrome.storage.onChanged.addListener(listener);
+  return () => chrome.storage.onChanged.removeListener(listener);
 }
 
 // ─── UI state ───

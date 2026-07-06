@@ -3,24 +3,10 @@ import type { ChatMessage } from './webllm-runner';
 import type { ProgressCallback } from './types';
 import { CLAUDE_MODELS, DEFAULT_CLAUDE_MODEL } from './types';
 
-/** Reasoning-effort levels accepted by current Claude models. */
-export type EffortLevel = 'low' | 'medium' | 'high' | 'xhigh' | 'max';
-
-/**
- * Tunable parameters for Anthropic models. Current Claude models reject
- * temperature/top_p (HTTP 400), so the knobs here are reasoning effort and the
- * max output-token cap — not the OpenAI-style sampling params.
- */
-export interface AnthropicParams {
-  effort?: EffortLevel;
-  maxTokens?: number;
-}
-
 /** Anthropic provider configuration block (composed into ModelConfig). */
 export interface AnthropicConfig {
   apiKey: string | null;
   baseUrl: string;
-  params: AnthropicParams;
 }
 
 /**
@@ -36,14 +22,12 @@ export const DEFAULT_ANTHROPIC_MODEL = DEFAULT_CLAUDE_MODEL;
 export const DEFAULT_ANTHROPIC_CONFIG: AnthropicConfig = {
   apiKey: null,
   baseUrl: 'https://api.anthropic.com',
-  params: { maxTokens: 1024 },
 };
 
 export class ClaudeRunner {
   private apiKey: string | null = null;
   private baseUrl = 'https://api.anthropic.com';
   private model: string = DEFAULT_CLAUDE_MODEL;
-  private params: AnthropicParams = {};
 
   // Accepts the progress callback for interface parity with the other runners;
   // Claude calls return in one shot, so there's no load/stream progress to report.
@@ -51,10 +35,6 @@ export class ClaudeRunner {
 
   setModel(model: string) {
     this.model = model;
-  }
-
-  setParams(params: AnthropicParams) {
-    this.params = params;
   }
 
   /** Set the API key in memory only (offscreen can't access chrome.storage). */
@@ -97,18 +77,12 @@ export class ClaudeRunner {
 
     const request: Anthropic.MessageCreateParamsNonStreaming = {
       model: this.model,
-      max_tokens: this.params.maxTokens ?? maxTokens,
+      max_tokens: maxTokens,
       system: systemMessage
         ? [{ type: 'text', text: systemMessage.content, cache_control: { type: 'ephemeral' } }]
         : undefined,
       messages: turns,
     };
-    // `effort` is GA on the Messages API but only typed under the SDK's beta
-    // messages resource in this version; attach it directly rather than switching
-    // the whole call to client.beta.messages.
-    if (this.params.effort) {
-      (request as unknown as Record<string, unknown>).output_config = { effort: this.params.effort };
-    }
 
     const message = await client.messages.create(request, { timeout: timeoutMs });
 
@@ -133,5 +107,20 @@ export class ClaudeRunner {
 
   getStatus(): { loaded: boolean; model: string | null } {
     return { loaded: this.apiKey !== null, model: this.apiKey ? this.model : null };
+  }
+
+  /**
+   * Free reachability + auth check: list models (GET /v1/models) rather than
+   * spend a message. Resolves on success; throws the SDK error on failure so the
+   * caller can classify it (bad key → 401, offline → connection error).
+   */
+  async verify(): Promise<void> {
+    const apiKey = this.ensureApiKey();
+    const client = new Anthropic({
+      apiKey,
+      baseURL: this.baseUrl,
+      dangerouslyAllowBrowser: true,
+    });
+    await client.models.list({ limit: 1 });
   }
 }

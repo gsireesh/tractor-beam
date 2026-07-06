@@ -10,23 +10,14 @@ import { type ChatMessage, DEFAULT_WEBLLM_MODEL, type ProgressCallback } from '.
 // existing `from './webllm-runner'` importers keep working during the refactor.
 export type { ChatMessage };
 
-/** Tunable generation parameters for the in-browser WebLLM runner. */
-export interface WebLlmParams {
-  temperature?: number;
-  maxTokens?: number;
-}
-
 /**
- * WebLLM provider config block (composed into ModelConfig). Local, so no
- * key/URL — just generation params; the active model lives in ModelConfig.selected.
+ * WebLLM provider config block (composed into ModelConfig). Local, so it has no
+ * connection settings at all — the active model lives in ModelConfig.selected.
+ * Kept as an (empty) block so the three providers stay structurally symmetric.
  */
-export interface WebLlmConfig {
-  params: WebLlmParams;
-}
+export type WebLlmConfig = Record<string, never>;
 
-export const DEFAULT_WEBLLM_CONFIG: WebLlmConfig = {
-  params: { maxTokens: 1024 },
-};
+export const DEFAULT_WEBLLM_CONFIG: WebLlmConfig = {};
 
 export class WebLlmRunner {
   private engine: MLCEngine | null = null;
@@ -34,7 +25,6 @@ export class WebLlmRunner {
   private loading = false;
   private currentModel: string = DEFAULT_WEBLLM_MODEL;
   private onProgress: ProgressCallback;
-  private params: WebLlmParams = {};
 
   constructor(onProgress: ProgressCallback) {
     this.onProgress = onProgress;
@@ -42,10 +32,6 @@ export class WebLlmRunner {
 
   setModel(model: string) {
     this.currentModel = model;
-  }
-
-  setParams(params: WebLlmParams) {
-    this.params = params;
   }
 
   /** Ensure the engine is loaded with the current model. */
@@ -87,8 +73,7 @@ export class WebLlmRunner {
     const engine = await this.ensureEngine(requestId);
     const completionPromise = engine.chat.completions.create({
       messages,
-      max_tokens: this.params.maxTokens ?? maxTokens,
-      ...(this.params.temperature != null ? { temperature: this.params.temperature } : {}),
+      max_tokens: maxTokens,
     });
     const timeoutPromise = new Promise<never>((_, reject) =>
       setTimeout(() => reject(new Error('WebLLM inference timed out')), timeoutMs),
@@ -98,5 +83,14 @@ export class WebLlmRunner {
 
   getStatus(): { loaded: boolean; model: string | null } {
     return { loaded: this.engine !== null, model: this.loadedModel };
+  }
+
+  /**
+   * Local model — there is no endpoint to probe, so a connection check is a
+   * no-op success. Readiness for WebLLM is purely structural (a model is
+   * selected); the expensive GPU load happens at run time, not here.
+   */
+  async verify(): Promise<void> {
+    return;
   }
 }

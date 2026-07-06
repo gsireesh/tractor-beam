@@ -88,7 +88,7 @@ describe('MlRunCard', () => {
       expect(screen.queryByRole('button', { name: /config/i })).not.toBeInTheDocument();
     });
 
-    it('hides the config behind a disclosure, revealing params on click', async () => {
+    it('hides the config behind a disclosure, revealing it on click', async () => {
       const user = userEvent.setup();
       render(
         <MlRunCard
@@ -97,7 +97,6 @@ describe('MlRunCard', () => {
               provider: 'anthropic',
               model: 'claude-opus-4-8',
               baseUrl: 'https://proxy.example.com',
-              params: { effort: 'high', maxTokens: 2048 },
             },
           })}
         />,
@@ -113,9 +112,6 @@ describe('MlRunCard', () => {
       expect(toggle).toHaveAttribute('aria-expanded', 'true');
       expect(screen.getByText('https://proxy.example.com')).toBeInTheDocument();
       expect(screen.getByText('Anthropic Compatible')).toBeInTheDocument(); // friendly provider label
-      expect(screen.getByText('effort')).toBeInTheDocument();
-      expect(screen.getByText('high')).toBeInTheDocument();
-      expect(screen.getByText('2048')).toBeInTheDocument();
     });
   });
 });

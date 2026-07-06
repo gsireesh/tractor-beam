@@ -76,14 +76,12 @@ export interface MlAnnotation {
 /**
  * Secret-stripped snapshot of the model config a run was produced with, recorded
  * at run time for provenance/display. Deliberately omits credentials (the
- * provider apiKey) — this is persisted to IndexedDB. `params` is provider-shaped
- * (e.g. effort/maxTokens), kept generic so it survives provider changes.
+ * provider apiKey) — this is persisted to IndexedDB.
  */
 export interface MlRunModel {
   provider: string;
   model: string;
   baseUrl?: string;
-  params?: Record<string, number | string | undefined>;
 }
 
 /**
