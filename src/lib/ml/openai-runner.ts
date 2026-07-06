@@ -13,8 +13,8 @@ import type { ProgressCallback } from './types';
 
 /**
  * OpenAI-compatible provider configuration block (composed into ModelConfig).
- * `baseUrl` is required — there is no universal default endpoint — and the
- * model list is fetched live from the endpoint's /v1/models.
+ * Defaults to OpenAI proper; point `baseUrl` at any OpenAI-compatible endpoint
+ * (Ollama, vLLM, OpenRouter, Together, …) to use it instead.
  */
 export interface OpenAiConfig {
   apiKey: string | null;
@@ -23,7 +23,7 @@ export interface OpenAiConfig {
 
 export const DEFAULT_OPENAI_CONFIG: OpenAiConfig = {
   apiKey: null,
-  baseUrl: '',
+  baseUrl: 'https://api.openai.com/v1',
 };
 
 /**
