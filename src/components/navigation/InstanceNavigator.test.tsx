@@ -82,6 +82,8 @@ function renderNavigator(
     confirmedSignposts?: Signpost[];
     mlSignposts?: Signpost[];
     outlineRoots?: OutlineNode[];
+    isPinned?: boolean;
+    onTogglePin?: () => void;
   } = {},
 ) {
   function Harness() {
@@ -93,6 +95,8 @@ function renderNavigator(
         filter={filter}
         setFilter={setFilter}
         outlineRoots={props.outlineRoots ?? []}
+        isPinned={props.isPinned}
+        onTogglePin={props.onTogglePin}
       />
     );
   }
@@ -363,6 +367,37 @@ describe('InstanceNavigator', () => {
 
       expect(screen.getAllByTestId('signpost')).toHaveLength(1);
       expect(screen.getByText('ch2 body')).toBeInTheDocument();
+    });
+  });
+
+  describe('pinning', () => {
+    it('shows the Pin control once a filter is active and calls onTogglePin', async () => {
+      const user = userEvent.setup();
+      const onTogglePin = vi.fn();
+      renderNavigator({
+        confirmedSignposts: [makeSignpost({ text: 'a' })],
+        mlSignposts: [makeSignpost({ text: 'b', source: 'ml' })],
+        onTogglePin,
+      });
+
+      // No pin control while nothing is filtered.
+      expect(screen.queryByRole('button', { name: /^pin$/i })).not.toBeInTheDocument();
+
+      await user.click(screen.getByRole('button', { name: /suggested/i }));
+      await user.click(screen.getByRole('button', { name: /^pin$/i }));
+
+      expect(onTogglePin).toHaveBeenCalledTimes(1);
+    });
+
+    it('surfaces the pinned state even when no filter is currently active', () => {
+      renderNavigator({
+        confirmedSignposts: [makeSignpost()],
+        isPinned: true,
+        onTogglePin: vi.fn(),
+      });
+
+      expect(screen.getByText(/filters pinned for this highlighter/i)).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /pinned/i })).toBeInTheDocument();
     });
   });
 

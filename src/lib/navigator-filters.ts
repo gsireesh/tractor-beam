@@ -41,6 +41,46 @@ export function pageRangeIsActive(r: PageRange): boolean {
   return r.from !== null || r.to !== null;
 }
 
+/**
+ * The JSON-safe form of a {@link NavigatorFilter} (Sets flattened to arrays) for
+ * persistence — used by per-schema pinned filters in chrome.storage.
+ */
+export interface SerializedFilter {
+  sources: Highlight['source'][];
+  classIds: string[];
+  pageRange: PageRange;
+  sectionKeys: number[];
+  query: string;
+}
+
+export function serializeFilter(f: NavigatorFilter): SerializedFilter {
+  return {
+    sources: [...f.sources],
+    classIds: [...f.classIds],
+    pageRange: { ...f.pageRange },
+    sectionKeys: [...f.sectionKeys],
+    query: f.query,
+  };
+}
+
+/**
+ * Rebuild a filter from its stored form. Defensive on every field: a pinned
+ * filter is long-lived storage that can predate a format change or arrive
+ * truncated, so missing pieces fall back to "no constraint" rather than throwing.
+ */
+export function deserializeFilter(
+  s: Partial<SerializedFilter> | null | undefined,
+): NavigatorFilter {
+  if (!s) return EMPTY_FILTER;
+  return {
+    sources: new Set(s.sources ?? []),
+    classIds: new Set(s.classIds ?? []),
+    pageRange: { from: s.pageRange?.from ?? null, to: s.pageRange?.to ?? null },
+    sectionKeys: new Set(s.sectionKeys ?? []),
+    query: s.query ?? '',
+  };
+}
+
 /** A filter with no constraints — passes every highlight. Safe to share: writers
  *  always build a fresh Set rather than mutating an existing one. */
 export const EMPTY_FILTER: NavigatorFilter = {

@@ -1,5 +1,5 @@
 import { type Dispatch, type SetStateAction, useId, useState } from 'react';
-import { ChevronDown, ChevronRight, Search, X } from 'lucide-react';
+import { ChevronDown, ChevronRight, Pin, PinOff, Search, X } from 'lucide-react';
 import { Highlight, Signpost } from '@/lib/definitions.ts';
 import { ConfirmedHighlightSignpost } from '@/components/navigation/ConfirmedHighlightSignpost.tsx';
 import { ProvisionalHighlightSignpost } from '@/components/navigation/ProvisionalHighlightSignpost.tsx';
@@ -34,6 +34,10 @@ interface InstanceNavigatorProps {
   setFilter: Dispatch<SetStateAction<NavigatorFilter>>;
   /** PDF outline tree; drives the Section filter and the per-card section chips. */
   outlineRoots: OutlineNode[];
+  /** Whether the active schema's filter is pinned (persisted). Omit to hide the pin control. */
+  isPinned?: boolean;
+  /** Pin/unpin the current filter for the active schema. */
+  onTogglePin?: () => void;
 }
 
 export const SEARCH_PLACEHOLDER_TEXT = 'Filter by highlighted text…';
@@ -117,6 +121,8 @@ export function InstanceNavigator({
   filter,
   setFilter,
   outlineRoots,
+  isPinned = false,
+  onTogglePin,
 }: InstanceNavigatorProps) {
   // The richer, potentially-long metadata filters (class, page, section) live
   // behind a disclosure so the common case (source + text) stays compact. Source
@@ -256,20 +262,48 @@ export function InstanceNavigator({
             </Button>
           )}
         </div>
-        {active && (
+        {(active || (onTogglePin && isPinned)) && (
           <div className="flex items-center justify-between gap-2 px-1 text-xs text-muted-foreground">
             <span>
-              {activeFilterCount(filter)} filter{activeFilterCount(filter) === 1 ? '' : 's'} active
-              {hiddenCount > 0 && <> · {hiddenCount} hidden</>}
+              {active ? (
+                <>
+                  {activeFilterCount(filter)} filter{activeFilterCount(filter) === 1 ? '' : 's'}{' '}
+                  active
+                  {hiddenCount > 0 && <> · {hiddenCount} hidden</>}
+                </>
+              ) : (
+                'Filters pinned for this highlighter'
+              )}
             </span>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-6 px-2"
-              onClick={() => setFilter(EMPTY_FILTER)}
-            >
-              Reset
-            </Button>
+            <div className="flex items-center gap-1">
+              {onTogglePin && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 gap-1 px-2"
+                  aria-pressed={isPinned}
+                  title={
+                    isPinned
+                      ? 'Unpin filters for this highlighter'
+                      : 'Pin these filters for this highlighter'
+                  }
+                  onClick={onTogglePin}
+                >
+                  {isPinned ? <PinOff /> : <Pin />}
+                  {isPinned ? 'Pinned' : 'Pin'}
+                </Button>
+              )}
+              {active && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 px-2"
+                  onClick={() => setFilter(EMPTY_FILTER)}
+                >
+                  Reset
+                </Button>
+              )}
+            </div>
           </div>
         )}
         {filtersOpen && hasPanel && (

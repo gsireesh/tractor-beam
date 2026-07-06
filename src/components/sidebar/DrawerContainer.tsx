@@ -34,14 +34,17 @@ import {
   setDocumentUiState,
   setDrawerOpen,
   setLastSchemaId,
+  setPinnedFilter,
   type UiState,
 } from '@/lib/config-storage';
 import { DrawerContext } from '@/contexts/DrawerContext';
 import { scrollToAnnotation } from '@/lib/pdf-navigation';
 import {
   applyNavigatorFilter,
+  deserializeFilter,
   EMPTY_FILTER,
   type NavigatorFilter,
+  serializeFilter,
 } from '@/lib/navigator-filters.ts';
 import { buildOutlineTree, type OutlineNode, sectionPathForPage } from '@/lib/pdf/outline-tree.ts';
 import {
@@ -272,9 +275,6 @@ function DrawerContent({
   const [mlFailures, setMlFailures] = useState<BlockFailure[]>([]);
 
   const [exportOpen, setExportOpen] = useState(false);
-  // filter/setFilter are lifted to DrawerContainer (shared with the minimap); we
-  // derive the reset used by the schema switch and the drawer-host bridge here.
-  const resetFilter = useCallback(() => setFilter(EMPTY_FILTER), [setFilter]);
   // The drawer root is a stable singleton; resolve it once rather than on every render.
   const drawerRoot = useMemo(() => document.getElementById('tractor-beam-drawer-root'), []);
 
@@ -287,6 +287,63 @@ function DrawerContent({
     resolveInitialSchemaId(viewerParams.get('schema'), schemas, initialUiState, pdfUrl),
   );
   const activeSchema = schemas.find((s) => s.id === activeSchemaId) ?? schemas[0];
+
+  // ── Per-schema pinned filters ──
+  // Opt-in persistence: when a schema is "pinned", its filter is the baseline that
+  // reset / reset-on-load / schema-switch restore to (instead of EMPTY_FILTER), and
+  // edits to the filter keep the pin up to date. Seeded from storage; our own writes
+  // update both the local copy and chrome.storage.
+  const [pinnedFilters, setPinnedFilters] = useState(initialUiState.pinnedFilters);
+  const isPinned = !!activeSchema && activeSchema.id in pinnedFilters;
+  // The filter a schema falls back to: its pinned filter, or the empty filter.
+  const baselineFilter = useCallback(
+    (schemaId?: string): NavigatorFilter =>
+      schemaId && pinnedFilters[schemaId]
+        ? deserializeFilter(pinnedFilters[schemaId])
+        : EMPTY_FILTER,
+    [pinnedFilters],
+  );
+  const resetFilter = useCallback(
+    () => setFilter(baselineFilter(activeSchema?.id)),
+    [baselineFilter, activeSchema?.id, setFilter],
+  );
+  const togglePin = useCallback(() => {
+    if (!activeSchema) return;
+    const id = activeSchema.id;
+    if (id in pinnedFilters) {
+      setPinnedFilters((prev) => {
+        const next = { ...prev };
+        delete next[id];
+        return next;
+      });
+      void setPinnedFilter(id, null);
+    } else {
+      const serialized = serializeFilter(filter);
+      setPinnedFilters((prev) => ({ ...prev, [id]: serialized }));
+      void setPinnedFilter(id, serialized);
+    }
+  }, [activeSchema, pinnedFilters, filter]);
+
+  // Restore the initial schema's pinned filter once, after it resolves. (Later
+  // switches go through selectSchema; run/cached loads go through resetFilter.)
+  const didRestorePin = useRef(false);
+  useEffect(() => {
+    if (didRestorePin.current || !activeSchema) return;
+    didRestorePin.current = true;
+    const base = baselineFilter(activeSchema.id);
+    if (base !== EMPTY_FILTER) setFilter(base);
+  }, [activeSchema, baselineFilter, setFilter]);
+
+  // While a schema is pinned, keep its stored filter in sync with edits, so the pin
+  // always reflects the current filter. Guarded so it only writes on real changes.
+  useEffect(() => {
+    if (!activeSchema || !(activeSchema.id in pinnedFilters)) return;
+    const serialized = serializeFilter(filter);
+    if (JSON.stringify(pinnedFilters[activeSchema.id]) === JSON.stringify(serialized)) return;
+    setPinnedFilters((prev) => ({ ...prev, [activeSchema.id]: serialized }));
+    void setPinnedFilter(activeSchema.id, serialized);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- persist on filter edits only; activeSchema/pinnedFilters read as latest-render closures
+  }, [filter]);
 
   // Bookmark the complete schema, then download the (possibly filtered) view.
   const handleExport = useCallback(
@@ -308,13 +365,13 @@ function DrawerContent({
   const selectSchema = useCallback(
     (id: string) => {
       setActiveSchemaId(id);
-      // A different schema has different classes; any class/section/page selection
-      // would be stale, so clear the filter rather than silently hide the new set.
-      resetFilter();
+      // A different schema has different classes, so the old filter would be stale.
+      // Fall back to the new schema's baseline: its pinned filter, or empty.
+      setFilter(baselineFilter(id));
       void setDocumentUiState(pdfUrl, { schemaId: id });
       void setLastSchemaId(id);
     },
-    [pdfUrl, resetFilter],
+    [pdfUrl, baselineFilter, setFilter],
   );
 
   // Pin this document's resolved position on first open, so it persists independently
@@ -559,6 +616,8 @@ function DrawerContent({
               filter={filter}
               setFilter={setFilter}
               outlineRoots={outlineRoots}
+              isPinned={isPinned}
+              onTogglePin={togglePin}
             />
           </TabsContent>
         </Tabs>

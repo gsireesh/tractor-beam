@@ -3,11 +3,13 @@ import {
   activeFilterCount,
   applyNavigatorFilter,
   classFacets,
+  deserializeFilter,
   EMPTY_FILTER,
   filterIsActive,
   highlightPage,
   type NavigatorFilter,
   sectionCountsByKey,
+  serializeFilter,
 } from './navigator-filters';
 import { buildOutlineTree } from './pdf/outline-tree';
 import type { Highlight, Signpost } from './definitions';
@@ -148,6 +150,37 @@ describe('classFacets', () => {
       { classId: 'a', className: 'Alpha', color: 'red', count: 1 },
       { classId: 'b', className: 'Beta', color: 'blue', count: 2 },
     ]);
+  });
+});
+
+describe('serializeFilter / deserializeFilter', () => {
+  it('round-trips a fully-populated filter', () => {
+    const original = filter({
+      sources: new Set(['ml']),
+      classIds: new Set(['a', 'b']),
+      pageRange: { from: 3, to: 9 },
+      sectionKeys: new Set([1, 4]),
+      query: 'invoice',
+    });
+    const restored = deserializeFilter(serializeFilter(original));
+    expect(restored).toEqual(original);
+  });
+
+  it('serializes Sets to arrays (JSON-safe)', () => {
+    const s = serializeFilter(filter({ sources: new Set(['manual']), sectionKeys: new Set([2]) }));
+    expect(Array.isArray(s.sources)).toBe(true);
+    expect(s.sectionKeys).toEqual([2]);
+    // Survives a JSON round-trip unchanged.
+    expect(JSON.parse(JSON.stringify(s))).toEqual(s);
+  });
+
+  it('deserializes defensively: missing/partial fields fall back to no-constraint', () => {
+    expect(deserializeFilter(null)).toEqual(EMPTY_FILTER);
+    expect(deserializeFilter({})).toEqual(EMPTY_FILTER);
+    const partial = deserializeFilter({ classIds: ['x'] });
+    expect(partial.classIds.has('x')).toBe(true);
+    expect(partial.pageRange).toEqual({ from: null, to: null });
+    expect(partial.query).toBe('');
   });
 });
 
