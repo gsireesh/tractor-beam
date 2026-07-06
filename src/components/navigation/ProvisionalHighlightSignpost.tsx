@@ -21,7 +21,13 @@ export function ProvisionalHighlightSignpost({
   coords,
   text,
   onPageClick,
-}: Signpost & { onPageClick?: (page: number) => void }) {
+  sectionPath,
+  onSectionClick,
+}: Signpost & {
+  onPageClick?: (page: number) => void;
+  sectionPath?: { key: number; title: string }[];
+  onSectionClick?: (key: number) => void;
+}) {
   const { activeSchema, pdfUrl, dispatch, removeMlHighlight } = useDrawerContext();
   const initialClass = activeSchema.classes.find((c) => c.id === classId) ?? null;
   const [selectedClass, setSelectedClass] = useState<SchemaClass | null>(initialClass);
@@ -102,6 +108,8 @@ export function ProvisionalHighlightSignpost({
           accentColor={accentColor}
           pageNumber={coords[0]?.pageNumber}
           onPageClick={onPageClick}
+          sectionPath={sectionPath}
+          onSectionClick={onSectionClick}
           comboboxContainer={document.getElementById('tractor-beam-popover-root')}
           comboboxPositionerClassName="z-[100001]"
           closeComboboxOnScroll={true}

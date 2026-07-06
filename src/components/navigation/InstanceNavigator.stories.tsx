@@ -43,6 +43,7 @@ export const Default: Story = () => {
           mlSignposts={mlSignposts}
           filter={filter}
           setFilter={setFilter}
+          outlineRoots={[]}
         />
       </Frame>
     </DrawerContext.Provider>

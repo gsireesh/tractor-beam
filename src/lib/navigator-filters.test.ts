@@ -8,7 +8,9 @@ import {
   highlightPage,
   type NavigatorFilter,
   pageFacets,
+  sectionCountsByKey,
 } from './navigator-filters';
+import { buildOutlineTree } from './pdf/outline-tree';
 import type { Highlight, Signpost } from './definitions';
 
 // Fully-shaped Highlight with overridable defaults, so fixtures stay honest to the
@@ -156,6 +158,29 @@ describe('pageFacets', () => {
       { page: 1, count: 1 },
       { page: 3, count: 2 },
     ]);
+  });
+});
+
+describe('sectionCountsByKey', () => {
+  // Chapter 1 (key 0) spans p1–4 with Section 1.1 (key 1) on p2–4; Chapter 2 (key 2) p5–6.
+  const roots = buildOutlineTree(
+    [
+      { title: 'Chapter 1', pageNumber: 1, level: 0 },
+      { title: 'Section 1.1', pageNumber: 2, level: 1 },
+      { title: 'Chapter 2', pageNumber: 5, level: 0 },
+    ],
+    6,
+  );
+  const onPage = (n: number) =>
+    makeSignpost({ coords: [{ pageNumber: n, left: 0, top: 0, width: 1, height: 1 }] });
+
+  it("counts a signpost toward every section in its page's path (parents include descendants)", () => {
+    // p1 → Chapter 1 only (before its subsection); p2 → Chapter 1 + Section 1.1
+    // (Section 1.1 spans p2–4); p5 → Chapter 2.
+    const counts = sectionCountsByKey(roots, [onPage(1), onPage(2), onPage(5)]);
+    expect(counts.get(0)).toBe(2); // Chapter 1: pages 1 and 2
+    expect(counts.get(1)).toBe(1); // Section 1.1: page 2
+    expect(counts.get(2)).toBe(1); // Chapter 2: page 5
   });
 });
 

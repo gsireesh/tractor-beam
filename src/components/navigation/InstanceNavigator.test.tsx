@@ -7,6 +7,7 @@ import { render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { InstanceNavigator, SEARCH_PLACEHOLDER_TEXT } from './InstanceNavigator';
 import { EMPTY_FILTER, type NavigatorFilter } from '@/lib/navigator-filters.ts';
+import { buildOutlineTree, type OutlineNode } from '@/lib/pdf/outline-tree.ts';
 import type { Signpost } from '@/lib/definitions.ts';
 
 // Mock the child signposts. They drag in DrawerContext + a portal + window
@@ -21,7 +22,13 @@ type StubProps = {
   text?: string;
   coords?: { pageNumber: number }[];
   onPageClick?: (page: number) => void;
+  sectionPath?: { key: number; title: string }[];
+  onSectionClick?: (key: number) => void;
 };
+// Each stand-in surfaces its text plus the onPageClick / onSectionClick wiring as
+// buttons, so we can exercise "click the page/section chip → filter" without
+// mounting the real card. The JSX is inlined per factory (not a shared helper)
+// because vi.mock is hoisted above every module-level binding.
 vi.mock('@/components/navigation/ConfirmedHighlightSignpost.tsx', () => ({
   ConfirmedHighlightSignpost: (props: StubProps) => (
     <div data-testid="signpost" data-source="confirmed">
@@ -32,6 +39,15 @@ vi.mock('@/components/navigation/ConfirmedHighlightSignpost.tsx', () => ({
       >
         page
       </button>
+      {props.sectionPath?.map((s) => (
+        <button
+          key={s.key}
+          data-testid="section-badge"
+          onClick={() => props.onSectionClick?.(s.key)}
+        >
+          {s.title}
+        </button>
+      ))}
     </div>
   ),
 }));
@@ -45,6 +61,15 @@ vi.mock('@/components/navigation/ProvisionalHighlightSignpost.tsx', () => ({
       >
         page
       </button>
+      {props.sectionPath?.map((s) => (
+        <button
+          key={s.key}
+          data-testid="section-badge"
+          onClick={() => props.onSectionClick?.(s.key)}
+        >
+          {s.title}
+        </button>
+      ))}
     </div>
   ),
 }));
@@ -53,7 +78,11 @@ vi.mock('@/components/navigation/ProvisionalHighlightSignpost.tsx', () => ({
 // (DrawerContent in the app). This harness plays that parent, holding the filter
 // in real useState so the toggles/search/reset drive genuine state transitions.
 function renderNavigator(
-  props: { confirmedSignposts?: Signpost[]; mlSignposts?: Signpost[] } = {},
+  props: {
+    confirmedSignposts?: Signpost[];
+    mlSignposts?: Signpost[];
+    outlineRoots?: OutlineNode[];
+  } = {},
 ) {
   function Harness() {
     const [filter, setFilter] = useState<NavigatorFilter>(EMPTY_FILTER);
@@ -63,11 +92,27 @@ function renderNavigator(
         mlSignposts={props.mlSignposts ?? []}
         filter={filter}
         setFilter={setFilter}
+        outlineRoots={props.outlineRoots ?? []}
       />
     );
   }
   return render(<Harness />);
 }
+
+// A small two-chapter outline: Chapter 1 spans pages 1–4 (with subsection 1.1 on
+// pages 2–4), Chapter 2 spans pages 5–6. Used by the section-filter tests.
+const outlineFixture: OutlineNode[] = buildOutlineTree(
+  [
+    { title: 'Chapter 1', pageNumber: 1, level: 0 },
+    { title: 'Section 1.1', pageNumber: 2, level: 1 },
+    { title: 'Chapter 2', pageNumber: 5, level: 0 },
+  ],
+  6,
+);
+const onPage = (n: number, text: string): Partial<Signpost> => ({
+  text,
+  coords: [{ pageNumber: n, left: 0, top: 0, width: 1, height: 1 }],
+});
 
 // Build fully-shaped Signposts with overridable defaults — same factory pattern
 // as the reducer tests, so fixtures stay honest to the real type.
@@ -242,6 +287,52 @@ describe('InstanceNavigator', () => {
       expect(screen.getByText('on two')).toBeInTheDocument();
       // The panel's page chip for the now-active page is revealed.
       expect(screen.getByRole('button', { name: 'Page 2' })).toHaveAttribute('data-state', 'on');
+    });
+  });
+
+  describe('section filter (ToC)', () => {
+    it('filters by a section checkbox in the panel', async () => {
+      const user = userEvent.setup();
+      renderNavigator({
+        confirmedSignposts: [makeSignpost(onPage(2, 'intro')), makeSignpost(onPage(5, 'ch2 body'))],
+        outlineRoots: outlineFixture,
+      });
+
+      await user.click(screen.getByRole('button', { name: /more filters/i }));
+      await user.click(screen.getByRole('checkbox', { name: /Chapter 2/ }));
+
+      expect(screen.getAllByTestId('signpost')).toHaveLength(1);
+      expect(screen.getByText('ch2 body')).toBeInTheDocument();
+    });
+
+    it('selecting a parent section matches pages in its subsections', async () => {
+      const user = userEvent.setup();
+      renderNavigator({
+        confirmedSignposts: [makeSignpost(onPage(2, 'in 1.1')), makeSignpost(onPage(5, 'in ch2'))],
+        outlineRoots: outlineFixture,
+      });
+
+      await user.click(screen.getByRole('button', { name: /more filters/i }));
+      // Page 2 sits under Section 1.1, which sits under Chapter 1; selecting the
+      // parent Chapter 1 still matches it (the predicate checks the whole path).
+      await user.click(screen.getByRole('checkbox', { name: /Chapter 1/ }));
+
+      expect(screen.getAllByTestId('signpost')).toHaveLength(1);
+      expect(screen.getByText('in 1.1')).toBeInTheDocument();
+    });
+
+    it('clicking a card section chip filters to that section', async () => {
+      const user = userEvent.setup();
+      renderNavigator({
+        confirmedSignposts: [makeSignpost(onPage(2, 'intro')), makeSignpost(onPage(5, 'ch2 body'))],
+        outlineRoots: outlineFixture,
+      });
+
+      // The page-5 card renders a single section chip (Chapter 2); click it.
+      await user.click(screen.getByRole('button', { name: 'Chapter 2' }));
+
+      expect(screen.getAllByTestId('signpost')).toHaveLength(1);
+      expect(screen.getByText('ch2 body')).toBeInTheDocument();
     });
   });
 

@@ -4,6 +4,7 @@ import {
   buildOutlineTree,
   leafKeys,
   nodeState,
+  sectionPathForPage,
   selectedPages,
   selectedTitles,
   type OutlineNode,
@@ -185,5 +186,31 @@ describe('selectedTitles', () => {
       '3. Results',
       '4. Conclusion',
     ]);
+  });
+});
+
+describe('sectionPathForPage', () => {
+  const tree = buildOutlineTree(REPORT, REPORT_PAGES);
+  const titles = (page: number) => sectionPathForPage(tree, page).map((n) => n.title);
+
+  it('returns the ancestor chain, deepest included', () => {
+    // p4 is in 2.1 Data, under 2. Methods.
+    expect(titles(4)).toEqual(['2. Methods', '2.1 Data']);
+  });
+
+  it('stops at the parent for a section intro page (before its first subsection)', () => {
+    // p3 is Methods itself; its first subsection (2.1 Data) starts at p4.
+    expect(titles(3)).toEqual(['2. Methods']);
+  });
+
+  it('returns a single top-level section when there are no subsections', () => {
+    expect(titles(1)).toEqual(['1. Introduction']);
+    expect(titles(13)).toEqual(['4. Conclusion']);
+  });
+
+  it('returns an empty path for pages outside every section range', () => {
+    // The outline starts at p1 and Conclusion ends at the last page (15).
+    expect(sectionPathForPage(tree, 16)).toEqual([]);
+    expect(sectionPathForPage([], 1)).toEqual([]);
   });
 });

@@ -13,6 +13,7 @@
  */
 
 import type { Highlight, Signpost } from '@/lib/definitions';
+import { type OutlineNode, sectionPathForPage } from '@/lib/pdf/outline-tree';
 
 export interface NavigatorFilter {
   /** Highlight sources to keep ('manual' = confirmed, 'ml' = suggested). Empty = all. */
@@ -106,6 +107,26 @@ export function pageFacets(signposts: Signpost[]): PageFacet[] {
   return [...byPage.entries()]
     .map(([page, count]) => ({ page, count }))
     .sort((a, b) => a.page - b.page);
+}
+
+/**
+ * How many signposts fall under each outline node, keyed by node key. A signpost
+ * counts toward every section in its path, so a parent's count includes all its
+ * descendants' signposts — mirroring how selecting a parent matches them all.
+ */
+export function sectionCountsByKey(
+  roots: OutlineNode[],
+  signposts: Signpost[],
+): Map<number, number> {
+  const counts = new Map<number, number>();
+  for (const sp of signposts) {
+    const page = highlightPage(sp);
+    if (page === null) continue;
+    for (const node of sectionPathForPage(roots, page)) {
+      counts.set(node.key, (counts.get(node.key) ?? 0) + 1);
+    }
+  }
+  return counts;
 }
 
 /**

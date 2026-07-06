@@ -54,6 +54,26 @@ export function leafKeys(node: OutlineNode): number[] {
   return node.children.length === 0 ? [node.key] : node.children.flatMap(leafKeys);
 }
 
+/**
+ * The chain of sections a page falls under, outermost first — e.g.
+ * [Chapter 3, 3.2 Methods, 3.2.1 Setup]. Walks down the tree following the child
+ * whose inclusive [start,end] range contains `page`, stopping at the deepest such
+ * node. Returns [] for pages before the first section or outside every range
+ * (e.g. front matter). Because it includes every ancestor, selecting ANY node in
+ * the returned path (a parent or a leaf) is enough to match the page.
+ */
+export function sectionPathForPage(roots: OutlineNode[], page: number): OutlineNode[] {
+  const path: OutlineNode[] = [];
+  let nodes = roots;
+  for (;;) {
+    const node = nodes.find((n) => page >= n.start && page <= n.end);
+    if (!node) break;
+    path.push(node);
+    nodes = node.children;
+  }
+  return path;
+}
+
 /** A node is on/off/mixed purely by how many of its leaf descendants are checked. */
 export function nodeState(node: OutlineNode, checked: ReadonlySet<number>): SectionCheckState {
   const leaves = leafKeys(node);

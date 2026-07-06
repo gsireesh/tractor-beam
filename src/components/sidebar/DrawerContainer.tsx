@@ -43,6 +43,7 @@ import {
   EMPTY_FILTER,
   type NavigatorFilter,
 } from '@/lib/navigator-filters.ts';
+import { buildOutlineTree, type OutlineNode, sectionPathForPage } from '@/lib/pdf/outline-tree.ts';
 import {
   colorMapForSchema,
   createNewSchema,
@@ -87,10 +88,48 @@ export function DrawerContainer() {
   // every ML surface: the navigator list, the in-page viewer, AND the minimap —
   // otherwise the minimap would show ticks for highlights hidden from the page.
   const [filter, setFilter] = useState<NavigatorFilter>(EMPTY_FILTER);
-  const filteredMlHighlights = useMemo(
-    () => applyNavigatorFilter(mlHighlights, filter),
-    [mlHighlights, filter],
+  // The PDF's table of contents as a nested tree, read once the PDF is ready. Used
+  // to resolve which section a highlight's page falls in — for the section filter
+  // dimension and the per-card section chips. Empty when the PDF has no outline.
+  const [outlineRoots, setOutlineRoots] = useState<OutlineNode[]>([]);
+  // page → outline node-key path, for the section-filter predicate. Derived from
+  // the tree; empty until the outline loads (so section filtering is a no-op then).
+  const sectionOf = useCallback(
+    (page: number) => sectionPathForPage(outlineRoots, page).map((n) => n.key),
+    [outlineRoots],
   );
+  const filteredMlHighlights = useMemo(
+    () => applyNavigatorFilter(mlHighlights, filter, sectionOf),
+    [mlHighlights, filter, sectionOf],
+  );
+
+  // Read the outline once the PDF document is available. The drawer usually mounts
+  // after the PDF loads, but poll briefly in case it isn't ready yet, then give up.
+  useEffect(() => {
+    let loaded = false;
+    const tryLoad = () => {
+      const app = window.PDFViewerApplication as
+        | { pdfDocument?: { numPages?: number } }
+        | undefined;
+      if (!window.TractorBeamPdf || !app?.pdfDocument) return;
+      loaded = true;
+      const pageCount = app.pdfDocument.numPages ?? 1;
+      void window.TractorBeamPdf.extractOutline(window.PDFViewerApplication)
+        .then((entries) => setOutlineRoots(buildOutlineTree(entries, pageCount)))
+        .catch((err: unknown) => console.warn('[drawer] Failed to read PDF outline:', err));
+    };
+    tryLoad();
+    if (loaded) return;
+    const iv = setInterval(() => {
+      tryLoad();
+      if (loaded) clearInterval(iv);
+    }, 500);
+    const giveUp = setTimeout(() => clearInterval(iv), 10000);
+    return () => {
+      clearInterval(iv);
+      clearTimeout(giveUp);
+    };
+  }, []);
 
   // Load schema state (IndexedDB) and UI state (chrome.storage) together so the
   // drawer's saved position is ready when its content first renders.
@@ -153,6 +192,7 @@ export function DrawerContainer() {
           setMlHighlights={setMlHighlights}
           filter={filter}
           setFilter={setFilter}
+          outlineRoots={outlineRoots}
         />
       </div>
     </>
@@ -196,6 +236,7 @@ function DrawerContent({
   setMlHighlights,
   filter,
   setFilter,
+  outlineRoots,
 }: {
   initialSchemas: Schema[];
   initialUiState: UiState;
@@ -207,7 +248,15 @@ function DrawerContent({
   setMlHighlights: Dispatch<SetStateAction<Highlight[]>>;
   filter: NavigatorFilter;
   setFilter: Dispatch<SetStateAction<NavigatorFilter>>;
+  /** PDF outline tree, for resolving section membership (filter + card chips). */
+  outlineRoots: OutlineNode[];
 }) {
+  // page → section-key path, derived locally so the confirmed viewer sync honors
+  // the section filter (the ML side is filtered in the parent).
+  const sectionOf = useCallback(
+    (page: number) => sectionPathForPage(outlineRoots, page).map((n) => n.key),
+    [outlineRoots],
+  );
   const [schemas, dispatch] = usePersistedSchemaReducer(
     schemasReducer,
     initialSchemas,
@@ -296,8 +345,8 @@ function DrawerContent({
   // ML side is filtered in the parent (`filteredMlHighlights` prop) so the same
   // array also feeds the minimap.
   const filteredConfirmedHighlights = useMemo<Highlight[]>(
-    () => applyNavigatorFilter(confirmedHighlights, filter),
-    [confirmedHighlights, filter],
+    () => applyNavigatorFilter(confirmedHighlights, filter, sectionOf),
+    [confirmedHighlights, filter, sectionOf],
   );
   const removeMlHighlight = useCallback(
     (highlightId: string) => setMlHighlights((prev) => prev.filter((h) => h.id !== highlightId)),
@@ -509,6 +558,7 @@ function DrawerContent({
               mlSignposts={mlSignposts}
               filter={filter}
               setFilter={setFilter}
+              outlineRoots={outlineRoots}
             />
           </TabsContent>
         </Tabs>

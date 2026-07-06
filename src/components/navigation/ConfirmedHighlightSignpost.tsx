@@ -9,7 +9,13 @@ export function ConfirmedHighlightSignpost({
   classId,
   coords,
   onPageClick,
-}: Signpost & { onPageClick?: (page: number) => void }) {
+  sectionPath,
+  onSectionClick,
+}: Signpost & {
+  onPageClick?: (page: number) => void;
+  sectionPath?: { key: number; title: string }[];
+  onSectionClick?: (key: number) => void;
+}) {
   // Clicking the card navigates to the annotation in the PDF — except when the
   // click lands on a form control (notes textarea, class picker, delete), which
   // should do their own thing. The class dropdown is portaled out of the card,
@@ -28,6 +34,8 @@ export function ConfirmedHighlightSignpost({
         classId={classId}
         instanceId={id}
         onPageClick={onPageClick}
+        sectionPath={sectionPath}
+        onSectionClick={onSectionClick}
       />
     </div>
   );
