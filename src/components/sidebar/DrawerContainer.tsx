@@ -83,6 +83,14 @@ export function DrawerContainer() {
   // toward the root-level `ml` store slice (docs/architecture/02); the minimap is a
   // read-only consumer, so it maps onto the future `useMlHighlights()` with no setter.
   const [mlHighlights, setMlHighlights] = useState<Highlight[]>([]);
+  // Filter state lives here (not in DrawerContent) so the SAME predicate shapes
+  // every ML surface: the navigator list, the in-page viewer, AND the minimap —
+  // otherwise the minimap would show ticks for highlights hidden from the page.
+  const [filter, setFilter] = useState<NavigatorFilter>(EMPTY_FILTER);
+  const filteredMlHighlights = useMemo(
+    () => applyNavigatorFilter(mlHighlights, filter),
+    [mlHighlights, filter],
+  );
 
   // Load schema state (IndexedDB) and UI state (chrome.storage) together so the
   // drawer's saved position is ready when its content first renders.
@@ -124,7 +132,7 @@ export function DrawerContainer() {
     return (
       <>
         <DrawerVisibilityToggle isOpen={isOpen} onToggle={toggle} />
-        <AnnotationMinimap mlHighlights={mlHighlights} isOpen={isOpen} />
+        <AnnotationMinimap mlHighlights={filteredMlHighlights} isOpen={isOpen} />
         <div className={`tractor-beam-drawer ${isOpen ? 'open' : ''}`}>
           <div className="p-4 text-sm text-muted-foreground">Loading...</div>
         </div>
@@ -135,13 +143,16 @@ export function DrawerContainer() {
   return (
     <>
       <DrawerVisibilityToggle isOpen={isOpen} onToggle={toggle} />
-      <AnnotationMinimap mlHighlights={mlHighlights} isOpen={isOpen} />
+      <AnnotationMinimap mlHighlights={filteredMlHighlights} isOpen={isOpen} />
       <div className={`tractor-beam-drawer ${isOpen ? 'open' : ''}`}>
         <DrawerContent
           initialSchemas={initialState}
           initialUiState={initialUiState}
           mlHighlights={mlHighlights}
+          filteredMlHighlights={filteredMlHighlights}
           setMlHighlights={setMlHighlights}
+          filter={filter}
+          setFilter={setFilter}
         />
       </div>
     </>
@@ -181,12 +192,21 @@ function DrawerContent({
   initialSchemas,
   initialUiState,
   mlHighlights,
+  filteredMlHighlights,
   setMlHighlights,
+  filter,
+  setFilter,
 }: {
   initialSchemas: Schema[];
   initialUiState: UiState;
   mlHighlights: Highlight[];
+  /** ML highlights already run through the shared filter (computed in the parent,
+   *  shared with the minimap). Used for the viewer sync; the raw `mlHighlights`
+   *  still feeds the signpost list so its source counts stay total. */
+  filteredMlHighlights: Highlight[];
   setMlHighlights: Dispatch<SetStateAction<Highlight[]>>;
+  filter: NavigatorFilter;
+  setFilter: Dispatch<SetStateAction<NavigatorFilter>>;
 }) {
   const [schemas, dispatch] = usePersistedSchemaReducer(
     schemasReducer,
@@ -203,10 +223,9 @@ function DrawerContent({
   const [mlFailures, setMlFailures] = useState<BlockFailure[]>([]);
 
   const [exportOpen, setExportOpen] = useState(false);
-  // Filter state lives here (not in InstanceNavigator) so the same predicate can
-  // shape both the navigator list AND the arrays pushed to the in-page viewer.
-  const [filter, setFilter] = useState<NavigatorFilter>(EMPTY_FILTER);
-  const resetFilter = useCallback(() => setFilter(EMPTY_FILTER), []);
+  // filter/setFilter are lifted to DrawerContainer (shared with the minimap); we
+  // derive the reset used by the schema switch and the drawer-host bridge here.
+  const resetFilter = useCallback(() => setFilter(EMPTY_FILTER), [setFilter]);
   // The drawer root is a stable singleton; resolve it once rather than on every render.
   const drawerRoot = useMemo(() => document.getElementById('tractor-beam-drawer-root'), []);
 
@@ -271,16 +290,14 @@ function DrawerContent({
     () => (activeSchema ? getSignpostsFromHighlights(mlHighlights, activeSchema) : []),
     [mlHighlights, activeSchema],
   );
-  // The viewer must show exactly what the navigator shows, so both sync effects
-  // below push these FILTERED arrays. (Section filtering has no outline yet, so
-  // sectionOf defaults to a no-op — added in the ToC-section slice.)
+  // The viewer must show exactly what the navigator shows, so the confirmed sync
+  // effect below pushes this FILTERED array. (Section filtering has no outline
+  // yet, so sectionOf defaults to a no-op — added in the ToC-section slice.) The
+  // ML side is filtered in the parent (`filteredMlHighlights` prop) so the same
+  // array also feeds the minimap.
   const filteredConfirmedHighlights = useMemo<Highlight[]>(
     () => applyNavigatorFilter(confirmedHighlights, filter),
     [confirmedHighlights, filter],
-  );
-  const filteredMlHighlights = useMemo<Highlight[]>(
-    () => applyNavigatorFilter(mlHighlights, filter),
-    [mlHighlights, filter],
   );
   const removeMlHighlight = useCallback(
     (highlightId: string) => setMlHighlights((prev) => prev.filter((h) => h.id !== highlightId)),
