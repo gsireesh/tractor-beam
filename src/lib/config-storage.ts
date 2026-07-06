@@ -100,8 +100,19 @@ type LegacyModelConfig = {
 function withDefaults(stored: Partial<ModelConfig>): ModelConfig {
   return {
     selected: { ...DEFAULT_MODEL_CONFIG.selected, ...stored.selected },
-    anthropic: { ...DEFAULT_MODEL_CONFIG.anthropic, ...stored.anthropic },
-    openai: { ...DEFAULT_MODEL_CONFIG.openai, ...stored.openai },
+    // An empty/missing baseUrl heals to the default rather than persisting as
+    // unconfigured. Older installs stored openai.baseUrl='' before OpenAI proper
+    // was the default, and an explicit '' would otherwise win this merge over it.
+    anthropic: {
+      ...DEFAULT_MODEL_CONFIG.anthropic,
+      ...stored.anthropic,
+      baseUrl: stored.anthropic?.baseUrl || DEFAULT_MODEL_CONFIG.anthropic.baseUrl,
+    },
+    openai: {
+      ...DEFAULT_MODEL_CONFIG.openai,
+      ...stored.openai,
+      baseUrl: stored.openai?.baseUrl || DEFAULT_MODEL_CONFIG.openai.baseUrl,
+    },
     webllm: {}, // local — no connection settings
   };
 }

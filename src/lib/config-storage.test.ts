@@ -86,6 +86,24 @@ describe('coerceModelConfig', () => {
       expect(config.openai).toEqual(DEFAULT_MODEL_CONFIG.openai);
       expect(config.webllm).toEqual(DEFAULT_MODEL_CONFIG.webllm);
     });
+
+    it('heals an empty stored baseUrl to the default (older installs stored "")', () => {
+      const stored = {
+        selected: { provider: 'openai' as const, model: 'gpt-5.4' },
+        openai: { apiKey: 'sk-test', baseUrl: '' },
+      };
+      const config = coerceModelConfig(stored, null);
+      expect(config.openai.baseUrl).toBe(DEFAULT_MODEL_CONFIG.openai.baseUrl);
+      expect(config.openai.apiKey).toBe('sk-test'); // other fields preserved
+    });
+
+    it('preserves a non-empty custom baseUrl (local endpoints)', () => {
+      const stored = {
+        selected: { provider: 'openai' as const, model: 'llama3' },
+        openai: { apiKey: null, baseUrl: 'http://localhost:11434/v1' },
+      };
+      expect(coerceModelConfig(stored, null).openai.baseUrl).toBe('http://localhost:11434/v1');
+    });
   });
 
   describe('absent or unusable storage', () => {
