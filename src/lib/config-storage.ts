@@ -100,21 +100,9 @@ type LegacyModelConfig = {
 function withDefaults(stored: Partial<ModelConfig>): ModelConfig {
   return {
     selected: { ...DEFAULT_MODEL_CONFIG.selected, ...stored.selected },
-    anthropic: {
-      ...DEFAULT_MODEL_CONFIG.anthropic,
-      ...stored.anthropic,
-      params: { ...DEFAULT_MODEL_CONFIG.anthropic.params, ...stored.anthropic?.params },
-    },
-    openai: {
-      ...DEFAULT_MODEL_CONFIG.openai,
-      ...stored.openai,
-      params: { ...DEFAULT_MODEL_CONFIG.openai.params, ...stored.openai?.params },
-    },
-    webllm: {
-      ...DEFAULT_MODEL_CONFIG.webllm,
-      ...stored.webllm,
-      params: { ...DEFAULT_MODEL_CONFIG.webllm.params, ...stored.webllm?.params },
-    },
+    anthropic: { ...DEFAULT_MODEL_CONFIG.anthropic, ...stored.anthropic },
+    openai: { ...DEFAULT_MODEL_CONFIG.openai, ...stored.openai },
+    webllm: {}, // local — no connection settings
   };
 }
 
@@ -200,27 +188,14 @@ export type ModelConfigPatch = {
   webllm?: Partial<ModelConfig['webllm']>;
 };
 
-/** Merge a patch over a full config — symmetric to {@link withDefaults}: top-level
- *  block spread, with `params` merged one level deeper so a partial params update
- *  doesn't wipe sibling params. */
+/** Merge a patch over a full config — symmetric to {@link withDefaults}: a
+ *  shallow per-block spread (each provider block is now just connection fields). */
 export function applyModelConfigPatch(base: ModelConfig, patch: ModelConfigPatch): ModelConfig {
   return {
     selected: { ...base.selected, ...patch.selected },
-    anthropic: {
-      ...base.anthropic,
-      ...patch.anthropic,
-      params: { ...base.anthropic.params, ...patch.anthropic?.params },
-    },
-    openai: {
-      ...base.openai,
-      ...patch.openai,
-      params: { ...base.openai.params, ...patch.openai?.params },
-    },
-    webllm: {
-      ...base.webllm,
-      ...patch.webllm,
-      params: { ...base.webllm.params, ...patch.webllm?.params },
-    },
+    anthropic: { ...base.anthropic, ...patch.anthropic },
+    openai: { ...base.openai, ...patch.openai },
+    webllm: {}, // local — no connection settings
   };
 }
 

@@ -42,19 +42,18 @@ const RUNNERS = { anthropic: claude, openai, webllm } as const;
 /**
  * Configure the runner for the active provider from the per-provider config,
  * and return it ready to run. Each provider block (config.anthropic /
- * config.openai / config.webllm) holds that backend's connection settings +
- * params; config.selected names the active provider and model.
+ * config.openai) holds that backend's connection settings; config.selected
+ * names the active provider and model. (Generation params were removed — runners
+ * use fixed defaults.)
  */
 function configureRunner(config: ModelConfig): Runner {
   const runner = RUNNERS[config.selected.provider];
   if (runner instanceof ClaudeRunner) {
     runner.setApiKeyDirect(config.anthropic.apiKey);
-    runner.setParams(config.anthropic.params);
     runner.setModel(config.selected.model);
   } else if (runner instanceof OpenAiRunner) {
     if (config.openai.baseUrl) runner.setBaseUrl(config.openai.baseUrl);
     runner.setApiKeyDirect(config.openai.apiKey);
-    runner.setParams(config.openai.params);
     runner.setModel(config.selected.model);
   } else {
     runner.setModel(config.selected.model);

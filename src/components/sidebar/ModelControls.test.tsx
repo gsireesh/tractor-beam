@@ -168,7 +168,6 @@ describe('ModelControls — ML run history', () => {
           provider: 'anthropic',
           model: 'claude-opus-4-8',
           baseUrl: 'https://proxy.example.com',
-          params: { maxTokens: 2048 },
         },
       }),
     ]);

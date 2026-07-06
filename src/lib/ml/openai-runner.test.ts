@@ -28,37 +28,21 @@ describe('OpenAiRunner request params', () => {
     });
   });
 
-  it('sends max_completion_tokens, never the deprecated max_tokens', async () => {
+  it('sends max_completion_tokens (fixed default), never the deprecated max_tokens', async () => {
     // OpenAI o-series / GPT-5 (the defaults) reject max_tokens with a 400.
     const runner = newRunner();
-    runner.setParams({ maxTokens: 512 });
     await runner.run([{ role: 'user', content: 'hi' }]);
 
     const args = createMock.mock.calls[0][0];
-    expect(args.max_completion_tokens).toBe(512);
+    expect(args.max_completion_tokens).toBe(1024);
     expect(args).not.toHaveProperty('max_tokens');
   });
 
-  it('falls back to the default cap when none is configured', async () => {
-    const runner = newRunner();
-    await runner.run([{ role: 'user', content: 'hi' }]);
-    expect(createMock.mock.calls[0][0].max_completion_tokens).toBe(1024);
-  });
-
-  it('omits sampling params unless explicitly set (reasoning models reject non-defaults)', async () => {
+  it('sends no sampling params (removed — reasoning models reject non-defaults)', async () => {
     const runner = newRunner();
     await runner.run([{ role: 'user', content: 'hi' }]);
     const args = createMock.mock.calls[0][0];
     expect(args).not.toHaveProperty('temperature');
     expect(args).not.toHaveProperty('top_p');
-  });
-
-  it('includes sampling params when the user set them', async () => {
-    const runner = newRunner();
-    runner.setParams({ maxTokens: 256, temperature: 0.2, topP: 0.9 });
-    await runner.run([{ role: 'user', content: 'hi' }]);
-    const args = createMock.mock.calls[0][0];
-    expect(args.temperature).toBe(0.2);
-    expect(args.top_p).toBe(0.9);
   });
 });

@@ -38,8 +38,7 @@ export function MlRunCard({ run, schemaVersion }: MlRunCardProps) {
   const [showConfig, setShowConfig] = useState(false);
   const count = run.annotations.length;
   const model = run.model;
-  const params = Object.entries(model?.params ?? {}).filter(([, v]) => v !== undefined && v !== '');
-  const hasConfig = Boolean(model && (model.baseUrl || params.length > 0));
+  const hasConfig = Boolean(model && model.baseUrl);
 
   const timestamp = new Date(run.createdAt).toLocaleString();
   return (
@@ -86,9 +85,6 @@ export function MlRunCard({ run, schemaVersion }: MlRunCardProps) {
             >
               <ConfigRow label="Provider" value={providerLabel(model.provider)} />
               {model.baseUrl && <ConfigRow label="Base URL" value={model.baseUrl} />}
-              {params.map(([k, v]) => (
-                <ConfigRow key={k} label={k} value={String(v)} />
-              ))}
             </div>
           )}
         </>

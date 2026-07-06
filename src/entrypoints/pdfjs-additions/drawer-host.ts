@@ -193,8 +193,8 @@ export function getRunScope(requestId: string): MlRunScope | undefined {
 
 /**
  * Distill the active selection into a credential-free snapshot for storage.
- * Only `params` (effort/maxTokens/…) and `baseUrl` are copied; the provider
- * block's sibling `apiKey` is never read, so it cannot reach IndexedDB.
+ * Only `provider`, `model`, and `baseUrl` are copied; the provider block's
+ * sibling `apiKey` is never read, so it cannot reach IndexedDB.
  */
 function modelSnapshot(config: ModelConfig): MlRunModel {
   const { provider, model } = config.selected;
@@ -203,7 +203,6 @@ function modelSnapshot(config: ModelConfig): MlRunModel {
     provider,
     model,
     baseUrl: 'baseUrl' in block ? block.baseUrl : undefined,
-    params: { ...block.params },
   };
 }
 

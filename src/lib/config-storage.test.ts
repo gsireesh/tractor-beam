@@ -75,7 +75,6 @@ describe('coerceModelConfig', () => {
         anthropic: {
           apiKey: 'sk-ant-existing',
           baseUrl: 'https://proxy.example.com',
-          params: { effort: 'high' as const, maxTokens: 2048 },
         },
         // openai + webllm blocks omitted — filled from defaults.
       };
@@ -83,7 +82,7 @@ describe('coerceModelConfig', () => {
 
       expect(config.selected).toEqual({ provider: 'anthropic', model: 'claude-opus-4-8' });
       expect(config.anthropic.baseUrl).toBe('https://proxy.example.com');
-      expect(config.anthropic.params.maxTokens).toBe(2048);
+      expect(config.anthropic.apiKey).toBe('sk-ant-existing');
       expect(config.openai).toEqual(DEFAULT_MODEL_CONFIG.openai);
       expect(config.webllm).toEqual(DEFAULT_MODEL_CONFIG.webllm);
     });

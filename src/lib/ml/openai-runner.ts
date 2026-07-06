@@ -11,13 +11,6 @@ import OpenAI from 'openai';
 import type { ChatMessage } from './webllm-runner';
 import type { ProgressCallback } from './types';
 
-/** Tunable generation parameters for OpenAI-compatible chat models. */
-export interface OpenAiParams {
-  temperature?: number;
-  topP?: number;
-  maxTokens?: number;
-}
-
 /**
  * OpenAI-compatible provider configuration block (composed into ModelConfig).
  * `baseUrl` is required — there is no universal default endpoint — and the
@@ -26,13 +19,11 @@ export interface OpenAiParams {
 export interface OpenAiConfig {
   apiKey: string | null;
   baseUrl: string;
-  params: OpenAiParams;
 }
 
 export const DEFAULT_OPENAI_CONFIG: OpenAiConfig = {
   apiKey: null,
   baseUrl: '',
-  params: { maxTokens: 1024 },
 };
 
 /**
@@ -47,7 +38,6 @@ export class OpenAiRunner {
   private apiKey: string | null = null;
   private baseUrl = '';
   private model = '';
-  private params: OpenAiParams = {};
 
   // Progress callback kept for interface parity; remote calls return in one shot.
   constructor(_onProgress: ProgressCallback) {}
@@ -62,10 +52,6 @@ export class OpenAiRunner {
 
   setBaseUrl(url: string) {
     this.baseUrl = url;
-  }
-
-  setParams(params: OpenAiParams) {
-    this.params = params;
   }
 
   /**
@@ -96,9 +82,7 @@ export class OpenAiRunner {
       // OpenAI-compatible servers (vLLM, OpenRouter, Together) accept this too;
       // older ones that only know `max_tokens` ignore the unknown field (no cap)
       // rather than erroring — a better failure mode than hard-breaking OpenAI.
-      max_completion_tokens: this.params.maxTokens ?? maxTokens,
-      ...(this.params.temperature != null ? { temperature: this.params.temperature } : {}),
-      ...(this.params.topP != null ? { top_p: this.params.topP } : {}),
+      max_completion_tokens: maxTokens,
     });
 
     const content = completion.choices[0]?.message?.content ?? '';
