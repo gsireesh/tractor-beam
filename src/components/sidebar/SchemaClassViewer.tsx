@@ -193,7 +193,7 @@ export function SchemaClassViewer({
                 }
               >
                 <Trash2 strokeWidth={1} size={'1em'} />
-                Delete Class
+                Delete Highlighter
               </DropdownMenuItem>
             </DropdownMenuGroup>
           </DropdownMenuContent>
