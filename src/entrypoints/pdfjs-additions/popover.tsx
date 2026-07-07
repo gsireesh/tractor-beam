@@ -14,7 +14,11 @@ import cssText from './popover-styles.css?inline';
 let root: Root | null = null;
 let container: HTMLDivElement | null = null;
 
-type Position = { top: number; left: number; bottom: number };
+interface Position {
+  top: number;
+  left: number;
+  bottom: number;
+}
 
 type PopoverState =
   | null

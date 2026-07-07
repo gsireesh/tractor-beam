@@ -114,6 +114,10 @@ export function CreatableCombobox({
       value={value}
       onInputValueChange={onInputValueChange}
       filter={filter}
+      // Keep the first filtered option highlighted while typing so Enter commits it
+      // (an existing class if one matches, otherwise the "Create new" item) instead
+      // of committing nothing and blanking the input.
+      autoHighlight
       {...(closeOnScroll ? { open, onOpenChange: setOpen } : {})}
       onValueChange={(picked: string | null) => {
         if (typeof picked === 'string' && picked.startsWith(CREATE_ITEM_PREFIX)) {
