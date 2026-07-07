@@ -23,8 +23,9 @@ export function SchemaViewer({ schema, dispatch }: SchemaViewerProps) {
       <div className="sticky top-0 z-10 bg-card">
         <div className="flex justify-end gap-1">
           <IconButton
-            title="Add New Highlighted"
+            title="Add New Highlighter"
             icon={ListPlus}
+            label={'Add New Highlighter'}
             strokeWidth={2}
             onClick={() => {
               dispatch({
