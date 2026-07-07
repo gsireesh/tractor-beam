@@ -7,6 +7,9 @@ node_modules
 # Lockfile
 pnpm-lock.yaml
 
+# Generated: @font-face rules (run `pnpm run fonts:generate`)
+src/fonts.css
+
 # Vendored pdf.js library — do not reformat (keep our own pdfjs-init.js formatted)
 public/pdfjs
 

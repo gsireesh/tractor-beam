@@ -17,6 +17,7 @@
     "test:watch": "vitest",
     "fixtures:trim": "node scripts/trim-fixture-sources.mjs",
     "fixtures:extract": "node scripts/extract-fixture-items.mjs",
+    "fonts:generate": "node scripts/generate-fonts-css.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "postinstall": "wxt prepare"
@@ -46,6 +47,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.21.0",
+    "@fontsource/ibm-plex-sans": "^5.2.8",
     "@ladle/react": "^5.1.1",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",

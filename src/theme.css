@@ -10,6 +10,12 @@
  * `.dark` on that same element to switch themes.
  */
 
+/* Bundled IBM Plex Sans @font-face rules (base64 data URIs). Kept in a
+   generated file so the ~93 KB of font bytes don't clutter this one; regenerate
+   with `pnpm run fonts:generate`. Import lives here so every surface that pulls
+   in theme.css also gets the font. */
+@import './fonts.css';
+
 /* Activate `dark:` utilities (used by the shadcn `ui/` components) and our
    `.tractor-beam-themed.dark` overrides for anything inside a `.dark` ancestor.
    `:where(...)` pins the variant's specificity to zero so it never fights real
@@ -61,7 +67,7 @@
      every themed subtree — so the `font-sans` utility, the scoped surfaces'
      `var(--font-sans)`, and this declaration all resolve to one value — without
      leaking the variable onto the host pdf.js page (`:root`). */
-  --font-sans: sans-serif;
+  --font-sans: 'IBM Plex Sans', sans-serif;
   font-family: var(--font-sans);
 
   --background: 0 0% 100%;

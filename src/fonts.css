@@ -1,0 +1,33 @@
+/*
+ * GENERATED FILE — do not edit by hand.
+ * Run `pnpm run fonts:generate` (scripts/generate-fonts-css.mjs) to rebuild.
+ *
+ * Bundled IBM Plex Sans (latin subset, weights 400/500/600). The woff2
+ * files live in public/fonts/ and are referenced by root-absolute URL so a single
+ * cached copy is shared across every injected surface. Imported by theme.css.
+ */
+
+@font-face {
+  font-family: 'IBM Plex Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(/fonts/ibm-plex-sans-400.woff2) format('woff2');
+}
+
+@font-face {
+  font-family: 'IBM Plex Sans';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(/fonts/ibm-plex-sans-500.woff2) format('woff2');
+}
+
+@font-face {
+  font-family: 'IBM Plex Sans';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url(/fonts/ibm-plex-sans-600.woff2) format('woff2');
+}
+
