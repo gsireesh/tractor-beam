@@ -40,7 +40,14 @@ export function constructSchemaNERPrompt(schema: Schema) {
     return `${schemaClass.name} (${abbreviatedClassName}): ${schemaClass.description}\nPositive examples: ${positiveExamples.join(', ')}\nNegative examples: ${negativeExamples.join(', ')}`;
   });
 
-  const schemaNERPrompt = `${DEFAULT_NER_SYSTEM_PROMPT}\n\nThe schema is as follows:\n\n${schemaStrings.join('\n\n')}`;
+  // Task-global instructions (document type, domain conventions, ...) are
+  // schema-scoped freetext. Inject only when non-empty so a blank field adds
+  // nothing to the prompt. Sits between the fixed system prompt and the schema
+  // so it stays inside the cached system-prompt prefix.
+  const instructions = schema.instructions?.trim();
+  const instructionsBlock = instructions ? `\n\nContext for this project:\n\n${instructions}` : '';
+
+  const schemaNERPrompt = `${DEFAULT_NER_SYSTEM_PROMPT}${instructionsBlock}\n\nThe schema is as follows:\n\n${schemaStrings.join('\n\n')}`;
   console.log('[prompting] Constructed Schema NER Prompt:', schemaNERPrompt);
   return schemaNERPrompt;
 }

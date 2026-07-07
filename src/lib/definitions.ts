@@ -131,6 +131,13 @@ export interface Schema {
   id: string;
   name: string;
   classes: SchemaClass[];
+  /**
+   * Task-global, freetext context shared with the model on every run for this
+   * project (e.g. what kind of document these are, domain conventions, date
+   * formats). Optional so legacy schemas read as `undefined`; injected into the
+   * NER system prompt by `constructSchemaNERPrompt`.
+   */
+  instructions?: string;
 }
 
 /** Why a snapshot (schema version) was recorded — see docs/architecture/02. */

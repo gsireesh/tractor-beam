@@ -14,6 +14,7 @@ function renderHeader(overrides: Partial<Parameters<typeof SchemaHeader>[0]> = {
     editing: true,
     onEditingChange: vi.fn(),
     onRename: vi.fn(),
+    onInstructionsChange: vi.fn(),
     onSwitch: vi.fn(),
     onNew: vi.fn(),
     onDelete: vi.fn(),
@@ -63,5 +64,35 @@ describe('SchemaHeader rename', () => {
     await user.click(screen.getByPlaceholderText('Untitled Project'));
     await user.tab(); // blur without editing
     expect(onRename).not.toHaveBeenCalled();
+  });
+});
+
+describe('SchemaHeader instructions', () => {
+  it('commits instructions once on close, not per keystroke', async () => {
+    const user = userEvent.setup();
+    const { onInstructionsChange } = renderHeader({ editing: false });
+
+    await user.click(screen.getByTitle('Project instructions'));
+    const textarea = screen.getByPlaceholderText(/clinical-trial protocols/i);
+
+    await user.type(textarea, 'These are invoices.');
+    expect(onInstructionsChange).not.toHaveBeenCalled(); // local draft only
+
+    await user.keyboard('{Escape}'); // closes the popover -> commit
+    expect(onInstructionsChange).toHaveBeenCalledExactlyOnceWith('These are invoices.');
+  });
+
+  it('does not dispatch when instructions are unchanged', async () => {
+    const user = userEvent.setup();
+    const withInstructions: Schema = { ...schema, instructions: 'Existing notes.' };
+    const { onInstructionsChange } = renderHeader({
+      editing: false,
+      activeSchema: withInstructions,
+    });
+
+    await user.click(screen.getByTitle('Project instructions'));
+    expect(screen.getByPlaceholderText(/clinical-trial protocols/i)).toHaveValue('Existing notes.');
+    await user.keyboard('{Escape}'); // close without editing
+    expect(onInstructionsChange).not.toHaveBeenCalled();
   });
 });

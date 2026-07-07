@@ -545,6 +545,15 @@ function DrawerContent({
             schemaInfo: { ...activeSchema, name },
           });
         }}
+        onInstructionsChange={(instructions) => {
+          if (!activeSchema) return;
+          dispatch({
+            actionType: 'updateSchema',
+            schemaId: activeSchema.id,
+            schemaInfo: { ...activeSchema, instructions },
+          });
+        }}
+        container={drawerRoot}
         onSwitch={(id) => {
           selectSchema(id);
           setTitleEditing(false);
