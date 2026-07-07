@@ -30,12 +30,17 @@ export function SchemaClassViewer({
   schemaId,
   schemaClass,
   dispatch,
+  autoEdit = false,
 }: {
   schemaId: string;
   schemaClass: SchemaClass;
   dispatch: (action: SchemaAction) => void;
+  autoEdit?: boolean;
 }) {
-  const [titleEditable, setTitleEditable] = useState<boolean>(false);
+  // autoEdit is only read at mount: a freshly-added class mounts with a new key,
+  // so it lands directly in title-edit mode (and the input's autoFocus grabs
+  // focus). Already-mounted siblings keep their existing state.
+  const [titleEditable, setTitleEditable] = useState<boolean>(autoEdit);
   // Local drafts so name/description can commit on blur instead of dispatching
   // every keystroke. A controlled input pinned to the prop with no onChange would
   // revert each keystroke; the draft is where the in-progress text lives.
@@ -117,6 +122,9 @@ export function SchemaClassViewer({
               autoFocus
               className="border-2 bg-card rounded-lg"
               value={nameDraft}
+              // Select the existing name on focus so a new class's "New
+              // Highlighter" placeholder is replaced by the first keystroke.
+              onFocus={(e) => e.target.select()}
               onChange={(e) => setNameDraft(e.target.value)}
               onKeyDown={(e) => {
                 // Commit + close on Enter. This input has no onBlur (it relies on
