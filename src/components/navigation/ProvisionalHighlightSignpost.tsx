@@ -28,7 +28,7 @@ export function ProvisionalHighlightSignpost({
   sectionPath?: { key: number; title: string }[];
   onSectionClick?: (key: number) => void;
 }) {
-  const { activeSchema, pdfUrl, dispatch, removeMlHighlight } = useDrawerContext();
+  const { activeSchema, pdfUrl, dispatch } = useDrawerContext();
   const initialClass = activeSchema.classes.find((c) => c.id === classId) ?? null;
   const [selectedClass, setSelectedClass] = useState<SchemaClass | null>(initialClass);
   const [inputValue, setInputValue] = useState<string>(initialClass?.name ?? '');
@@ -70,8 +70,6 @@ export function ProvisionalHighlightSignpost({
         classInfo: { ...selectedClass, instances: [instance] },
       });
     }
-    // Promoted to a confirmed instance — drop the provisional copy.
-    removeMlHighlight(id);
   };
 
   const handleCardClick = (e: MouseEvent<HTMLDivElement>) => {
