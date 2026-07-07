@@ -73,7 +73,7 @@ describe('SchemaHeader instructions', () => {
     const { onInstructionsChange } = renderHeader({ editing: false });
 
     await user.click(screen.getByTitle('Project instructions'));
-    const textarea = screen.getByPlaceholderText(/clinical-trial protocols/i);
+    const textarea = screen.getByPlaceholderText(/Citations are/i);
 
     await user.type(textarea, 'These are invoices.');
     expect(onInstructionsChange).not.toHaveBeenCalled(); // local draft only
@@ -91,7 +91,7 @@ describe('SchemaHeader instructions', () => {
     });
 
     await user.click(screen.getByTitle('Project instructions'));
-    expect(screen.getByPlaceholderText(/clinical-trial protocols/i)).toHaveValue('Existing notes.');
+    expect(screen.getByPlaceholderText(/Citations are/i)).toHaveValue('Existing notes.');
     await user.keyboard('{Escape}'); // close without editing
     expect(onInstructionsChange).not.toHaveBeenCalled();
   });
