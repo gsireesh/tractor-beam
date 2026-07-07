@@ -148,7 +148,18 @@ function init() {
   document.body.appendChild(container);
   syncTheme(container);
 
-  root = createRoot(container);
+  // The popover mounts into a nested element, NOT `container` itself. `container`
+  // (#tractor-beam-popover-root) is ALSO the portal target for menus/comboboxes
+  // rendered by the *drawer's* separate React root. A React root assumes it owns
+  // its container's entire child list, so if this root owned `container`, its
+  // render()/render(null) on show/hide would reconcile — and remove — the drawer
+  // root's portaled nodes, and vice versa: two roots removing each other's
+  // children is the "removeChild: node is not a child of this node" crash. Owning
+  // only `appEl` keeps this root's reconciliation off the shared child list; the
+  // portals live as sibling children of `appEl` under the same themed container.
+  const appEl = document.createElement('div');
+  container.appendChild(appEl);
+  root = createRoot(appEl);
 
   window.TractorBeamPopover = {
     show: showPopover,
