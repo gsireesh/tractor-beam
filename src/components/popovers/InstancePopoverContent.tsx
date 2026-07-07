@@ -64,6 +64,13 @@ export interface InstancePopoverContentProps {
   onTogglePositiveExample?: () => void;
   /** PDF page of the annotation. Passed only by the navigation-view host, so the page badge is nav-only. */
   pageNumber?: number;
+  /** When set, the page badge becomes a button that filters the navigator to this page. */
+  onPageClick?: (page: number) => void;
+  /** Outline sections this annotation's page falls under, outermost first. Rendered
+   *  as clickable chips (one per hierarchy level) when onSectionClick is also set. */
+  sectionPath?: { key: number; title: string }[];
+  /** When set (with sectionPath), each section chip filters the navigator to that section. */
+  onSectionClick?: (key: number) => void;
   notesValue: string | null;
   onNotesChange: (v: string) => void;
   /** Fired when the notes textarea loses focus — used by the inline host to persist. */
@@ -90,6 +97,9 @@ export function InstancePopoverContent({
   positiveExample,
   onTogglePositiveExample,
   pageNumber,
+  onPageClick,
+  sectionPath,
+  onSectionClick,
   notesValue,
   onNotesChange,
   onNotesBlur,
@@ -113,16 +123,53 @@ export function InstancePopoverContent({
       >
         {text}
       </div>
-      {(positiveExample !== undefined || pageNumber !== undefined) && (
-        <div className="mb-3 flex items-center gap-2">
+      {(positiveExample !== undefined ||
+        pageNumber !== undefined ||
+        (onSectionClick && sectionPath && sectionPath.length > 0)) && (
+        <div className="mb-3 flex flex-wrap items-center gap-2">
           {positiveExample !== undefined && (
             <ExampleChip positiveExample={positiveExample} onToggle={onTogglePositiveExample} />
           )}
-          {pageNumber !== undefined && (
-            <Badge className="bg-muted text-muted-foreground" style={{ borderColor: accentColor }}>
-              Page {pageNumber}
-            </Badge>
-          )}
+          {pageNumber !== undefined &&
+            (onPageClick ? (
+              <Badge
+                asChild
+                className="bg-muted text-muted-foreground cursor-pointer"
+                style={{ borderColor: accentColor }}
+              >
+                <button
+                  type="button"
+                  onClick={() => onPageClick(pageNumber)}
+                  title={`Filter to page ${pageNumber}`}
+                >
+                  Page {pageNumber}
+                </button>
+              </Badge>
+            ) : (
+              <Badge
+                className="bg-muted text-muted-foreground"
+                style={{ borderColor: accentColor }}
+              >
+                Page {pageNumber}
+              </Badge>
+            ))}
+          {onSectionClick &&
+            sectionPath?.map((s) => (
+              <Badge
+                key={s.key}
+                asChild
+                className="max-w-[12rem] cursor-pointer overflow-hidden bg-muted text-muted-foreground"
+                style={{ borderColor: accentColor }}
+              >
+                <button
+                  type="button"
+                  onClick={() => onSectionClick(s.key)}
+                  title={`Filter to section: ${s.title}`}
+                >
+                  <span className="truncate">{s.title}</span>
+                </button>
+              </Badge>
+            ))}
         </div>
       )}
       <Textarea

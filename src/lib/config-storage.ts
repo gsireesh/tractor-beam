@@ -3,6 +3,7 @@ import { DEFAULT_MODEL_CONFIG, type ModelConfig, type ModelSelection } from './m
 import { DEFAULT_ANTHROPIC_CONFIG, DEFAULT_ANTHROPIC_MODEL } from '@/lib/ml/claude-runner.ts';
 import { DEFAULT_WEBLLM_CONFIG } from '@/lib/ml/webllm-runner.ts';
 import { DEFAULT_OPENAI_CONFIG } from '@/lib/ml/openai-runner.ts';
+import type { SerializedFilter } from '@/lib/navigator-filters.ts';
 
 /**
  * Single source of truth for everything persisted in chrome.storage.local.
@@ -64,6 +65,9 @@ export interface UiState {
   documents: Record<string, DocumentUiState>;
   /** Color-theme preference; applied to every surface root by syncTheme. */
   themePreference: ThemePreference;
+  /** Opt-in "pinned" navigator filter per schema (by schemaId). When a schema with
+   *  a pinned filter becomes active, that filter is restored instead of cleared. */
+  pinnedFilters: Record<string, SerializedFilter>;
 }
 
 /** Full documented shape of chrome.storage.local. */
@@ -78,6 +82,7 @@ const DEFAULT_UI_STATE: UiState = {
   lastSchemaId: null,
   documents: {},
   themePreference: 'system',
+  pinnedFilters: {},
 };
 
 // ─── Model config (per-provider) ───
@@ -241,10 +246,7 @@ export async function saveModelConfig(patch: ModelConfigPatch): Promise<void> {
  */
 export function subscribeModelConfig(callback: (config: ModelConfig) => void): () => void {
   if (typeof chrome === 'undefined' || !chrome.storage?.onChanged) return () => {};
-  const listener = (
-    changes: Record<string, chrome.storage.StorageChange>,
-    area: string,
-  ) => {
+  const listener = (changes: Record<string, chrome.storage.StorageChange>, area: string) => {
     if (area !== 'local') return;
     if (MODEL_CONFIG_KEY in changes || API_KEY_STORAGE_KEY in changes) {
       void loadModelConfig().then(callback);
@@ -262,7 +264,12 @@ export async function getUiState(): Promise<UiState> {
   if (!store) return { ...DEFAULT_UI_STATE };
   const result = await store.get(UI_STATE_KEY);
   const stored = result[UI_STATE_KEY] as Partial<UiState> | undefined;
-  return { ...DEFAULT_UI_STATE, ...stored, documents: stored?.documents ?? {} };
+  return {
+    ...DEFAULT_UI_STATE,
+    ...stored,
+    documents: stored?.documents ?? {},
+    pinnedFilters: stored?.pinnedFilters ?? {},
+  };
 }
 
 /**
@@ -308,6 +315,20 @@ export function setDocumentUiState(pdfUrl: string, patch: Partial<DocumentUiStat
   });
 }
 
+/**
+ * Pin (persist) or unpin the navigator filter for one schema. Pass a serialized
+ * filter to pin/update it, or null to remove the pin. Keyed by schemaId so a
+ * pinned filter follows its schema across documents and reloads.
+ */
+export function setPinnedFilter(schemaId: string, filter: SerializedFilter | null): Promise<void> {
+  return updateUiState((state) => {
+    const pinnedFilters = { ...state.pinnedFilters };
+    if (filter === null) delete pinnedFilters[schemaId];
+    else pinnedFilters[schemaId] = filter;
+    return { ...state, pinnedFilters };
+  });
+}
+
 /** Read the user's color-theme preference. */
 export async function getThemePreference(): Promise<ThemePreference> {
   return (await getUiState()).themePreference;
@@ -330,7 +351,12 @@ export function onUiStateChange(listener: (state: UiState) => void): () => void 
   const handler = (changes: Record<string, chrome.storage.StorageChange>, area: string) => {
     if (area !== 'local' || !changes[UI_STATE_KEY]) return;
     const next = changes[UI_STATE_KEY].newValue as Partial<UiState> | undefined;
-    listener({ ...DEFAULT_UI_STATE, ...next, documents: next?.documents ?? {} });
+    listener({
+      ...DEFAULT_UI_STATE,
+      ...next,
+      documents: next?.documents ?? {},
+      pinnedFilters: next?.pinnedFilters ?? {},
+    });
   };
   chrome.storage.onChanged.addListener(handler);
   return () => chrome.storage.onChanged.removeListener(handler);

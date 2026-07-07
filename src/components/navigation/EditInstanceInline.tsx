@@ -9,6 +9,12 @@ interface EditInstanceInlineProps {
   instanceId: string;
   /** Override the data source (used by Ladle stories that have no DrawerContext). */
   adapter?: InstanceDataAdapter;
+  /** Makes the page badge filter the navigator to that page (see InstancePopoverContent). */
+  onPageClick?: (page: number) => void;
+  /** Outline sections this instance's page falls under (clickable chips). */
+  sectionPath?: { key: number; title: string }[];
+  /** Makes each section chip filter the navigator to that section. */
+  onSectionClick?: (key: number) => void;
 }
 
 /**
@@ -21,6 +27,9 @@ export function EditInstanceInline({
   classId,
   instanceId,
   adapter,
+  onPageClick,
+  sectionPath,
+  onSectionClick,
 }: EditInstanceInlineProps) {
   const { editor, accentColor } = useDrawerInstanceEditor({
     schemaId,
@@ -41,6 +50,9 @@ export function EditInstanceInline({
         positiveExample={editor.positiveExample}
         onTogglePositiveExample={editor.togglePositiveExample}
         pageNumber={editor.instance.coords?.[0]?.pageNumber}
+        onPageClick={onPageClick}
+        sectionPath={sectionPath}
+        onSectionClick={onSectionClick}
         notesValue={editor.notesValue}
         onNotesChange={editor.setNotesValue}
         onNotesBlur={editor.save}

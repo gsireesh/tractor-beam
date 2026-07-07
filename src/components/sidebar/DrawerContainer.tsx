@@ -34,10 +34,19 @@ import {
   setDocumentUiState,
   setDrawerOpen,
   setLastSchemaId,
+  setPinnedFilter,
   type UiState,
 } from '@/lib/config-storage';
 import { DrawerContext } from '@/contexts/DrawerContext';
 import { scrollToAnnotation } from '@/lib/pdf-navigation';
+import {
+  applyNavigatorFilter,
+  deserializeFilter,
+  EMPTY_FILTER,
+  type NavigatorFilter,
+  serializeFilter,
+} from '@/lib/navigator-filters.ts';
+import { buildOutlineTree, type OutlineNode, sectionPathForPage } from '@/lib/pdf/outline-tree.ts';
 import {
   colorMapForSchema,
   createNewSchema,
@@ -78,6 +87,52 @@ export function DrawerContainer() {
   // toward the root-level `ml` store slice (docs/architecture/02); the minimap is a
   // read-only consumer, so it maps onto the future `useMlHighlights()` with no setter.
   const [mlHighlights, setMlHighlights] = useState<Highlight[]>([]);
+  // Filter state lives here (not in DrawerContent) so the SAME predicate shapes
+  // every ML surface: the navigator list, the in-page viewer, AND the minimap —
+  // otherwise the minimap would show ticks for highlights hidden from the page.
+  const [filter, setFilter] = useState<NavigatorFilter>(EMPTY_FILTER);
+  // The PDF's table of contents as a nested tree, read once the PDF is ready. Used
+  // to resolve which section a highlight's page falls in — for the section filter
+  // dimension and the per-card section chips. Empty when the PDF has no outline.
+  const [outlineRoots, setOutlineRoots] = useState<OutlineNode[]>([]);
+  // page → outline node-key path, for the section-filter predicate. Derived from
+  // the tree; empty until the outline loads (so section filtering is a no-op then).
+  const sectionOf = useCallback(
+    (page: number) => sectionPathForPage(outlineRoots, page).map((n) => n.key),
+    [outlineRoots],
+  );
+  const filteredMlHighlights = useMemo(
+    () => applyNavigatorFilter(mlHighlights, filter, sectionOf),
+    [mlHighlights, filter, sectionOf],
+  );
+
+  // Read the outline once the PDF document is available. The drawer usually mounts
+  // after the PDF loads, but poll briefly in case it isn't ready yet, then give up.
+  useEffect(() => {
+    let loaded = false;
+    const tryLoad = () => {
+      const app = window.PDFViewerApplication as
+        | { pdfDocument?: { numPages?: number } }
+        | undefined;
+      if (!window.TractorBeamPdf || !app?.pdfDocument) return;
+      loaded = true;
+      const pageCount = app.pdfDocument.numPages ?? 1;
+      void window.TractorBeamPdf.extractOutline(window.PDFViewerApplication)
+        .then((entries) => setOutlineRoots(buildOutlineTree(entries, pageCount)))
+        .catch((err: unknown) => console.warn('[drawer] Failed to read PDF outline:', err));
+    };
+    tryLoad();
+    if (loaded) return;
+    const iv = setInterval(() => {
+      tryLoad();
+      if (loaded) clearInterval(iv);
+    }, 500);
+    const giveUp = setTimeout(() => clearInterval(iv), 10000);
+    return () => {
+      clearInterval(iv);
+      clearTimeout(giveUp);
+    };
+  }, []);
 
   // Load schema state (IndexedDB) and UI state (chrome.storage) together so the
   // drawer's saved position is ready when its content first renders.
@@ -119,7 +174,7 @@ export function DrawerContainer() {
     return (
       <>
         <DrawerVisibilityToggle isOpen={isOpen} onToggle={toggle} />
-        <AnnotationMinimap mlHighlights={mlHighlights} isOpen={isOpen} />
+        <AnnotationMinimap mlHighlights={filteredMlHighlights} isOpen={isOpen} />
         <div className={`tractor-beam-drawer ${isOpen ? 'open' : ''}`}>
           <div className="p-4 text-sm text-muted-foreground">Loading...</div>
         </div>
@@ -130,13 +185,17 @@ export function DrawerContainer() {
   return (
     <>
       <DrawerVisibilityToggle isOpen={isOpen} onToggle={toggle} />
-      <AnnotationMinimap mlHighlights={mlHighlights} isOpen={isOpen} />
+      <AnnotationMinimap mlHighlights={filteredMlHighlights} isOpen={isOpen} />
       <div className={`tractor-beam-drawer ${isOpen ? 'open' : ''}`}>
         <DrawerContent
           initialSchemas={initialState}
           initialUiState={initialUiState}
           mlHighlights={mlHighlights}
+          filteredMlHighlights={filteredMlHighlights}
           setMlHighlights={setMlHighlights}
+          filter={filter}
+          setFilter={setFilter}
+          outlineRoots={outlineRoots}
         />
       </div>
     </>
@@ -176,13 +235,31 @@ function DrawerContent({
   initialSchemas,
   initialUiState,
   mlHighlights,
+  filteredMlHighlights,
   setMlHighlights,
+  filter,
+  setFilter,
+  outlineRoots,
 }: {
   initialSchemas: Schema[];
   initialUiState: UiState;
   mlHighlights: Highlight[];
+  /** ML highlights already run through the shared filter (computed in the parent,
+   *  shared with the minimap). Used for the viewer sync; the raw `mlHighlights`
+   *  still feeds the signpost list so its source counts stay total. */
+  filteredMlHighlights: Highlight[];
   setMlHighlights: Dispatch<SetStateAction<Highlight[]>>;
+  filter: NavigatorFilter;
+  setFilter: Dispatch<SetStateAction<NavigatorFilter>>;
+  /** PDF outline tree, for resolving section membership (filter + card chips). */
+  outlineRoots: OutlineNode[];
 }) {
+  // page → section-key path, derived locally so the confirmed viewer sync honors
+  // the section filter (the ML side is filtered in the parent).
+  const sectionOf = useCallback(
+    (page: number) => sectionPathForPage(outlineRoots, page).map((n) => n.key),
+    [outlineRoots],
+  );
   const [schemas, dispatch] = usePersistedSchemaReducer(
     schemasReducer,
     initialSchemas,
@@ -211,6 +288,63 @@ function DrawerContent({
   );
   const activeSchema = schemas.find((s) => s.id === activeSchemaId) ?? schemas[0];
 
+  // ── Per-schema pinned filters ──
+  // Opt-in persistence: when a schema is "pinned", its filter is the baseline that
+  // reset / reset-on-load / schema-switch restore to (instead of EMPTY_FILTER), and
+  // edits to the filter keep the pin up to date. Seeded from storage; our own writes
+  // update both the local copy and chrome.storage.
+  const [pinnedFilters, setPinnedFilters] = useState(initialUiState.pinnedFilters);
+  const isPinned = !!activeSchema && activeSchema.id in pinnedFilters;
+  // The filter a schema falls back to: its pinned filter, or the empty filter.
+  const baselineFilter = useCallback(
+    (schemaId?: string): NavigatorFilter =>
+      schemaId && pinnedFilters[schemaId]
+        ? deserializeFilter(pinnedFilters[schemaId])
+        : EMPTY_FILTER,
+    [pinnedFilters],
+  );
+  const resetFilter = useCallback(
+    () => setFilter(baselineFilter(activeSchema?.id)),
+    [baselineFilter, activeSchema?.id, setFilter],
+  );
+  const togglePin = useCallback(() => {
+    if (!activeSchema) return;
+    const id = activeSchema.id;
+    if (id in pinnedFilters) {
+      setPinnedFilters((prev) => {
+        const next = { ...prev };
+        delete next[id];
+        return next;
+      });
+      void setPinnedFilter(id, null);
+    } else {
+      const serialized = serializeFilter(filter);
+      setPinnedFilters((prev) => ({ ...prev, [id]: serialized }));
+      void setPinnedFilter(id, serialized);
+    }
+  }, [activeSchema, pinnedFilters, filter]);
+
+  // Restore the initial schema's pinned filter once, after it resolves. (Later
+  // switches go through selectSchema; run/cached loads go through resetFilter.)
+  const didRestorePin = useRef(false);
+  useEffect(() => {
+    if (didRestorePin.current || !activeSchema) return;
+    didRestorePin.current = true;
+    const base = baselineFilter(activeSchema.id);
+    if (base !== EMPTY_FILTER) setFilter(base);
+  }, [activeSchema, baselineFilter, setFilter]);
+
+  // While a schema is pinned, keep its stored filter in sync with edits, so the pin
+  // always reflects the current filter. Guarded so it only writes on real changes.
+  useEffect(() => {
+    if (!activeSchema || !(activeSchema.id in pinnedFilters)) return;
+    const serialized = serializeFilter(filter);
+    if (JSON.stringify(pinnedFilters[activeSchema.id]) === JSON.stringify(serialized)) return;
+    setPinnedFilters((prev) => ({ ...prev, [activeSchema.id]: serialized }));
+    void setPinnedFilter(activeSchema.id, serialized);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- persist on filter edits only; activeSchema/pinnedFilters read as latest-render closures
+  }, [filter]);
+
   // Bookmark the complete schema, then download the (possibly filtered) view.
   const handleExport = useCallback(
     (opts: ExportOptions) => {
@@ -231,10 +365,13 @@ function DrawerContent({
   const selectSchema = useCallback(
     (id: string) => {
       setActiveSchemaId(id);
+      // A different schema has different classes, so the old filter would be stale.
+      // Fall back to the new schema's baseline: its pinned filter, or empty.
+      setFilter(baselineFilter(id));
       void setDocumentUiState(pdfUrl, { schemaId: id });
       void setLastSchemaId(id);
     },
-    [pdfUrl],
+    [pdfUrl, baselineFilter, setFilter],
   );
 
   // Pin this document's resolved position on first open, so it persists independently
@@ -259,6 +396,15 @@ function DrawerContent({
     () => (activeSchema ? getSignpostsFromHighlights(mlHighlights, activeSchema) : []),
     [mlHighlights, activeSchema],
   );
+  // The viewer must show exactly what the navigator shows, so the confirmed sync
+  // effect below pushes this FILTERED array. (Section filtering has no outline
+  // yet, so sectionOf defaults to a no-op — added in the ToC-section slice.) The
+  // ML side is filtered in the parent (`filteredMlHighlights` prop) so the same
+  // array also feeds the minimap.
+  const filteredConfirmedHighlights = useMemo<Highlight[]>(
+    () => applyNavigatorFilter(confirmedHighlights, filter, sectionOf),
+    [confirmedHighlights, filter, sectionOf],
+  );
   const removeMlHighlight = useCallback(
     (highlightId: string) => setMlHighlights((prev) => prev.filter((h) => h.id !== highlightId)),
     [],
@@ -271,9 +417,10 @@ function DrawerContent({
       dispatch,
       getActiveSchema: () => activeSchema ?? null,
       setMlHighlights,
+      resetFilter,
     });
     return () => clearDrawerContent();
-  }, [dispatch, activeSchema]);
+  }, [dispatch, activeSchema, resetFilter]);
 
   // Push ML highlights to the viewer whenever they or the active schema change.
   // Keyed on the whole activeSchema object (not just its id) so a recolor re-fires
@@ -281,8 +428,8 @@ function DrawerContent({
   // confirmed-sync effect reacts to activeSchema (via the confirmedHighlights memo),
   // so both highlight kinds recolor through the same trigger.
   useEffect(() => {
-    syncProvisionalHighlights(mlHighlights);
-  }, [mlHighlights, activeSchema]);
+    syncProvisionalHighlights(filteredMlHighlights);
+  }, [filteredMlHighlights, activeSchema]);
 
   // Listen for messages from offscreen document (ML results)
   useEffect(() => {
@@ -363,10 +510,10 @@ function DrawerContent({
   useEffect(() => {
     if (!window.TractorBeamHighlights) return;
     console.log(
-      `[drawer] confirmed highlight sync: ${confirmedHighlights.length} manual, pdfUrl="${pdfUrl}"`,
+      `[drawer] confirmed highlight sync: ${filteredConfirmedHighlights.length} manual, pdfUrl="${pdfUrl}"`,
     );
-    window.TractorBeamHighlights.setHighlights('confirmed', confirmedHighlights);
-  }, [confirmedHighlights, pdfUrl]);
+    window.TractorBeamHighlights.setHighlights('confirmed', filteredConfirmedHighlights);
+  }, [filteredConfirmedHighlights, pdfUrl]);
 
   // Deep link (?instance=…): scroll to and flash the target highlight once, after
   // its highlights have been synced above.
@@ -456,14 +603,22 @@ function DrawerContent({
             </TabsTrigger>
             <TabsTrigger value={'navigation'}>
               <SignpostIcon />
-              Navigate Highlights
+              Highlights ({confirmedSignposts.length + mlSignposts.length})
             </TabsTrigger>
           </TabsList>
           <TabsContent value={'schema'} className="overflow-scroll flex-1 min-h-0">
             <SchemaViewer schema={activeSchema} dispatch={dispatch} />
           </TabsContent>
           <TabsContent value={'navigation'} className="overflow-scroll flex-1 min-h-0">
-            <InstanceNavigator confirmedSignposts={confirmedSignposts} mlSignposts={mlSignposts} />
+            <InstanceNavigator
+              confirmedSignposts={confirmedSignposts}
+              mlSignposts={mlSignposts}
+              filter={filter}
+              setFilter={setFilter}
+              outlineRoots={outlineRoots}
+              isPinned={isPinned}
+              onTogglePin={togglePin}
+            />
           </TabsContent>
         </Tabs>
       </div>
