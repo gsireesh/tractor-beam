@@ -30,3 +30,5 @@ src/learning-opportunities/
 # Rebuild the trimmed sources with `pnpm run fixtures:trim` (needs the full docs here).
 test/fixtures/pdf/original/_sources/
 
+telemetry-archive
+
