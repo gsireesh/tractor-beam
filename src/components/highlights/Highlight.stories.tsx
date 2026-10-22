@@ -2,6 +2,8 @@ import type { Story } from '@ladle/react';
 import { HighlightOverlay, VISUAL_BLOCK_CLASS_ID } from './HighlightOverlay.tsx';
 import type { HighlightOverlayProps } from './types.ts';
 
+export default { title: 'Product / Reading Area / Highlights' };
+
 // Frame is 480x620 with p-8 (32px padding) and text-[13px] leading-relaxed,
 // so each text line is ~21px tall and the first line starts at y≈32. The
 // underline coords below place each highlight on a different odd-numbered

@@ -6,6 +6,8 @@ import { getHighlightsFromSchema, getSignpostsFromHighlights } from '@/lib/utils
 import { DrawerContext } from '@/contexts/DrawerContext';
 import { EMPTY_FILTER, type NavigatorFilter } from '@/lib/navigator-filters.ts';
 
+export default { title: 'Product / TractorBeam Sidebar / Schema Viewer / Instance Navigator' };
+
 // Use the "STS Reading" schema (index 1, not 0): its classes carry populated
 // `instances` with real PDF coords, so the navigator has something to render.
 const activeSchema = placeholderSchemas[1];

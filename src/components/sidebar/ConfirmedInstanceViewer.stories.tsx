@@ -4,6 +4,8 @@ import { placeholderSchemas } from '@/lib/placeholder-schemas.ts';
 import { rgbaToHex } from '@/lib/utils.ts';
 import { DrawerContext } from '@/contexts/DrawerContext.tsx';
 
+export default { title: 'Product / TractorBeam Sidebar / Schema Viewer / Instance Navigator / Confirmed Instances' };
+
 // The "STS Reading" schema (index 1) carries classes with populated `instances`
 // that have real PDF coords — so the viewer has something to resolve and render.
 const activeSchema = placeholderSchemas[1];

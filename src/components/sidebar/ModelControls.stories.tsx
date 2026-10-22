@@ -3,6 +3,8 @@ import { Story } from '@ladle/react';
 import { DrawerContext } from '@/contexts/DrawerContext.tsx';
 import { ModelControls } from '@/components/sidebar/ModelControls.tsx';
 
+export default { title: 'Product / TractorBeam Sidebar / Model Controls' };
+
 const activeSchema = placeholderSchemas[1];
 
 // ConfirmedInstanceViewer reads/writes through DrawerContext. Provide a stub so
@@ -19,7 +21,7 @@ function Frame({ children }: { children: React.ReactNode }) {
   return <div className="relative w-[380px] border border-black p-2 shadow-sm">{children}</div>;
 }
 
-export const ModelControlsStory: Story = () => (
+export const Default: Story = () => (
   <DrawerContext.Provider value={stubContext}>
     <Frame>
       {/*<div> testing!</div>*/}

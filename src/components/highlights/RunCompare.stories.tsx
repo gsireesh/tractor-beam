@@ -5,6 +5,8 @@ import { wavyBoxFromHeight } from './wavy-mask';
 import { ConfirmedTextHighlight } from './ConfirmedTextHighlight.tsx';
 import type { HighlightOverlayProps } from './types.ts';
 
+export default { title: 'Product / Reading Area / Run Compare' };
+
 /**
  * DESIGN MOCKUP — run-vs-run compare mode (not production code).
  *

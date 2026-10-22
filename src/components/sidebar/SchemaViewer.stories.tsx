@@ -3,6 +3,8 @@ import { SchemaViewer } from './SchemaViewer.tsx';
 import { placeholderSchemas } from '@/lib/placeholder-schemas.ts';
 import { DrawerContext } from '@/contexts/DrawerContext.tsx';
 
+export default { title: 'Product / TractorBeam Sidebar / Schema Viewer' };
+
 // "STS Reading" (index 1) is the schema with populated classes + instances, so the
 // viewer renders a realistic stack of class accordions instead of an empty shell.
 const schema = placeholderSchemas[1];
