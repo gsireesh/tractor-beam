@@ -57,12 +57,12 @@ export const DEFAULT_WEBLLM_MODEL: WebLlmModelId = 'Qwen2.5-3B-Instruct-q4f16_1-
 
 /** Available Claude models (current generation, one+ per tier) */
 export const CLAUDE_MODELS = [
-  'claude-opus-4-8',
-  'claude-opus-4-7',
-  'claude-sonnet-4-6',
-  'claude-haiku-4-5',
+  'claude-fable-5-1',
+  'claude-opus-5-5',
+  'claude-sonnet-5-5',
+  'claude-haiku-5-5',
 ] as const;
 
 export type ClaudeModelId = (typeof CLAUDE_MODELS)[number];
 
-export const DEFAULT_CLAUDE_MODEL: ClaudeModelId = 'claude-sonnet-4-6';
+export const DEFAULT_CLAUDE_MODEL: ClaudeModelId = 'claude-sonnet-5-5';

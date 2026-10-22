@@ -57,7 +57,7 @@ export class ClaudeRunner {
    * SDK. Returns a response shaped like WebLLM's ChatCompletion so the pipeline
    * can treat every runner uniformly.
    */
-  async run(messages: ChatMessage[], _requestId?: string, maxTokens = 1024, timeoutMs = 60_000) {
+  async run(messages: ChatMessage[], _requestId?: string, maxTokens = 2048, timeoutMs = 60_000) {
     const apiKey = this.ensureApiKey();
     const client = new Anthropic({
       apiKey,

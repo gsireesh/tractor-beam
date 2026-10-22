@@ -27,12 +27,12 @@ export const DEFAULT_OPENAI_CONFIG: OpenAiConfig = {
 };
 
 /**
- * Curated default models for OpenAI-compatible endpoints — a couple of current
- * OpenAI GPT-5.4 models. Placeholder until the list is fetched live from the
+ * Curated default models for OpenAI-compatible endpoints — the current OpenAI
+ * GPT-6 tier (astra > sol > luna). Placeholder until the list is fetched live from the
  * endpoint's /v1/models, since the real catalog is endpoint-specific (a custom
  * Ollama/Together/OpenRouter endpoint will serve entirely different ids).
  */
-export const OPENAI_MODELS = ['gpt-5.4', 'gpt-5.4-mini'] as const;
+export const OPENAI_MODELS = ['gpt-6-astra', 'gpt-6.1-sol', 'gpt-6-luna'] as const;
 
 export class OpenAiRunner {
   private apiKey: string | null = null;
@@ -59,7 +59,7 @@ export class OpenAiRunner {
    * endpoint (Ollama, Together, OpenRouter, OpenAI proper). Returns a response
    * shaped like WebLLM's ChatCompletion so the pipeline treats runners uniformly.
    */
-  async run(messages: ChatMessage[], _requestId?: string, maxTokens = 1024, timeoutMs = 60_000) {
+  async run(messages: ChatMessage[], _requestId?: string, maxTokens = 2048, timeoutMs = 60_000) {
     if (!this.baseUrl) {
       throw new Error('OpenAI-compatible base URL not configured. Set it in Model Configuration.');
     }

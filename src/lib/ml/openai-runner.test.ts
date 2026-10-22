@@ -34,7 +34,7 @@ describe('OpenAiRunner request params', () => {
     await runner.run([{ role: 'user', content: 'hi' }]);
 
     const args = createMock.mock.calls[0][0];
-    expect(args.max_completion_tokens).toBe(1024);
+    expect(args.max_completion_tokens).toBe(2048);
     expect(args).not.toHaveProperty('max_tokens');
   });
 
