@@ -2,6 +2,20 @@
 
 All notable changes to this project are documented here.
 
+## 0.4.1 - 2026-10-28
+
+### Models
+
+- Updated the Claude model list to the Claude 5 family (Fable 5.1, Opus 5.5, Sonnet 5.5, Haiku 5.5); the default is now Sonnet 5.5.
+- Updated the curated OpenAI defaults to the GPT-6 tier (`gpt-6-astra`, `gpt-6.1-sol`, `gpt-6-luna`).
+- Raised the default max output tokens per request from 1024 to 2048 for both Claude and OpenAI-compatible runners.
+
+### Branding
+
+- New extension icons at all sizes, including a new 32px icon.
+- Package renamed to `TractorBeam`, so release zips are now named `TractorBeam-<version>-chrome.zip`.
+- Refreshed the README and demo GIF.
+
 ## 0.4.0 - 2026-07-07
 
 ### Highlight filtering
