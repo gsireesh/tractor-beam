@@ -132,7 +132,7 @@ extension icon. This should open the extension with the sidebar open and set to 
 TractorBeam currently supports any OpenAI- or Anthropic-compatible endpoint in a 
 bring-your-own-key setup. This means that you can use OpenAI or Anthropic themselves, or any 
 other models behind a similar endpoint, including ones you host or run yourself through tools 
-like Ollama](https://ollama.com) or [vLLM](https://vllm.ai/). We also have an experimental mode 
+like [Ollama](https://ollama.com) or [vLLM](https://vllm.ai/). We also have an experimental mode 
 that allows you to use models in-browser via [WebLLM](https://webllm.mlc.ai/). Setting an 
 endpoint URL and an API key can be done by clicking the gear icon in the AI control panel.
 
