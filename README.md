@@ -24,7 +24,13 @@ less of a concern if you're seeing an AI's results in light of the original docu
 evaluating whether an AI is doing a good job is a lot easier when you see what it's drawing from.
 I wrote about some of the benefits of collaborative annotation for machine learning in a paper
 at the [Science and Technology of Augmented Reading Workshop](https://chi-star-workshop.github.io/)
-at CHI 2026, and you can find my paper [here](<https://chi-star-workshop.github.io/src/assets/pdf/papers/CHI_STAR_26__Collaborative_Annotation_as_an_Interface_Metaphor_for_Personalizable_AI_Reading_Support%20(3)%20-%20Sireesh%20Gururaja.pdf>).
+at CHI 2026, and you can find that paper 
+[here](<https://chi-star-workshop.github.io/src/assets/pdf/papers/CHI_STAR_26__Collaborative_Annotation_as_an_Interface_Metaphor_for_Personalizable_AI_Reading_Support%20(3)%20-%20Sireesh%20Gururaja.pdf>).
+TractorBeam and it's preliminary user study will also be a poster at UIST 2026(
+[paper](https://siree.sh/assets/pdf/tractorbeam_uist_26_paper.pdf)|
+[poster](https://siree.sh/assets/pdf/tb_uist_poster.pdf)), and 
+you can find a more complete version of the study 
+[here.](https://siree.sh/assets/pdf/tractorbeam_paper_27.pdf)
 
 While TractorBeam doesn't support collaboration with other users yet, it frames AI as a
 collaborative annotator on the same documents you read, in a very common, existing PDF reader
@@ -41,21 +47,22 @@ However, to better reflect the structure that that annotation might take for dif
 TractorBeam imposes a little more structure. In the following bullets, we discuss key terms in
 the TractorBeam conceptual model.
 
-- **Schemas**: all TractorBeam annotation happens inside what we call a _schema_, which is just
+- **Projects**: all TractorBeam annotation happens inside a _project_, which is just
   a collection of things that you might care about in a domain. We explicitly use this level so
   that you can use TractorBeam in multiple different ways without reconfiguring it each time.
-  For instance, I might have one schema that helps me read NLP papers, and another that helps
+  For instance, I might have one project that helps me read NLP papers, and another that helps
   with materials science papers. Both of these can coexist, and be switched between, even on the
-  same paper. Each Schema has a name that can freely be changed, and a list of classes. Schemas
+  same paper. Each project has a name that can freely be changed, and a list of classes. Projects
   are not intended to be document-specific; rather, they represent a model for thinking about a
-  collection of similar documents.
-- **Classes**: Each schema is composed of a list of _classes_, which indicate particular things
-  you might be looking for. This can be something as specific as "materials", or as loose as
-  "things I find interesting". Every highlight you make in the PDF viewer needs to belong to a
-  class; we indicate this visually by having the highlights and the class they belong to share a
-  color. Think of a class as a colored highlighter that has some associated
-  semantics. Classes consist of a name, a description, and a list of instances.
-- **Instances**: An _instance_ represents a highlight that you make on a document that belongs
+  collection of similar documents. Projects also allow for project-wide instructions, which are 
+  for things that apply broadly to all documents you might read with it.
+- **Highlighters**: Each project  is composed of a list of _highlighters_, which describe  
+  particular things you might be looking for. This can be something as specific as "materials", 
+  or as loose as "things I find interesting". Every highlight you make in the PDF viewer needs 
+  to belong to a highlighter; we indicate this visually by the highlighter's color, which then 
+  applies automatically to each associated highlight. Highlighters consist of a name, a 
+  description, a color, and a list of examples.
+- **Examples**: An _example_ represents a highlight that you make on a document that belongs
   to a specific class, that can optionally have associated notes. Instances have an associated
   class (and thereby a schema), and will be rendered automatically on a document when you load
   it. Instances also allow you to specify whether a highlight is a _negative_ example of a class,
@@ -102,14 +109,12 @@ interoperable with a number of formats: [Hypothesis](https://hypothes.is) and [M
 for annotations, HuggingFace for NER training, and plain CSV. More concretely, this data is
 stored in your browser's [`IndexedDB`](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API).
 
-For machine annotations, only choosing to use the Claude annotation backend causes data to ever
-leave your computer, and that data would then be handled by Anthropic.
-**Do not use the Claude backend for data that you're not sure can be sent to Anthropic**.
+For machine annotations, only choosing to use a remote AI annotation backend causes data to ever
+leave your computer, and that data would then be handled by the LLM provider.
+**Do not use a remote AI backend for data that you're not sure can be sent to Anthropic**.
 
-Using the WebLLM and Ollama backends can be done entirely locally, and with the exception of the
-first run to download the models themselves, entirely without an internet connection!
-Unfortunately, current limitations mean that these models are both slow and do not annotate
-particularly well.
+You can point the AI annotation to a model that you run locally, for example with tools like 
+Ollama and vLLM by reconfiguring the URL that the model points at.
 
 </details>
 
@@ -124,22 +129,12 @@ extension icon. This should open the extension with the sidebar open and set to 
 
 ### Choosing an ML Backend
 
-TractorBeam currently supports three ML backends:
-
-- [WebLLM](https://webllm.mlc.ai) (entirely in-browser, dependent on local hardware): The WebLLM
-  backend runs an LLM on your computer, directly in the browser itself. The models available
-  through this route are fairly limited, and are also limited by how good your hardware is.
-  These models tend to run slowly and not do particularly well; we are working on research to
-  fix that problem. The upside of these models is that they require effectively no
-  configuration: you just specify a model, download it, and you're ready to go.
-- [Ollama](https://ollama.com) (on-device, outside of browser): The Ollama backend uses models
-  served within the Ollama framework to run inference. This can either be an instance of Ollama
-  running locally on your computer, or that is hosted for you. The configuration for this
-  backend is the URL at which the Ollama server can be accessed. The configuration is
-  pre-populated for a local Ollama server.
-- [Claude](https://claude.ai) (hosted): This runs against Claude models directly, and tends to
-  be the fastest/best quality version, but the data will be processed by Anthropic. For this,
-  you will need an API key for Claude, which can be pasted in directly to the model control panel.
+TractorBeam currently supports any OpenAI- or Anthropic-compatible endpoint in a 
+bring-your-own-key setup. This means that you can use OpenAI or Anthropic themselves, or any 
+other models behind a similar endpoint, including ones you host or run yourself through tools 
+like Ollama](https://ollama.com) or [vLLM](https://vllm.ai/). We also have an experimental mode 
+that allows you to use models in-browser via [WebLLM](https://webllm.mlc.ai/). Setting an 
+endpoint URL and an API key can be done by clicking the gear icon in the AI control panel.
 
 ## Development
 
@@ -191,10 +186,7 @@ src/
 public/                      # vendored pdf.js viewer + pdfjs-init.js (the JS↔React bridge)
 docs/architecture/           # design rationale & in-progress direction
 ```
-
-## Contributing
-
-Not yet licensed, but please feel free to file an issue/get in touch!
+ 
 
 ## Acknowledgements
 
